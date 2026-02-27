@@ -1,19 +1,14 @@
+using BurnOutAdmin.Views.Clients;
+
 namespace BurnOutAdmin;
 
 public partial class AppShell : Shell
 {
-    public AppShell(IServiceProvider serviceProvider)
+    public AppShell()
     {
         InitializeComponent();
         
-        Routing.RegisterRoute("MainPage", typeof(MainPage));
-        
-        var mainPage = serviceProvider.GetRequiredService<MainPage>();
-        Items.Add(new ShellContent
-        {
-            Title = "Home",
-            Route = "MainPage",
-            Content = mainPage
-        });
+        Routing.RegisterRoute(nameof(MainPage), typeof(MainPage));
+        Routing.RegisterRoute(nameof(ClientsView), typeof(ClientsView));
     }
 }

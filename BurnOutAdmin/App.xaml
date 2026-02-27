@@ -1,14 +1,46 @@
-﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<?xml version = "1.0" encoding = "UTF-8" ?>
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:BurnOutAdmin"
+             xmlns:converters="clr-namespace:BurnOutAdmin.Converters"
              x:Class="BurnOutAdmin.App">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/MaterialIcons.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Base Converters -->
+            <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+            <converters:IsNotNullConverter x:Key="IsNotNullConverter" />
+            <converters:IsZeroConverter x:Key="IsZeroConverter" />
+            <converters:FirstLetterConverter x:Key="FirstLetterConverter" />
+            
+            <!-- Sidebar Converters -->
+            <converters:SidebarWidthConverter x:Key="SidebarWidthConverter" />
+            <converters:MenuItemBackgroundConverter x:Key="MenuItemBackgroundConverter" />
+            <converters:MenuItemIconColorConverter x:Key="MenuItemIconColorConverter" />
+            <converters:MenuItemTextColorConverter x:Key="MenuItemTextColorConverter" />
+            <converters:IconKeyToPathConverter x:Key="IconKeyToPathConverter" />
+            <converters:ViewModelToViewConverter x:Key="ViewModelToViewConverter" />
+            
+            <!-- Status Converters -->
+            <converters:StatusBadgeColorConverter x:Key="StatusBadgeColorConverter" />
+            <converters:ActiveStatusTextConverter x:Key="ActiveStatusTextConverter" />
+            <converters:ChallengeStatusColorConverter x:Key="ChallengeStatusColorConverter" />
+            <converters:ClientStatusColorConverter x:Key="ClientStatusColorConverter" />
+            
+            <!-- NFC Converters -->
+            <converters:NfcResultColorConverter x:Key="NfcResultColorConverter" />
+            <converters:NfcCardIconColorConverter x:Key="NfcCardIconColorConverter" />
+            <converters:FilterButtonColorConverter x:Key="FilterButtonColorConverter" />
+            <converters:FilterIconColorConverter x:Key="FilterIconColorConverter" />
+            <converters:FilterTextConverter x:Key="FilterTextConverter" />
+            
+            <!-- Client Converters -->
+            <converters:SelectedClientBackgroundConverter x:Key="SelectedClientBackgroundConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

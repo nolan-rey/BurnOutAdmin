@@ -4,6 +4,13 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:BurnOutAdmin"
-    Title="BurnOutAdmin">
+    xmlns:views="clr-namespace:BurnOutAdmin.Views.Clients"
+    Title="BurnOutAdmin"
+    Shell.FlyoutBehavior="Disabled">
+
+    <ShellContent
+        Title="Clients"
+        ContentTemplate="{DataTemplate views:ClientsView}"
+        Route="ClientsView" />
 
 </Shell>

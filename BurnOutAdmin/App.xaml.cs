@@ -1,9 +1,12 @@
+using BurnOutAdmin.ViewModels;
+using BurnOutAdmin.Views.Shell;
+
 namespace BurnOutAdmin;
 
 public partial class App : Application
 {
     private readonly IServiceProvider _serviceProvider;
-
+    
     public App(IServiceProvider serviceProvider)
     {
         InitializeComponent();
@@ -12,6 +15,7 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(_serviceProvider.GetRequiredService<AppShell>());
+        var mainShell = _serviceProvider.GetRequiredService<MainShell>();
+        return new Window(mainShell);
     }
 }
