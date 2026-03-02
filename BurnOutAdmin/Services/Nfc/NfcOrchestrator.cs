@@ -20,6 +20,9 @@ public class NfcOrchestrator : INfcOrchestrator
     public event EventHandler<NfcLog>? LogUpdated;
 
     /// <inheritdoc />
+    public event EventHandler<string>? UidScanned;
+
+    /// <inheritdoc />
     public bool IsReaderConnected => _rfidReader.IsConnected;
 
     /// <inheritdoc />
@@ -27,6 +30,9 @@ public class NfcOrchestrator : INfcOrchestrator
 
     /// <inheritdoc />
     public bool IsBindMode => _bindClientId.HasValue;
+
+    /// <inheritdoc />
+    public bool IsCaptureMode { get; private set; }
 
     private readonly IRfidReaderService _rfidReader;
     private readonly IMqttService _mqttService;
@@ -107,14 +113,40 @@ public class NfcOrchestrator : INfcOrchestrator
         System.Diagnostics.Debug.WriteLine("[Orchestrator] Mode Bind annulé.");
     }
 
+    /// <inheritdoc />
+    public void StartCaptureMode()
+    {
+        IsCaptureMode = true;
+        System.Diagnostics.Debug.WriteLine("[Orchestrator] Mode Capture activé (UID intercepté sans MQTT/log).");
+    }
+
+    /// <inheritdoc />
+    public void StopCaptureMode()
+    {
+        IsCaptureMode = false;
+        System.Diagnostics.Debug.WriteLine("[Orchestrator] Mode Capture désactivé.");
+    }
+
     /// <summary>
     /// Callback déclenché par le lecteur RFID lorsqu'un UID est lu.
-    /// Crée un log Pending, persiste, publie sur MQTT.
+    /// Si mode Capture actif : émet UidScanned puis retourne (pas de MQTT/log).
+    /// Sinon : crée un log Pending, persiste, publie sur MQTT.
     /// </summary>
     private async void OnUidReceived(object? sender, string uid)
     {
         try
         {
+            // Toujours émettre l'événement UidScanned (brut)
+            UidScanned?.Invoke(this, uid);
+
+            // Mode Capture : intercepter l'UID sans traitement
+            if (IsCaptureMode)
+            {
+                IsCaptureMode = false;
+                System.Diagnostics.Debug.WriteLine($"[Orchestrator] UID capturé (formulaire): {uid}");
+                return;
+            }
+
             // Déterminer le mode (access ou bind)
             string mode;
             int? clientId;

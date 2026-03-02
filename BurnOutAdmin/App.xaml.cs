@@ -1,3 +1,4 @@
+using BurnOutAdmin.Services.Nfc;
 using BurnOutAdmin.ViewModels;
 using BurnOutAdmin.Views.Shell;
 
@@ -16,6 +17,23 @@ public partial class App : Application
     protected override Window CreateWindow(IActivationState? activationState)
     {
         var mainShell = _serviceProvider.GetRequiredService<MainShell>();
+
+        // Démarrer l'orchestrateur NFC automatiquement (lecteur RFID + MQTT)
+        // Fire-and-forget : le reader écoute en continu dès le lancement de l'app
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var orchestrator = _serviceProvider.GetRequiredService<INfcOrchestrator>();
+                await orchestrator.StartAsync();
+                System.Diagnostics.Debug.WriteLine("[App] Orchestrateur NFC démarré automatiquement.");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[App] Erreur démarrage orchestrateur: {ex.Message}");
+            }
+        });
+
         return new Window(mainShell);
     }
 }

@@ -403,9 +403,32 @@
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="UID NFC (optionnel)" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource TextMedium}"/>
-                                    <Border Style="{StaticResource InputBorder}"><Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
-                                        <Entry Text="{Binding FormNfcUid}" Placeholder="Ex: 04:A3:5B:12" PlaceholderColor="{StaticResource TextLight}" Style="{StaticResource InputEntry}" Margin="10,0"/>
-                                    </Border>
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                        <Border Grid.Column="0" Style="{StaticResource InputBorder}"><Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                                            <Entry Text="{Binding FormNfcUid}" Placeholder="Ex: 029EC135" PlaceholderColor="{StaticResource TextLight}" Style="{StaticResource InputEntry}" Margin="10,0"/>
+                                        </Border>
+                                        <!-- Bouton Scanner (visible quand PAS en attente) -->
+                                        <Button Grid.Column="1" Text="&#x1F4F6; Scanner"
+                                                Command="{Binding StartScanForClientCommand}"
+                                                IsVisible="{Binding IsWaitingForRfidScan, Converter={StaticResource InvertedBool}}"
+                                                BackgroundColor="#EFF6FF" TextColor="{StaticResource Primary}"
+                                                FontSize="12" FontAttributes="Bold" CornerRadius="6"
+                                                HeightRequest="40" Padding="12,0" VerticalOptions="Center"/>
+                                        <!-- Bouton Annuler (visible quand EN attente) -->
+                                        <Button Grid.Column="1" Text="Annuler"
+                                                Command="{Binding CancelScanForClientCommand}"
+                                                IsVisible="{Binding IsWaitingForRfidScan}"
+                                                BackgroundColor="{StaticResource ErrorRedBg}" TextColor="{StaticResource ErrorRed}"
+                                                FontSize="12" FontAttributes="Bold" CornerRadius="6"
+                                                HeightRequest="40" Padding="12,0" VerticalOptions="Center"/>
+                                    </Grid>
+                                    <!-- Label dynamique : Approchez un badge... -->
+                                    <HorizontalStackLayout Spacing="6" IsVisible="{Binding IsWaitingForRfidScan}">
+                                        <ActivityIndicator IsRunning="{Binding IsWaitingForRfidScan}" Color="{StaticResource Primary}"
+                                                           HeightRequest="14" WidthRequest="14" VerticalOptions="Center"/>
+                                        <Label Text="Approchez un badge NFC du lecteur..." FontSize="12"
+                                               TextColor="{StaticResource Primary}" FontAttributes="Italic" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
                                 </VerticalStackLayout>
                                 <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
                                     <VerticalStackLayout Grid.Column="0" Spacing="4">

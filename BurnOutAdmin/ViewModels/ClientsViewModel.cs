@@ -78,6 +78,11 @@ public partial class ClientsViewModel : BaseViewModel
     [ObservableProperty]
     private bool _formAutoRenewal;
 
+    // --- Scan NFC dans formulaire ---
+
+    [ObservableProperty]
+    private bool _isWaitingForRfidScan;
+
     // --- Bind NFC Mode ---
 
     [ObservableProperty]
@@ -205,6 +210,10 @@ public partial class ClientsViewModel : BaseViewModel
     [RelayCommand]
     private void CancelForm()
     {
+        // Arrêter un éventuel scan NFC en cours dans le formulaire
+        if (IsWaitingForRfidScan)
+            CancelScanForClient();
+
         IsFormOpen = false;
         ErrorMessage = null;
     }
@@ -330,6 +339,49 @@ public partial class ClientsViewModel : BaseViewModel
         {
             IsBusy = false;
         }
+    }
+
+    // --- Scan NFC dans formulaire Client ---
+
+    /// <summary>Active le mode Capture pour remplir le champ FormNfcUid par scan.</summary>
+    [RelayCommand]
+    private async Task StartScanForClientAsync()
+    {
+        try
+        {
+            // S'assurer que l'orchestrateur est démarré
+            if (!_orchestrator.IsReaderConnected)
+                await _orchestrator.StartAsync();
+
+            _orchestrator.UidScanned += OnUidScanned;
+            _orchestrator.StartCaptureMode();
+            IsWaitingForRfidScan = true;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ClientsVM] Erreur StartScanForClient: {ex.Message}");
+            IsWaitingForRfidScan = false;
+        }
+    }
+
+    /// <summary>Annule le scan NFC en cours dans le formulaire.</summary>
+    [RelayCommand]
+    private void CancelScanForClient()
+    {
+        _orchestrator.UidScanned -= OnUidScanned;
+        _orchestrator.StopCaptureMode();
+        IsWaitingForRfidScan = false;
+    }
+
+    /// <summary>Callback déclenché par l'orchestrateur quand un UID est capturé en mode formulaire.</summary>
+    private void OnUidScanned(object? sender, string uid)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            FormNfcUid = uid;
+            CancelScanForClient();
+            System.Diagnostics.Debug.WriteLine($"[ClientsVM] UID capturé dans formulaire: {uid}");
+        });
     }
 
     // --- Bind NFC Commands ---
