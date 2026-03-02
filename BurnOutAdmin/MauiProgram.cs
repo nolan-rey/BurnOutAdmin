@@ -1,4 +1,7 @@
 using BurnOutAdmin.Services;
+using BurnOutAdmin.Services.Mqtt;
+using BurnOutAdmin.Services.Nfc;
+using BurnOutAdmin.Services.Rfid;
 using BurnOutAdmin.ViewModels;
 using BurnOutAdmin.Views.Shell;
 using Microsoft.Extensions.Logging;
@@ -18,7 +21,28 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
-        // Services - Mock implementations for MVP
+        // ── Infrastructure NFC ──────────────────────────────────────
+
+        // RFID Reader : SerialPort sur Windows, Dummy sur les autres plateformes
+#if WINDOWS
+        builder.Services.AddSingleton<IRfidReaderService>(sp =>
+            new SerialPortRfidReaderService("COM3", 9600));
+#else
+        builder.Services.AddSingleton<IRfidReaderService, DummyRfidReaderService>();
+#endif
+
+        // MQTT Client (Raspberry Pi broker — réseau local)
+        builder.Services.AddSingleton<IMqttService>(sp =>
+            new MqttService("172.31.254.200", 1883));
+
+        // SQLite Log Repository
+        builder.Services.AddSingleton<INfcLogRepository, SqliteNfcLogRepository>();
+
+        // NFC Orchestrator (coordination RFID → MQTT → SQLite)
+        builder.Services.AddSingleton<INfcOrchestrator, NfcOrchestrator>();
+
+        // ── Services métier ─────────────────────────────────────────
+
         builder.Services.AddSingleton<IUserService, UserService>();
         builder.Services.AddSingleton<IClientService, MockClientService>();
         builder.Services.AddSingleton<INfcService, MockNfcService>();
@@ -30,7 +54,8 @@ public static class MauiProgram
         // Navigation Service - Singleton for app-wide navigation
         builder.Services.AddSingleton<INavigationService, NavigationService>();
         
-        // ViewModels
+        // ── ViewModels ──────────────────────────────────────────────
+
         builder.Services.AddSingleton<MainShellViewModel>();
         builder.Services.AddTransient<DashboardViewModel>();
         builder.Services.AddTransient<ClientsViewModel>();

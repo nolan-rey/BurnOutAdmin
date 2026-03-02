@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:BurnOutAdmin.ViewModels"
+             x:Class="BurnOutAdmin.Views.Shell.MainShell"
+             x:DataType="viewmodels:MainShellViewModel"
+             Title="BurnOut Admin"
+             BackgroundColor="#F5F5F5">
+
+    <Grid ColumnDefinitions="220,*">
+        
+        <!-- Sidebar -->
+        <Border Grid.Column="0"
+                BackgroundColor="#1E1E2E"
+                StrokeThickness="0">
+            <Grid RowDefinitions="Auto,*,Auto">
+                
+                <!-- Header -->
+                <VerticalStackLayout Grid.Row="0" Padding="16,20">
+                    <Label Text="🔥 BurnOut"
+                           TextColor="White"
+                           FontSize="20"
+                           FontAttributes="Bold"/>
+                    <Label Text="Administration"
+                           TextColor="#888888"
+                           FontSize="12"/>
+                </VerticalStackLayout>
+                
+                <!-- Menu Items -->
+                <VerticalStackLayout Grid.Row="1" Spacing="4" Padding="8,20,8,0">
+                    <Button Text="📊 Tableau de bord"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="Dashboard"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            FontSize="14"
+                            HorizontalOptions="Fill"
+                            Padding="12,10"/>
+                    
+                    <Button Text="👥 Clients"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="Clients"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            FontSize="14"
+                            HorizontalOptions="Fill"
+                            Padding="12,10"/>
+                    
+                    <Button Text="📅 Programmes"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="Programmes"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            FontSize="14"
+                            HorizontalOptions="Fill"
+                            Padding="12,10"/>
+                    
+                    <Button Text="🏆 Challenges"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="Challenges"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            FontSize="14"
+                            HorizontalOptions="Fill"
+                            Padding="12,10"/>
+                    
+                    <Button Text="📱 Journal NFC"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="NfcLogs"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            FontSize="14"
+                            HorizontalOptions="Fill"
+                            Padding="12,10"/>
+                    
+                    <Button Text="⚙️ Paramètres"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="Settings"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            FontSize="14"
+                            HorizontalOptions="Fill"
+                            Padding="12,10"/>
+                </VerticalStackLayout>
+                
+                <!-- Footer -->
+                <Button Grid.Row="2"
+                        Text="🚪 Déconnexion"
+                        Command="{Binding LogoutCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="#EF4444"
+                        FontSize="14"
+                        Margin="8,0,8,16"
+                        Padding="12,10"/>
+            </Grid>
+        </Border>
+        
+        <!-- Main Content Area -->
+        <ContentView Grid.Column="1"
+                     x:Name="ContentArea"
+                     BackgroundColor="#F5F5F5"/>
+        
+    </Grid>
+</ContentPage>

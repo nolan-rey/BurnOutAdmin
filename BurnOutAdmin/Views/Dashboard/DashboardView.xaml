@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:BurnOutAdmin.ViewModels"
+             x:Class="BurnOutAdmin.Views.Dashboard.DashboardView"
+             x:DataType="viewmodels:DashboardViewModel"
+             BackgroundColor="#F5F5F5">
+
+    <ScrollView Padding="24">
+        <VerticalStackLayout Spacing="24">
+            
+            <!-- Page Header -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="📊 Tableau de bord"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="#1E1E2E"/>
+                <Label Text="Vue d'ensemble de votre salle de sport"
+                       FontSize="14"
+                       TextColor="#666666"/>
+            </VerticalStackLayout>
+            
+            <!-- Stats Cards Grid -->
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
+                  ColumnSpacing="16" RowSpacing="16">
+                
+                <!-- Clients Actifs Card -->
+                <Border Grid.Row="0" Grid.Column="0"
+                        BackgroundColor="White"
+                        StrokeThickness="0"
+                        Padding="20">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="👥" FontSize="32"/>
+                        <Label Text="{Binding ActiveClientsCount}"
+                               FontSize="36"
+                               FontAttributes="Bold"
+                               TextColor="#4CAF50"/>
+                        <Label Text="Clients actifs"
+                               FontSize="14"
+                               TextColor="#666666"/>
+                    </VerticalStackLayout>
+                </Border>
+                
+                <!-- Accès NFC Card -->
+                <Border Grid.Row="0" Grid.Column="1"
+                        BackgroundColor="White"
+                        StrokeThickness="0"
+                        Padding="20">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="📱" FontSize="32"/>
+                        <Label Text="{Binding TodayNfcAccessCount}"
+                               FontSize="36"
+                               FontAttributes="Bold"
+                               TextColor="#2196F3"/>
+                        <Label Text="Accès NFC aujourd'hui"
+                               FontSize="14"
+                               TextColor="#666666"/>
+                    </VerticalStackLayout>
+                </Border>
+                
+                <!-- Alertes Card -->
+                <Border Grid.Row="1" Grid.Column="0"
+                        BackgroundColor="White"
+                        StrokeThickness="0"
+                        Padding="20">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="⚠️" FontSize="32"/>
+                        <Label Text="{Binding AlertsCount}"
+                               FontSize="36"
+                               FontAttributes="Bold"
+                               TextColor="#FF9800"/>
+                        <Label Text="Alertes"
+                               FontSize="14"
+                               TextColor="#666666"/>
+                    </VerticalStackLayout>
+                </Border>
+                
+                <!-- Statut Système Card -->
+                <Border Grid.Row="1" Grid.Column="1"
+                        BackgroundColor="White"
+                        StrokeThickness="0"
+                        Padding="20">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="✅" FontSize="32"/>
+                        <Label Text="{Binding SystemStatusText}"
+                               FontSize="24"
+                               FontAttributes="Bold"
+                               TextColor="#4CAF50"/>
+                        <Label Text="Statut système"
+                               FontSize="14"
+                               TextColor="#666666"/>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+            
+            <!-- Secondary Stats -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                <Border Grid.Column="0" BackgroundColor="White" StrokeThickness="0" Padding="20">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <HorizontalStackLayout Spacing="16">
+                        <Label Text="🏆" FontSize="40" VerticalOptions="Center"/>
+                        <VerticalStackLayout VerticalOptions="Center">
+                            <Label Text="{Binding ActiveChallengesCount, StringFormat='{0} challenges'}"
+                                   FontSize="18" FontAttributes="Bold" TextColor="#1E1E2E"/>
+                            <Label Text="Défis en cours" FontSize="13" TextColor="#666666"/>
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </Border>
+                
+                <Border Grid.Column="1" BackgroundColor="White" StrokeThickness="0" Padding="20">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <HorizontalStackLayout Spacing="16">
+                        <Label Text="📅" FontSize="40" VerticalOptions="Center"/>
+                        <VerticalStackLayout VerticalOptions="Center">
+                            <Label Text="{Binding ActiveProgrammesCount, StringFormat='{0} programmes'}"
+                                   FontSize="18" FontAttributes="Bold" TextColor="#1E1E2E"/>
+                            <Label Text="Programmes actifs" FontSize="13" TextColor="#666666"/>
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </Border>
+            </Grid>
+            
+            <!-- Loading -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="#512BD4"/>
+            
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentView>

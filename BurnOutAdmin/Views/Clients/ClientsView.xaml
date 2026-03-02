@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:BurnOutAdmin.ViewModels"
+             xmlns:models="clr-namespace:BurnOutAdmin.Models"
+             xmlns:converters="clr-namespace:BurnOutAdmin.Converters"
+             x:Class="BurnOutAdmin.Views.Clients.ClientsView"
+             x:DataType="viewmodels:ClientsViewModel"
+             BackgroundColor="#F6F7F8">
+
+    <ContentView.Resources>
+        <Color x:Key="Primary">#137FEC</Color>
+        <Color x:Key="PrimaryHover">#1066C0</Color>
+        <Color x:Key="TextDark">#111418</Color>
+        <Color x:Key="TextMedium">#6B7280</Color>
+        <Color x:Key="TextLight">#9CA3AF</Color>
+        <Color x:Key="BorderColor">#E5E7EB</Color>
+        <Color x:Key="BgGray50">#F9FAFB</Color>
+        <Color x:Key="BgGray100">#F3F4F6</Color>
+        <Color x:Key="StatusGreen">#15803D</Color>
+        <Color x:Key="StatusGreenBg">#DCFCE7</Color>
+        <Color x:Key="StatusGreenBorder">#BBF7D0</Color>
+        <Color x:Key="StatusGreenDot">#22C55E</Color>
+        <Color x:Key="StatusRedText">#B91C1C</Color>
+        <Color x:Key="StatusRedBg">#FEE2E2</Color>
+        <Color x:Key="StatusRedBorder">#FECACA</Color>
+        <Color x:Key="StatusRedDot">#EF4444</Color>
+        <Color x:Key="StatusYellowText">#A16207</Color>
+        <Color x:Key="StatusYellowBg">#FEF9C3</Color>
+        <Color x:Key="StatusYellowBorder">#FDE68A</Color>
+        <Color x:Key="StatusYellowDot">#EAB308</Color>
+        <Color x:Key="NfcDarkBg">#1E293B</Color>
+        <Color x:Key="NfcDarkBg2">#0F172A</Color>
+        <Color x:Key="NfcBlueText">#137FEC</Color>
+        <Color x:Key="ErrorRed">#DC2626</Color>
+        <Color x:Key="ErrorRedBg">#FEF2F2</Color>
+        <Color x:Key="ActionAmber">#D97706</Color>
+        <Color x:Key="ActionRed">#DC2626</Color>
+
+        <converters:ClientStatusColorConverter x:Key="StatusColorConverter"/>
+        <converters:InvertedBoolConverter x:Key="InvertedBool"/>
+        <converters:IsNotNullConverter x:Key="IsNotNull"/>
+
+        <Style x:Key="InputBorder" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="White"/>
+            <Setter Property="Stroke" Value="{StaticResource BorderColor}"/>
+            <Setter Property="StrokeThickness" Value="1"/>
+            <Setter Property="HeightRequest" Value="40"/>
+        </Style>
+        <Style x:Key="InputEntry" TargetType="Entry">
+            <Setter Property="BackgroundColor" Value="Transparent"/>
+            <Setter Property="TextColor" Value="{StaticResource TextDark}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalOptions" Value="Center"/>
+        </Style>
+    </ContentView.Resources>
+
+    <!-- Main layout: full-width list + modal popup overlay -->
+    <Grid>
+
+        <!-- ==================== FULL WIDTH: Master List ==================== -->
+        <Grid BackgroundColor="#F6F7F8" Padding="32,24,32,24" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="0">
+
+            <!-- Breadcrumb -->
+            <HorizontalStackLayout Grid.Row="0" Spacing="6" Margin="0,0,0,12">
+                <Label Text="Accueil" FontSize="13" TextColor="{StaticResource TextLight}"/>
+                <Label Text="/" FontSize="13" TextColor="{StaticResource TextLight}" Margin="2,0"/>
+                <Label Text="Gestion des Clients" FontSize="13" TextColor="{StaticResource TextDark}" FontAttributes="Bold"/>
+            </HorizontalStackLayout>
+
+            <!-- Page Header -->
+            <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,20">
+                <VerticalStackLayout Grid.Column="0" Spacing="4">
+                    <Label Text="Liste des Clients" FontSize="26" FontAttributes="Bold" TextColor="{StaticResource TextDark}"/>
+                    <Label Text="Gérez les abonnements et les accès NFC" FontSize="13" TextColor="{StaticResource TextMedium}"/>
+                </VerticalStackLayout>
+                <Button Grid.Column="1" Text="+ Ajouter un Client"
+                        Command="{Binding OpenCreateFormCommand}"
+                        BackgroundColor="{StaticResource Primary}" TextColor="White"
+                        FontAttributes="Bold" FontSize="13" CornerRadius="8"
+                        HeightRequest="42" Padding="20,0" VerticalOptions="Center">
+                    <Button.Shadow>
+                        <Shadow Brush="{StaticResource Primary}" Offset="0,4" Radius="12" Opacity="0.3"/>
+                    </Button.Shadow>
+                </Button>
+            </Grid>
+
+            <!-- Toolbar: Search + Filter Dropdown + Filter Icon -->
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" Margin="0,0,0,20">
+                <!-- Search -->
+                <Border Grid.Column="0" BackgroundColor="White" Stroke="{StaticResource BorderColor}" StrokeThickness="1" HeightRequest="42">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8"/>
+                    </Border.StrokeShape>
+                    <Grid ColumnDefinitions="Auto,*" Padding="12,0">
+                        <Image Grid.Column="0" VerticalOptions="Center" WidthRequest="16" HeightRequest="16">
+                            <Image.Source>
+                                <FontImageSource Glyph="&#x1F50D;" Color="{StaticResource TextLight}" Size="16"/>
+                            </Image.Source>
+                        </Image>
+                        <Entry Grid.Column="1" Placeholder="Rechercher par Nom, ID ou UID NFC..."
+                               PlaceholderColor="{StaticResource TextLight}" Text="{Binding SearchText}"
+                               TextColor="{StaticResource TextDark}"
+                               BackgroundColor="Transparent" FontSize="13" VerticalOptions="Center" Margin="6,0,0,0"/>
+                    </Grid>
+                </Border>
+                <!-- Status Filter -->
+                <Border Grid.Column="1" BackgroundColor="White" Stroke="{StaticResource BorderColor}" StrokeThickness="1" HeightRequest="42" MinimumWidthRequest="100">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8"/>
+                    </Border.StrokeShape>
+                    <Picker ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding SelectedStatus}"
+                            FontSize="13" WidthRequest="120" BackgroundColor="Transparent"
+                            TextColor="{StaticResource TextDark}" VerticalOptions="Center" Margin="10,0"/>
+                </Border>
+                <!-- Filter icon -->
+                <Border Grid.Column="2" BackgroundColor="White" Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                        HeightRequest="42" WidthRequest="42">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8"/>
+                    </Border.StrokeShape>
+                    <Image WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
+                        <Image.Source>
+                            <FontImageSource Glyph="&#x2630;" Color="{StaticResource TextMedium}" Size="16"/>
+                        </Image.Source>
+                    </Image>
+                </Border>
+            </Grid>
+
+            <!-- Data Table Card -->
+            <Border Grid.Row="3" BackgroundColor="White" Stroke="{StaticResource BorderColor}" StrokeThickness="1">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="#000" Offset="0,1" Radius="3" Opacity="0.05"/>
+                </Border.Shadow>
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <!-- Table Header -->
+                    <Border Grid.Row="0" BackgroundColor="{StaticResource BgGray50}" StrokeThickness="0">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="10,10,0,0"/></Border.StrokeShape>
+                        <Grid ColumnDefinitions="70,*,100,150,120" Padding="20,12" BackgroundColor="{StaticResource BgGray50}">
+                            <Label Grid.Column="0" Text="ID" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="NOM &amp; PRÉNOM" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8" VerticalOptions="Center"/>
+                            <Label Grid.Column="2" Text="STATUT" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8" VerticalOptions="Center" HorizontalTextAlignment="Center"/>
+                            <Label Grid.Column="3" Text="UID NFC" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8" VerticalOptions="Center"/>
+                            <Label Grid.Column="4" Text="ACTIONS" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                        </Grid>
+                    </Border>
+                    <BoxView Grid.Row="0" VerticalOptions="End" HeightRequest="1" Color="{StaticResource BorderColor}"/>
+
+                    <!-- Table Body -->
+                    <CollectionView Grid.Row="1" ItemsSource="{Binding FilteredClients}"
+                                    SelectionMode="Single" SelectedItem="{Binding SelectedClient}">
+                        <CollectionView.EmptyView>
+                            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8" Padding="0,60">
+                                <Label Text="Aucun client trouvé" FontSize="16" TextColor="{StaticResource TextMedium}" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                                <Label Text="Modifiez vos filtres ou ajoutez un nouveau client." FontSize="13" TextColor="{StaticResource TextLight}" HorizontalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Client">
+                                <Border BackgroundColor="White" StrokeThickness="0" Padding="0">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup Name="CommonStates">
+                                            <VisualState Name="Normal"/>
+                                            <VisualState Name="Selected">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="#EBF5FF"/>
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Grid RowDefinitions="*,Auto">
+                                        <Grid Grid.Row="0" ColumnDefinitions="70,*,100,150,120" Padding="20,14">
+                                            <!-- ID -->
+                                            <Label Grid.Column="0" Text="{Binding Id, StringFormat='#{0:D3}'}"
+                                                   FontSize="13" FontAttributes="Bold" TextColor="{StaticResource TextDark}" VerticalOptions="Center"/>
+                                            <!-- Name + Email -->
+                                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                                <Label Text="{Binding FullName}" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource TextDark}" LineBreakMode="TailTruncation"/>
+                                                <Label Text="{Binding Email}" FontSize="11" TextColor="{StaticResource TextLight}" LineBreakMode="TailTruncation"/>
+                                            </VerticalStackLayout>
+                                            <!-- Status Badge with dot -->
+                                            <HorizontalStackLayout Grid.Column="2" VerticalOptions="Center" HorizontalOptions="Center">
+                                                <!-- Actif badge -->
+                                                <Border IsVisible="False" BackgroundColor="{StaticResource StatusGreenBg}" Stroke="{StaticResource StatusGreenBorder}" StrokeThickness="1" Padding="8,4" VerticalOptions="Center">
+                                                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding Status}" Value="Actif">
+                                                            <Setter Property="IsVisible" Value="True"/>
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <HorizontalStackLayout Spacing="5">
+                                                        <Border BackgroundColor="{StaticResource StatusGreenDot}" StrokeThickness="0" HeightRequest="6" WidthRequest="6" VerticalOptions="Center">
+                                                            <Border.StrokeShape><RoundRectangle CornerRadius="3"/></Border.StrokeShape>
+                                                        </Border>
+                                                        <Label Text="Actif" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource StatusGreen}" VerticalOptions="Center"/>
+                                                    </HorizontalStackLayout>
+                                                </Border>
+                                                <!-- Expiré badge -->
+                                                <Border IsVisible="False" BackgroundColor="{StaticResource StatusRedBg}" Stroke="{StaticResource StatusRedBorder}" StrokeThickness="1" Padding="8,4" VerticalOptions="Center">
+                                                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding Status}" Value="Expiré">
+                                                            <Setter Property="IsVisible" Value="True"/>
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <HorizontalStackLayout Spacing="5">
+                                                        <Border BackgroundColor="{StaticResource StatusRedDot}" StrokeThickness="0" HeightRequest="6" WidthRequest="6" VerticalOptions="Center">
+                                                            <Border.StrokeShape><RoundRectangle CornerRadius="3"/></Border.StrokeShape>
+                                                        </Border>
+                                                        <Label Text="Expiré" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource StatusRedText}" VerticalOptions="Center"/>
+                                                    </HorizontalStackLayout>
+                                                </Border>
+                                                <!-- En attente badge -->
+                                                <Border IsVisible="False" BackgroundColor="{StaticResource StatusYellowBg}" Stroke="{StaticResource StatusYellowBorder}" StrokeThickness="1" Padding="8,4" VerticalOptions="Center">
+                                                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding Status}" Value="En attente">
+                                                            <Setter Property="IsVisible" Value="True"/>
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <HorizontalStackLayout Spacing="5">
+                                                        <Border BackgroundColor="{StaticResource StatusYellowDot}" StrokeThickness="0" HeightRequest="6" WidthRequest="6" VerticalOptions="Center">
+                                                            <Border.StrokeShape><RoundRectangle CornerRadius="3"/></Border.StrokeShape>
+                                                        </Border>
+                                                        <Label Text="En attente" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource StatusYellowText}" VerticalOptions="Center"/>
+                                                    </HorizontalStackLayout>
+                                                </Border>
+                                                <!-- Suspendu badge -->
+                                                <Border IsVisible="False" BackgroundColor="{StaticResource BgGray100}" Stroke="{StaticResource BorderColor}" StrokeThickness="1" Padding="8,4" VerticalOptions="Center">
+                                                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding Status}" Value="Suspendu">
+                                                            <Setter Property="IsVisible" Value="True"/>
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <HorizontalStackLayout Spacing="5">
+                                                        <Border BackgroundColor="{StaticResource TextLight}" StrokeThickness="0" HeightRequest="6" WidthRequest="6" VerticalOptions="Center">
+                                                            <Border.StrokeShape><RoundRectangle CornerRadius="3"/></Border.StrokeShape>
+                                                        </Border>
+                                                        <Label Text="Suspendu" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" VerticalOptions="Center"/>
+                                                    </HorizontalStackLayout>
+                                                </Border>
+                                            </HorizontalStackLayout>
+                                            <!-- NFC UID -->
+                                            <HorizontalStackLayout Grid.Column="3" Spacing="6" VerticalOptions="Center">
+                                                <Border IsVisible="{Binding HasNfcCard}" BackgroundColor="{StaticResource BgGray100}" Stroke="{StaticResource BorderColor}" StrokeThickness="1" Padding="6,3">
+                                                    <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                                    <Label Text="{Binding NfcUid}" FontSize="11" TextColor="{StaticResource TextMedium}"/>
+                                                </Border>
+                                                <Border IsVisible="{Binding HasNfcCard}" BackgroundColor="#EFF6FF" Stroke="#DBEAFE" StrokeThickness="1" Padding="3" VerticalOptions="Center">
+                                                    <Border.StrokeShape><RoundRectangle CornerRadius="3"/></Border.StrokeShape>
+                                                    <Image WidthRequest="12" HeightRequest="12" VerticalOptions="Center" HorizontalOptions="Center">
+                                                        <Image.Source>
+                                                            <FontImageSource Glyph="&#x270E;" Color="{StaticResource Primary}" Size="12"/>
+                                                        </Image.Source>
+                                                    </Image>
+                                                </Border>
+                                                <Label IsVisible="{Binding HasNfcCard, Converter={StaticResource InvertedBool}}" Text="Aucune carte associée" FontSize="11" TextColor="{StaticResource TextLight}" FontAttributes="Italic" VerticalOptions="Center"/>
+                                            </HorizontalStackLayout>
+                                            <!-- Actions: RFID bind (blue) + Edit (amber) + Delete (red) -->
+                                            <HorizontalStackLayout Grid.Column="4" Spacing="6" VerticalOptions="Center" HorizontalOptions="End">
+                                                <ImageButton BackgroundColor="Transparent" Padding="4"
+                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=StartBindCommand}"
+                                                             CommandParameter="{Binding .}"
+                                                             HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
+                                                    <ImageButton.Source>
+                                                        <FontImageSource Glyph="&#x1F4F6;" Color="#137FEC" Size="16"/>
+                                                    </ImageButton.Source>
+                                                </ImageButton>
+                                                <ImageButton BackgroundColor="Transparent" Padding="4"
+                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=OpenEditFormCommand}"
+                                                             CommandParameter="{Binding .}"
+                                                             HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
+                                                    <ImageButton.Source>
+                                                        <FontImageSource Glyph="&#x270E;" Color="#D97706" Size="18"/>
+                                                    </ImageButton.Source>
+                                                </ImageButton>
+                                                <ImageButton BackgroundColor="Transparent" Padding="4"
+                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=DeleteClientCommand}"
+                                                             CommandParameter="{Binding .}"
+                                                             HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
+                                                    <ImageButton.Source>
+                                                        <FontImageSource Glyph="&#x2716;" Color="#DC2626" Size="16"/>
+                                                    </ImageButton.Source>
+                                                </ImageButton>
+                                            </HorizontalStackLayout>
+                                        </Grid>
+                                        <!-- Row separator -->
+                                        <BoxView Grid.Row="1" HeightRequest="1" Color="{StaticResource BorderColor}" VerticalOptions="End"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <!-- Pagination Footer -->
+                    <Border Grid.Row="2" BackgroundColor="{StaticResource BgGray50}" StrokeThickness="0" Padding="20,12">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="0,0,10,10"/></Border.StrokeShape>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <BoxView VerticalOptions="Start" HeightRequest="1" Color="{StaticResource BorderColor}" Grid.ColumnSpan="2" Margin="-20,-12,-20,0"/>
+                            <Label Grid.Column="0" Text="{Binding FilteredClients.Count, StringFormat='Affichage de {0} clients'}" FontSize="12" TextColor="{StaticResource TextLight}" VerticalOptions="Center"/>
+                            <HorizontalStackLayout Grid.Column="1" Spacing="6">
+                                <Border BackgroundColor="White" Stroke="{StaticResource BorderColor}" StrokeThickness="1" Padding="12,6">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                    <Label Text="Préc." FontSize="12" TextColor="{StaticResource TextMedium}"/>
+                                </Border>
+                                <Border BackgroundColor="White" Stroke="{StaticResource BorderColor}" StrokeThickness="1" Padding="12,6">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                    <Label Text="Suiv." FontSize="12" TextColor="{StaticResource TextMedium}"/>
+                                </Border>
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ==================== MODAL POPUP OVERLAY ==================== -->
+        <!-- Dark backdrop (click to close) -->
+        <Grid IsVisible="{Binding IsFormOpen}" BackgroundColor="#80000000" VerticalOptions="Fill" HorizontalOptions="Fill">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CancelFormCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <!-- Modal card: centered, fixed 500px wide -->
+            <Border BackgroundColor="White" WidthRequest="500" MaximumHeightRequest="680"
+                    VerticalOptions="Center" HorizontalOptions="Center"
+                    Stroke="{StaticResource BorderColor}" StrokeThickness="1">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="16"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="#000" Offset="0,8" Radius="32" Opacity="0.2"/>
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer/>
+                </Border.GestureRecognizers>
+
+                <Grid RowDefinitions="Auto,*,Auto">
+
+                    <!-- Modal Header -->
+                    <Grid Grid.Row="0" Padding="24,20" ColumnDefinitions="*,Auto" BackgroundColor="{StaticResource BgGray50}">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label FontSize="18" FontAttributes="Bold" TextColor="{StaticResource TextDark}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsEditMode}" Value="True">
+                                        <Setter Property="Text" Value="Modifier le Client"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsEditMode}" Value="False">
+                                        <Setter Property="Text" Value="Nouveau Client"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Label Text="Remplissez les informations du client" FontSize="12" TextColor="{StaticResource TextMedium}"/>
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1" Text="✕" FontSize="16" Padding="0" WidthRequest="32" HeightRequest="32"
+                                BackgroundColor="Transparent" TextColor="{StaticResource TextLight}" Command="{Binding CancelFormCommand}"/>
+                    </Grid>
+
+                    <!-- Modal Body (scrollable) -->
+                    <ScrollView Grid.Row="1">
+                        <VerticalStackLayout Padding="24" Spacing="24">
+
+                            <!-- Error -->
+                            <Border BackgroundColor="{StaticResource ErrorRedBg}" Stroke="#FECACA" StrokeThickness="1" Padding="12,10"
+                                    IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNull}}">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                                <HorizontalStackLayout Spacing="8">
+                                    <Image WidthRequest="18" HeightRequest="18" VerticalOptions="Center">
+                                        <Image.Source>
+                                            <FontImageSource Glyph="&#x26A0;" Color="{StaticResource ErrorRed}" Size="18"/>
+                                        </Image.Source>
+                                    </Image>
+                                    <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource ErrorRed}" FontSize="13" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Border>
+
+                            <!-- Personal Info -->
+                            <VerticalStackLayout Spacing="16">
+                                <Label Text="INFORMATIONS PERSONNELLES" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="1"/>
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="4">
+                                        <Label Text="Prénom" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource TextMedium}"/>
+                                        <Border Style="{StaticResource InputBorder}"><Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                                            <Entry Text="{Binding FormFirstName}" Placeholder="Prénom" PlaceholderColor="{StaticResource TextLight}" Style="{StaticResource InputEntry}" Margin="10,0"/>
+                                        </Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                        <Label Text="Nom" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource TextMedium}"/>
+                                        <Border Style="{StaticResource InputBorder}"><Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                                            <Entry Text="{Binding FormLastName}" Placeholder="Nom" PlaceholderColor="{StaticResource TextLight}" Style="{StaticResource InputEntry}" Margin="10,0"/>
+                                        </Border>
+                                    </VerticalStackLayout>
+                                </Grid>
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="Email" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource TextMedium}"/>
+                                    <Border Style="{StaticResource InputBorder}"><Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                                        <Entry Text="{Binding FormEmail}" Placeholder="email@exemple.com" PlaceholderColor="{StaticResource TextLight}" Keyboard="Email" Style="{StaticResource InputEntry}" Margin="10,0"/>
+                                    </Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="UID NFC (optionnel)" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource TextMedium}"/>
+                                    <Border Style="{StaticResource InputBorder}"><Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                                        <Entry Text="{Binding FormNfcUid}" Placeholder="Ex: 04:A3:5B:12" PlaceholderColor="{StaticResource TextLight}" Style="{StaticResource InputEntry}" Margin="10,0"/>
+                                    </Border>
+                                </VerticalStackLayout>
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="4">
+                                        <Label Text="Statut" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource TextMedium}"/>
+                                        <Border Style="{StaticResource InputBorder}"><Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                                            <Picker ItemsSource="{Binding FormStatusOptions}" SelectedItem="{Binding FormStatus}" FontSize="14" TextColor="{StaticResource TextDark}" VerticalOptions="Center" Margin="10,0"/>
+                                        </Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                        <Label Text="Abonnement" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource TextMedium}"/>
+                                        <Border Style="{StaticResource InputBorder}"><Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                                            <Picker ItemsSource="{Binding SubscriptionTypeOptions}" SelectedItem="{Binding FormSubscriptionType}" FontSize="14" TextColor="{StaticResource TextDark}" VerticalOptions="Center" Margin="10,0"/>
+                                        </Border>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <BoxView HeightRequest="1" Color="#F3F4F6"/>
+
+                            <!-- Subscription Dates -->
+                            <VerticalStackLayout Spacing="16">
+                                <Label Text="ABONNEMENT" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="1"/>
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="4">
+                                        <Label Text="Date de début" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource TextMedium}"/>
+                                        <Border Style="{StaticResource InputBorder}"><Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                                            <Grid Margin="10,0">
+                                                <Label Text="{Binding FormStartDate, StringFormat='{0:dd/MM/yyyy}'}" FontSize="14" TextColor="{StaticResource TextDark}" VerticalOptions="Center"/>
+                                                <DatePicker Date="{Binding FormStartDate}" FontSize="14" Opacity="0.02" VerticalOptions="Center"/>
+                                            </Grid>
+                                        </Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                        <Label Text="Date de fin" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource TextMedium}"/>
+                                        <Border Style="{StaticResource InputBorder}"><Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                                            <Grid Margin="10,0">
+                                                <Label Text="{Binding FormEndDate, StringFormat='{0:dd/MM/yyyy}'}" FontSize="14" TextColor="{StaticResource TextDark}" VerticalOptions="Center"/>
+                                                <DatePicker Date="{Binding FormEndDate}" FontSize="14" Opacity="0.02" VerticalOptions="Center"/>
+                                            </Grid>
+                                        </Border>
+                                    </VerticalStackLayout>
+                                </Grid>
+                                <HorizontalStackLayout Spacing="10">
+                                    <Switch IsToggled="{Binding FormAutoRenewal}" OnColor="{StaticResource Primary}"/>
+                                    <Label Text="Renouvellement automatique" FontSize="14" TextColor="{StaticResource TextDark}" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                    <!-- Modal Footer -->
+                    <Border Grid.Row="2" BackgroundColor="{StaticResource BgGray50}" StrokeThickness="0" Padding="24,16">
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <Button Grid.Column="0" Text="Sauvegarder"
+                                    Command="{Binding SaveCommand}" IsEnabled="{Binding CanSave}"
+                                    BackgroundColor="{StaticResource Primary}" TextColor="White"
+                                    FontAttributes="Bold" FontSize="14" CornerRadius="8" HeightRequest="44">
+                                <Button.Shadow><Shadow Brush="{StaticResource Primary}" Offset="0,2" Radius="6" Opacity="0.3"/></Button.Shadow>
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button" Binding="{Binding CanSave}" Value="False">
+                                        <Setter Property="Opacity" Value="0.5"/>
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                            <Button Grid.Column="1" Text="Annuler"
+                                    Command="{Binding CancelFormCommand}"
+                                    BackgroundColor="White" BorderColor="{StaticResource BorderColor}" BorderWidth="1"
+                                    TextColor="{StaticResource TextDark}" FontAttributes="Bold" FontSize="14"
+                                    CornerRadius="8" HeightRequest="44"/>
+                        </Grid>
+                    </Border>
+
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ==================== NFC BIND MODE OVERLAY ==================== -->
+        <Grid IsVisible="{Binding IsBindMode}" BackgroundColor="#80000000" VerticalOptions="Fill" HorizontalOptions="Fill">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CancelBindCommand}"/>
+            </Grid.GestureRecognizers>
+            <Border BackgroundColor="White" WidthRequest="420" VerticalOptions="Center" HorizontalOptions="Center"
+                    Stroke="{StaticResource BorderColor}" StrokeThickness="1">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+                <Border.Shadow><Shadow Brush="#000" Offset="0,8" Radius="32" Opacity="0.2"/></Border.Shadow>
+                <Border.GestureRecognizers><TapGestureRecognizer/></Border.GestureRecognizers>
+                <VerticalStackLayout Padding="32" Spacing="20" HorizontalOptions="Center">
+                    <!-- Pulsing NFC icon -->
+                    <Border BackgroundColor="#EFF6FF" StrokeThickness="0" HeightRequest="80" WidthRequest="80"
+                            HorizontalOptions="Center">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="40"/></Border.StrokeShape>
+                        <Image WidthRequest="36" HeightRequest="36" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Image.Source>
+                                <FontImageSource Glyph="&#x1F4F6;" Color="{StaticResource Primary}" Size="36"/>
+                            </Image.Source>
+                        </Image>
+                    </Border>
+                    <Label Text="Scanner le Badge NFC" FontSize="20" FontAttributes="Bold"
+                           TextColor="{StaticResource TextDark}" HorizontalTextAlignment="Center"/>
+                    <Label Text="{Binding BindStatusText}" FontSize="14"
+                           TextColor="{StaticResource TextMedium}" HorizontalTextAlignment="Center"/>
+                    <!-- Simulate button (dev) -->
+                    <Button Text="Simuler un scan" Command="{Binding SimulateRfidScanCommand}"
+                            BackgroundColor="#F3F4F6" TextColor="{StaticResource TextDark}"
+                            FontSize="12" CornerRadius="8" HeightRequest="36" Padding="16,0"
+                            HorizontalOptions="Center"/>
+                    <Button Text="Annuler" Command="{Binding CancelBindCommand}"
+                            BackgroundColor="White" BorderColor="{StaticResource BorderColor}" BorderWidth="1"
+                            TextColor="{StaticResource TextDark}" FontAttributes="Bold" FontSize="14"
+                            CornerRadius="8" HeightRequest="42" HorizontalOptions="Fill"/>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- Loading Overlay -->
+        <Grid IsVisible="{Binding IsBusy}" BackgroundColor="#80000000" VerticalOptions="Fill" HorizontalOptions="Fill">
+            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="12">
+                <ActivityIndicator IsRunning="{Binding IsBusy}" Color="White" HeightRequest="48" WidthRequest="48"/>
+                <Label Text="Chargement..." FontSize="16" TextColor="White" FontAttributes="Bold"/>
+            </VerticalStackLayout>
+        </Grid>
+    </Grid>
+</ContentView>
