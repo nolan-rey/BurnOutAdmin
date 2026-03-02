@@ -65,4 +65,16 @@
         <PackageReference Include="System.IO.Ports" Version="9.0.0" />
     </ItemGroup>
 
+    <!-- DLL SDK lecteur RFID (Windows uniquement) -->
+    <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+        <Reference Include="MasterCom">
+            <HintPath>DLL-RFID\MasterCom.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
+        <Reference Include="MasterRD">
+            <HintPath>DLL-RFID\MasterRD.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
+    </ItemGroup>
+
 </Project>
