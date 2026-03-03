@@ -65,16 +65,17 @@
         <PackageReference Include="System.IO.Ports" Version="9.0.0" />
     </ItemGroup>
 
-    <!-- DLL SDK lecteur RFID (Windows uniquement) -->
+    <!-- DLL natives SDK lecteur RFID SL500 (Windows uniquement — P/Invoke) -->
+    <!-- Ces DLLs ne sont PAS des assemblies .NET : elles sont chargées via DllImport -->
     <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
-        <Reference Include="MasterCom">
-            <HintPath>DLL-RFID\MasterCom.dll</HintPath>
-            <Private>true</Private>
-        </Reference>
-        <Reference Include="MasterRD">
-            <HintPath>DLL-RFID\MasterRD.dll</HintPath>
-            <Private>true</Private>
-        </Reference>
+        <Content Include="DLL-RFID\MasterRD.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Link>MasterRD.dll</Link>
+        </Content>
+        <Content Include="DLL-RFID\MasterCOM.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Link>MasterCOM.dll</Link>
+        </Content>
     </ItemGroup>
 
 </Project>

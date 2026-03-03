@@ -23,10 +23,10 @@ public static class MauiProgram
 
         // ── Infrastructure NFC ──────────────────────────────────────
 
-        // RFID Reader : SL500 série sur Windows, Dummy sur les autres plateformes
+        // RFID Reader : SL500 via DLL native sur Windows, Dummy sur les autres plateformes
 #if WINDOWS
         builder.Services.AddSingleton<IRfidReaderService>(sp =>
-            new SL500SerialRfidReaderService("COM3", 9600));
+            new SL500NativeRfidReaderService(comPort: 2, baudRate: 9600)); // COM3 = index 2
 #else
         builder.Services.AddSingleton<IRfidReaderService, DummyRfidReaderService>();
 #endif
