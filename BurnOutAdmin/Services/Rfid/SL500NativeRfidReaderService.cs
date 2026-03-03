@@ -57,7 +57,7 @@ public class SL500NativeRfidReaderService : IRfidReaderService
     /// </summary>
     /// <param name="comPort">Numéro de port COM : 0=COM1, 1=COM2, 2=COM3, etc.</param>
     /// <param name="baudRate">Vitesse de communication. Par défaut 9600.</param>
-    public SL500NativeRfidReaderService(int comPort = 2, int baudRate = 9600)
+    public SL500NativeRfidReaderService(int comPort = 4, int baudRate = 9600)
     {
         _comPort = comPort;
         _baudRate = baudRate;

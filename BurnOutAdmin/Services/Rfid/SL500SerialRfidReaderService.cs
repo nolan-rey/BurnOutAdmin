@@ -63,9 +63,9 @@ public class SL500SerialRfidReaderService : IRfidReaderService
     /// <summary>
     /// Crée une instance du service de lecture RFID SL500 via port série.
     /// </summary>
-    /// <param name="portName">Nom du port COM (ex: "COM3"). Par défaut "COM3".</param>
+    /// <param name="portName">Nom du port COM (ex: "COM5"). Par défaut "COM5".</param>
     /// <param name="baudRate">Vitesse de communication. Par défaut 9600 (standard SL500).</param>
-    public SL500SerialRfidReaderService(string portName = "COM3", int baudRate = 9600)
+    public SL500SerialRfidReaderService(string portName = "COM5", int baudRate = 9600)
     {
         _portName = portName;
         _baudRate = baudRate;

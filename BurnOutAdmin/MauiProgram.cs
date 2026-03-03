@@ -26,7 +26,7 @@ public static class MauiProgram
         // RFID Reader : SL500 via DLL native sur Windows, Dummy sur les autres plateformes
 #if WINDOWS
         builder.Services.AddSingleton<IRfidReaderService>(sp =>
-            new SL500NativeRfidReaderService(comPort: 2, baudRate: 9600)); // COM3 = index 2
+            new SL500NativeRfidReaderService(comPort: 4, baudRate: 9600)); // COM5 = index 4
 #else
         builder.Services.AddSingleton<IRfidReaderService, DummyRfidReaderService>();
 #endif
