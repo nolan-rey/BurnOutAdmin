@@ -57,24 +57,62 @@ public class NfcOrchestrator : INfcOrchestrator
         _rfidReader = rfidReader;
         _mqttService = mqttService;
         _logRepository = logRepository;
+        OrcLog($"Créé. RfidReader type={rfidReader.GetType().Name}");
+    }
+
+    private static void OrcLog(string message)
+    {
+        var msg = $"[Orchestrator] {message}";
+        Console.WriteLine(msg);
+        System.Diagnostics.Debug.WriteLine(msg);
     }
 
     /// <inheritdoc />
     public async Task StartAsync()
     {
+        OrcLog("========== DÉMARRAGE ORCHESTRATOR ==========");
+
         // Initialiser le dépôt SQLite
-        await _logRepository.InitializeAsync();
+        OrcLog("Initialisation SQLite...");
+        try
+        {
+            await _logRepository.InitializeAsync();
+            OrcLog("SQLite OK.");
+        }
+        catch (Exception ex)
+        {
+            OrcLog($"ERREUR SQLite: {ex.Message}");
+        }
 
         // Démarrer le lecteur RFID
+        OrcLog($"Abonnement UidReceived sur {_rfidReader.GetType().Name}...");
         _rfidReader.UidReceived += OnUidReceived;
-        await _rfidReader.StartAsync();
+        OrcLog("Démarrage du lecteur RFID (StartAsync)...");
+        try
+        {
+            await _rfidReader.StartAsync();
+            OrcLog($"Lecteur RFID démarré. IsConnected={_rfidReader.IsConnected}");
+        }
+        catch (Exception ex)
+        {
+            OrcLog($"ERREUR démarrage lecteur RFID: {ex.GetType().Name}: {ex.Message}");
+        }
 
         // Connecter MQTT et s'abonner aux résultats
-        await _mqttService.ConnectAsync();
-        _mqttService.MessageReceived += OnMqttMessageReceived;
+        OrcLog("Connexion MQTT...");
+        try
+        {
+            await _mqttService.ConnectAsync();
+            _mqttService.MessageReceived += OnMqttMessageReceived;
+            OrcLog($"MQTT connecté. IsConnected={_mqttService.IsConnected}");
+        }
+        catch (Exception ex)
+        {
+            OrcLog($"ERREUR MQTT: {ex.Message}");
+        }
 
-        System.Diagnostics.Debug.WriteLine("[Orchestrator] Démarré. " +
-            $"Reader={IsReaderConnected}, MQTT={IsMqttConnected}");
+        OrcLog($"Reader={IsReaderConnected}, MQTT={IsMqttConnected}");
+        OrcLog("========== ORCHESTRATOR PRÊT ==========");
     }
 
     /// <inheritdoc />
@@ -134,9 +172,11 @@ public class NfcOrchestrator : INfcOrchestrator
     /// </summary>
     private async void OnUidReceived(object? sender, string uid)
     {
+        OrcLog($">>> OnUidReceived déclenché ! UID={uid}, CaptureMode={IsCaptureMode}, BindMode={IsBindMode}");
         try
         {
             // Toujours émettre l'événement UidScanned (brut)
+            OrcLog("Emission UidScanned...");
             UidScanned?.Invoke(this, uid);
 
             // Mode Capture : intercepter l'UID sans traitement

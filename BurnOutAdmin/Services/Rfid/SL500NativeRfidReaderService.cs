@@ -1,6 +1,7 @@
 #if WINDOWS
 using BurnOutAdmin.Platforms.Windows.RFID;
 #endif
+using System.Diagnostics;
 
 namespace BurnOutAdmin.Services.Rfid;
 
@@ -61,6 +62,14 @@ public class SL500NativeRfidReaderService : IRfidReaderService
     {
         _comPort = comPort;
         _baudRate = baudRate;
+        Log($"Service créé: comPort={comPort} (COM{comPort + 1}), baudRate={baudRate}");
+    }
+
+    private static void Log(string message)
+    {
+        var msg = $"[SL500-DLL] {message}";
+        Console.WriteLine(msg);
+        Debug.WriteLine(msg);
     }
 
     /// <inheritdoc />
@@ -73,38 +82,56 @@ public class SL500NativeRfidReaderService : IRfidReaderService
             {
                 if (IsConnected)
                 {
-                    System.Diagnostics.Debug.WriteLine("[SL500-DLL] Lecteur déjà connecté.");
+                    Log("Lecteur déjà connecté — ignoré.");
                     return Task.CompletedTask;
                 }
 
+                Log("========== DÉMARRAGE SL500 ==========");
+
+                // Diagnostic : vérifier que les DLL existent
+                var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                Log($"Répertoire de base: {baseDir}");
+                var masterRdPath = Path.Combine(baseDir, "MasterRD.dll");
+                var masterComPath = Path.Combine(baseDir, "MasterCOM.dll");
+                Log($"MasterRD.dll existe: {File.Exists(masterRdPath)} → {masterRdPath}");
+                Log($"MasterCOM.dll existe: {File.Exists(masterComPath)} → {masterComPath}");
+
+                if (!File.Exists(masterRdPath) || !File.Exists(masterComPath))
+                {
+                    Log("⚠ DLL MANQUANTE ! Vérifiez que les DLLs sont copiées dans le répertoire de sortie.");
+                }
+
                 // Étape 1 : Initialiser le port COM via la DLL
+                Log($"Appel rf_init_com(port={_comPort}, baud={_baudRate})...");
                 _icdev = SL500Native.rf_init_com(_comPort, _baudRate);
+                Log($"rf_init_com retour = {_icdev} (>0 = OK, <=0 = erreur)");
 
                 if (_icdev <= 0)
                 {
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[SL500-DLL] Erreur rf_init_com: port COM{_comPort + 1}, retour={_icdev}");
+                    Log($"ERREUR: rf_init_com a échoué pour COM{_comPort + 1}. Retour={_icdev}");
+                    Log("Vérifiez: (1) Le SL500 est branché (2) COM5 est le bon port (3) Pas d'autre app qui utilise le port");
                     IsConnected = false;
                     return Task.CompletedTask;
                 }
 
-                System.Diagnostics.Debug.WriteLine(
-                    $"[SL500-DLL] rf_init_com OK: COM{_comPort + 1}, icdev={_icdev}");
+                Log($"OK: COM{_comPort + 1} ouvert, icdev={_icdev}");
 
                 // Étape 2 : Activer l'antenne RF
+                Log("Appel rf_antenna_sta(icdev, 0x01)...");
                 var antennaResult = SL500Native.rf_antenna_sta(_icdev, 0x01);
-                if (antennaResult != 0)
-                {
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[SL500-DLL] Avertissement rf_antenna_sta: retour={antennaResult}");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("[SL500-DLL] Antenne RF activée.");
-                }
+                Log($"rf_antenna_sta retour = {antennaResult} (0=OK)");
 
                 // Bip de confirmation (court)
-                try { SL500Native.rf_beep(_icdev, 10); } catch { /* optionnel */ }
+                Log("Appel rf_beep...");
+                try
+                {
+                    var beepResult = SL500Native.rf_beep(_icdev, 10);
+                    Log($"rf_beep retour = {beepResult}");
+                }
+                catch (Exception beepEx)
+                {
+                    Log($"rf_beep exception: {beepEx.Message}");
+                }
 
                 IsConnected = true;
 
@@ -112,23 +139,38 @@ public class SL500NativeRfidReaderService : IRfidReaderService
                 _pollingCts = new CancellationTokenSource();
                 _pollingTask = Task.Run(() => PollingLoopAsync(_pollingCts.Token));
 
-                System.Diagnostics.Debug.WriteLine("[SL500-DLL] Polling démarré.");
+                Log("Polling démarré. Approchez une carte...");
+                Log("========== SL500 PRÊT ==========");
             }
             catch (DllNotFoundException ex)
             {
                 IsConnected = false;
-                System.Diagnostics.Debug.WriteLine(
-                    $"[SL500-DLL] DLL introuvable: {ex.Message}. " +
-                    "Vérifiez que MasterRD.dll et MasterCOM.dll sont dans le répertoire de sortie.");
+                Log($"ERREUR DllNotFoundException: {ex.Message}");
+                Log($"Stack: {ex.StackTrace}");
+                Log("Les DLLs MasterRD.dll et MasterCOM.dll doivent être dans le répertoire de sortie!");
+            }
+            catch (BadImageFormatException ex)
+            {
+                IsConnected = false;
+                Log($"ERREUR BadImageFormatException: {ex.Message}");
+                Log("La DLL est probablement 32-bit et votre app 64-bit (ou inversement).");
+                Log($"Stack: {ex.StackTrace}");
+            }
+            catch (EntryPointNotFoundException ex)
+            {
+                IsConnected = false;
+                Log($"ERREUR EntryPointNotFoundException: {ex.Message}");
+                Log("La fonction P/Invoke n'existe pas dans la DLL. Vérifiez les noms de fonctions.");
             }
             catch (Exception ex)
             {
                 IsConnected = false;
-                System.Diagnostics.Debug.WriteLine($"[SL500-DLL] Erreur démarrage: {ex.Message}");
+                Log($"ERREUR inattendue: {ex.GetType().Name}: {ex.Message}");
+                Log($"Stack: {ex.StackTrace}");
             }
         }
 #else
-        System.Diagnostics.Debug.WriteLine("[SL500-DLL] Non supporté sur cette plateforme.");
+        Log("Non supporté sur cette plateforme (non-Windows).");
 #endif
         return Task.CompletedTask;
     }
@@ -173,22 +215,23 @@ public class SL500NativeRfidReaderService : IRfidReaderService
             {
                 if (_icdev > 0)
                 {
-                    // Désactiver l'antenne avant de fermer
+                    Log("Fermeture: désactivation antenne...");
                     try { SL500Native.rf_antenna_sta(_icdev, 0x00); } catch { /* ignore */ }
 
+                    Log($"Fermeture: rf_closeport(icdev={_icdev})...");
                     var result = SL500Native.rf_closeport(_icdev);
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[SL500-DLL] rf_closeport: retour={result}");
+                    Log($"rf_closeport retour = {result}");
                     _icdev = -1;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SL500-DLL] Erreur fermeture: {ex.Message}");
+                Log($"Erreur fermeture: {ex.Message}");
             }
             finally
             {
                 IsConnected = false;
+                Log("Port fermé, IsConnected=false.");
             }
         }
 #else
@@ -207,9 +250,12 @@ public class SL500NativeRfidReaderService : IRfidReaderService
     /// Boucle de polling exécutée en background.
     /// REQUEST → ANTICOLL → SELECT → HALT → émet UID.
     /// </summary>
+    private int _pollCount;
+
     private async Task PollingLoopAsync(CancellationToken ct)
     {
-        System.Diagnostics.Debug.WriteLine("[SL500-DLL] Boucle de polling démarrée.");
+        Log("Boucle de polling démarrée (thread background).");
+        _pollCount = 0;
 
         while (!ct.IsCancellationRequested)
         {
@@ -218,8 +264,16 @@ public class SL500NativeRfidReaderService : IRfidReaderService
                 if (_icdev <= 0)
                 {
                     IsConnected = false;
-                    System.Diagnostics.Debug.WriteLine("[SL500-DLL] Device invalide, arrêt du polling.");
+                    Log("ERREUR: icdev invalide dans la boucle, arrêt.");
                     break;
+                }
+
+                _pollCount++;
+
+                // Log toutes les 25 itérations (~5s) pour montrer que le polling tourne
+                if (_pollCount % 25 == 1)
+                {
+                    Log($"Polling actif... (itération #{_pollCount}, icdev={_icdev})");
                 }
 
                 // --- Étape 1 : REQUEST (détecter carte) ---
@@ -228,19 +282,27 @@ public class SL500NativeRfidReaderService : IRfidReaderService
 
                 if (reqResult != 0)
                 {
-                    // Pas de carte à proximité — normal, on continue
+                    // Pas de carte — normal, on continue silencieusement
+                    // Log toutes les 50 itérations pour debug
+                    if (_pollCount % 50 == 0)
+                    {
+                        Log($"rf_request retour={reqResult} (pas de carte) — poll #{_pollCount}");
+                    }
                     await Task.Delay(PollIntervalMs, ct);
                     continue;
                 }
 
+                // CARTE DÉTECTÉE !
+                Log($">>> CARTE DÉTECTÉE ! rf_request=0, tagType=[0x{tagType[0]:X2}, 0x{tagType[1]:X2}]");
+
                 // --- Étape 2 : ANTICOLL (obtenir UID) ---
                 var snr = new byte[4];
                 var anticollResult = SL500Native.rf_anticoll(_icdev, 0x04, snr);
+                Log($"rf_anticoll retour={anticollResult}, snr=[0x{snr[0]:X2}, 0x{snr[1]:X2}, 0x{snr[2]:X2}, 0x{snr[3]:X2}]");
 
                 if (anticollResult != 0)
                 {
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[SL500-DLL] rf_anticoll échoué: retour={anticollResult}");
+                    Log($"ERREUR rf_anticoll: retour={anticollResult}");
                     await Task.Delay(PollIntervalMs, ct);
                     continue;
                 }
@@ -248,39 +310,47 @@ public class SL500NativeRfidReaderService : IRfidReaderService
                 // --- Étape 3 : SELECT (valider la carte) ---
                 var size = new byte[1];
                 var selectResult = SL500Native.rf_select(_icdev, snr, size);
-
-                if (selectResult != 0)
-                {
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[SL500-DLL] rf_select échoué: retour={selectResult}");
-                }
+                Log($"rf_select retour={selectResult}, SAK=0x{size[0]:X2}");
 
                 // --- Étape 4 : Convertir UID en hex ---
                 var uid = FormatUid(snr);
+                Log($"UID formaté: {uid}");
 
                 // --- Étape 5 : HALT (libérer la carte pour prochaine détection) ---
-                try { SL500Native.rf_halt(_icdev); } catch { /* ignore */ }
+                try
+                {
+                    var haltResult = SL500Native.rf_halt(_icdev);
+                    Log($"rf_halt retour={haltResult}");
+                }
+                catch (Exception haltEx)
+                {
+                    Log($"rf_halt exception: {haltEx.Message}");
+                }
 
                 // --- Étape 6 : Émettre si anti-rebond OK ---
                 if (!string.IsNullOrEmpty(uid))
                 {
                     TryEmitUid(uid);
                 }
+                else
+                {
+                    Log("UID vide après formatage — ignoré.");
+                }
             }
             catch (OperationCanceledException)
             {
+                Log("Polling annulé (CancellationToken).");
                 break;
             }
             catch (DllNotFoundException ex)
             {
                 IsConnected = false;
-                System.Diagnostics.Debug.WriteLine(
-                    $"[SL500-DLL] DLL introuvable pendant polling: {ex.Message}");
+                Log($"ERREUR DllNotFoundException pendant polling: {ex.Message}");
                 break;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SL500-DLL] Erreur polling: {ex.Message}");
+                Log($"ERREUR polling: {ex.GetType().Name}: {ex.Message}");
             }
 
             try
@@ -293,7 +363,7 @@ public class SL500NativeRfidReaderService : IRfidReaderService
             }
         }
 
-        System.Diagnostics.Debug.WriteLine("[SL500-DLL] Boucle de polling terminée.");
+        Log($"Boucle de polling terminée après {_pollCount} itérations.");
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -324,14 +394,24 @@ public class SL500NativeRfidReaderService : IRfidReaderService
 
         if (uid == _lastUid && (now - _lastScanTime).TotalMilliseconds < DebounceMs)
         {
-            return; // Anti-rebond : même carte encore sur le lecteur
+            Log($"Anti-rebond: {uid} ignoré ({(now - _lastScanTime).TotalMilliseconds:F0}ms < {DebounceMs}ms)");
+            return;
         }
 
         _lastUid = uid;
         _lastScanTime = now;
 
-        System.Diagnostics.Debug.WriteLine($"[SL500-DLL] UID détecté: {uid}");
-        UidReceived?.Invoke(this, uid);
+        Log($">>> UID ÉMIS: {uid} — envoi event UidReceived");
+        var handlers = UidReceived;
+        if (handlers == null)
+        {
+            Log("ATTENTION: aucun abonné à UidReceived ! L'orchestrateur n'est peut-être pas démarré.");
+        }
+        else
+        {
+            handlers.Invoke(this, uid);
+            Log("Event UidReceived invoqué avec succès.");
+        }
     }
 
     /// <inheritdoc />
