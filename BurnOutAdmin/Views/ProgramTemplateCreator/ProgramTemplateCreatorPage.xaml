@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BurnOutAdmin.ViewModels.ProgramTemplateCreator"
+             xmlns:local="clr-namespace:BurnOutAdmin.Views.ProgramTemplateCreator"
+             x:Class="BurnOutAdmin.Views.ProgramTemplateCreator.ProgramTemplateCreatorPage"
+             x:DataType="vm:ProgramTemplateCreatorViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False">
+
+    <local:ProgramTemplateCreatorView />
+
+</ContentPage>

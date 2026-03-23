@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Icon Styles -->
+    <Style x:Key="IconLabel" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold"/>
+        <Setter Property="VerticalOptions" Value="Center"/>
+        <Setter Property="HorizontalOptions" Value="Center"/>
+    </Style>
+
+    <!-- Icon Definitions (Unicode) -->
+    <x:String x:Key="IconAdd">+</x:String>
+    <x:String x:Key="IconSearch">🔍</x:String>
+    <x:String x:Key="IconFilter">⚙</x:String>
+    <x:String x:Key="IconEdit">✎</x:String>
+    <x:String x:Key="IconDelete">🗑</x:String>
+    <x:String x:Key="IconNfc">📡</x:String>
+    <x:String x:Key="IconClose">✕</x:String>
+    <x:String x:Key="IconCalendar">📅</x:String>
+    <x:String x:Key="IconInfo">ℹ</x:String>
+    <x:String x:Key="IconLink">🔗</x:String>
+    <x:String x:Key="IconScan">📷</x:String>
+    <x:String x:Key="IconContactless">📡</x:String>
+    
+</ResourceDictionary>

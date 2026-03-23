@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BurnOutAdmin.Controls.MaterialIcon"
+             x:Name="this">
+    <Grid>
+        <Path Fill="{Binding Source={x:Reference this}, Path=IconColor}"
+              Data="{Binding Source={x:Reference this}, Path=IconData}"
+              Aspect="Uniform"
+              HeightRequest="{Binding Source={x:Reference this}, Path=Size}"
+              WidthRequest="{Binding Source={x:Reference this}, Path=Size}"/>
+    </Grid>
+</ContentView>

@@ -1,4 +1,3 @@
-using BurnOutAdmin.ViewModels;
 using BurnOutAdmin.Views.Shell;
 
 namespace BurnOutAdmin;

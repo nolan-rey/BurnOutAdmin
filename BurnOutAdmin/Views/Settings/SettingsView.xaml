@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:BurnOutAdmin.ViewModels"
+             x:Class="BurnOutAdmin.Views.Settings.SettingsView"
+             x:DataType="viewmodels:SettingsViewModel"
+             BackgroundColor="#F5F5F5">
+
+    <ScrollView Padding="24">
+        <VerticalStackLayout Spacing="24" MaximumWidthRequest="600">
+            
+            <!-- Header -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Paramètres"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="#1E1E2E"/>
+                <Label Text="Configuration de l'application"
+                       FontSize="14"
+                       TextColor="#666666"/>
+            </VerticalStackLayout>
+            
+            <!-- Notifications Section -->
+            <Border BackgroundColor="White"
+                    StrokeThickness="0"
+                    Padding="24">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="#15000000" Offset="0,2" Radius="6"/>
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="20">
+                    <Label Text="Notifications"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#1E1E2E"/>
+                    
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Activer les notifications"
+                                   FontSize="14"
+                                   TextColor="#1E1E2E"/>
+                            <Label Text="Recevoir des alertes pour les événements importants"
+                                   FontSize="12"
+                                   TextColor="#888888"/>
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding NotificationsEnabled}"
+                                OnColor="#512BD4"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+            
+            <!-- Appearance Section -->
+            <Border BackgroundColor="White"
+                    StrokeThickness="0"
+                    Padding="24">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="#15000000" Offset="0,2" Radius="6"/>
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="20">
+                    <Label Text="Apparence"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#1E1E2E"/>
+                    
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Mode sombre"
+                                   FontSize="14"
+                                   TextColor="#1E1E2E"/>
+                            <Label Text="Utiliser un thème sombre (non disponible)"
+                                   FontSize="12"
+                                   TextColor="#888888"/>
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding DarkModeEnabled}"
+                                OnColor="#512BD4"
+                                IsEnabled="False"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+            
+            <!-- Sync Section -->
+            <Border BackgroundColor="White"
+                    StrokeThickness="0"
+                    Padding="24">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="#15000000" Offset="0,2" Radius="6"/>
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="20">
+                    <Label Text="Synchronisation"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#1E1E2E"/>
+                    
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Synchronisation automatique"
+                                   FontSize="14"
+                                   TextColor="#1E1E2E"/>
+                            <Label Text="Synchroniser les données automatiquement"
+                                   FontSize="12"
+                                   TextColor="#888888"/>
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding AutoSyncEnabled}"
+                                OnColor="#512BD4"/>
+                    </Grid>
+                    
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0"
+                               Text="Intervalle de synchronisation"
+                               FontSize="14"
+                               TextColor="#1E1E2E"
+                               VerticalOptions="Center"/>
+                        <Border Grid.Column="1"
+                                BackgroundColor="#F5F5F5"
+                                StrokeThickness="0"
+                                Padding="12,8">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="6"/>
+                            </Border.StrokeShape>
+                            <Label Text="{Binding SyncInterval}"
+                                   FontSize="14"
+                                   TextColor="#666666"/>
+                        </Border>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+            
+            <!-- Data Section -->
+            <Border BackgroundColor="White"
+                    StrokeThickness="0"
+                    Padding="24">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="#15000000" Offset="0,2" Radius="6"/>
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="16">
+                    <Label Text="Données"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#1E1E2E"/>
+                    
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+                        <Label Grid.Column="0"
+                               Text="Gestion du cache et des données"
+                               FontSize="14"
+                               TextColor="#666666"
+                               VerticalOptions="Center"/>
+                        
+                        <Button Grid.Column="1"
+                                Text="Vider le cache"
+                                Command="{Binding ClearCacheCommand}"
+                                BackgroundColor="#F5F5F5"
+                                TextColor="#666666"
+                                FontSize="13"
+                                Padding="16,8"
+                                CornerRadius="6"/>
+                        
+                        <Button Grid.Column="2"
+                                Text="Exporter"
+                                Command="{Binding ExportDataCommand}"
+                                BackgroundColor="#512BD4"
+                                TextColor="White"
+                                FontSize="13"
+                                Padding="16,8"
+                                CornerRadius="6"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+            
+            <!-- About Section -->
+            <Border BackgroundColor="White"
+                    StrokeThickness="0"
+                    Padding="24">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="#15000000" Offset="0,2" Radius="6"/>
+                </Border.Shadow>
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout Grid.Column="0" Spacing="4">
+                        <Label Text="À propos"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="#1E1E2E"/>
+                        <Label Text="{Binding AppVersion, StringFormat='Version {0}'}"
+                               FontSize="14"
+                               TextColor="#888888"/>
+                    </VerticalStackLayout>
+                    
+                    <Button Grid.Column="1"
+                            Text="Plus d'infos"
+                            Command="{Binding ShowAboutCommand}"
+                            BackgroundColor="#F5F5F5"
+                            TextColor="#666666"
+                            FontSize="13"
+                            Padding="16,8"
+                            CornerRadius="6"
+                            VerticalOptions="Center"/>
+                </Grid>
+            </Border>
+            
+            <!-- Save Button -->
+            <Button Text="Sauvegarder les paramètres"
+                    Command="{Binding SaveSettingsCommand}"
+                    BackgroundColor="#512BD4"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    FontSize="16"
+                    Padding="24,14"
+                    CornerRadius="8"
+                    HorizontalOptions="Start"/>
+            
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentView>
