@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:BurnOutAdmin.ViewModels"
+             xmlns:models="clr-namespace:BurnOutAdmin.Models"
+             x:Class="BurnOutAdmin.Views.Programmes.ProgrammesView"
+             x:DataType="viewmodels:ProgrammesViewModel"
+             BackgroundColor="#F5F5F5">
+
+    <Grid Padding="24" RowDefinitions="Auto,*">
+        
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,24">
+            <VerticalStackLayout Grid.Column="0" Spacing="4">
+                <Label Text="📅 Programmes"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="#1E1E2E"/>
+                <Label Text="Création et planification de programmes d'entraînement"
+                       FontSize="14"
+                       TextColor="#666666"/>
+            </VerticalStackLayout>
+            
+            <Button Grid.Column="1"
+                    Text="+ Nouveau Programme"
+                    Command="{Binding AddProgrammeCommand}"
+                    BackgroundColor="#512BD4"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    Padding="20,12"
+                    CornerRadius="8"/>
+        </Grid>
+        
+        <!-- Programmes List -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Programmes}"
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedProgramme}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Programme">
+                    <Border BackgroundColor="White"
+                            StrokeThickness="0"
+                            Padding="20"
+                            Margin="0,0,0,12">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12"/>
+                        </Border.StrokeShape>
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+                            
+                            <!-- Icon -->
+                            <Label Grid.Column="0" Text="🏋️" FontSize="32" VerticalOptions="Center"/>
+                            
+                            <!-- Programme Info -->
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                                <Label Text="{Binding Name}"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E1E2E"/>
+                                <Label Text="{Binding Description}"
+                                       FontSize="13"
+                                       TextColor="#666666"
+                                       LineBreakMode="TailTruncation"
+                                       MaxLines="1"/>
+                                <Label Text="{Binding DurationWeeks, StringFormat='{0} semaines • {0} séances/sem.'}"
+                                       FontSize="12"
+                                       TextColor="#888888"/>
+                            </VerticalStackLayout>
+                            
+                            <!-- Status -->
+                            <Border Grid.Column="2"
+                                    BackgroundColor="#4CAF50"
+                                    StrokeThickness="0"
+                                    Padding="12,6"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12"/>
+                                </Border.StrokeShape>
+                                <Label Text="Actif"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="White"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        
+        <!-- Loading -->
+        <ActivityIndicator Grid.Row="1"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           Color="#512BD4"
+                           HeightRequest="40"
+                           VerticalOptions="Center"/>
+    </Grid>
+</ContentView>

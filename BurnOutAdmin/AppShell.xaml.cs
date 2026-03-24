@@ -1,4 +1,4 @@
-using BurnOutAdmin.Views.Clients;
+using BurnOutAdmin.Views.ProgramBuilder;
 
 namespace BurnOutAdmin;
 
@@ -9,6 +9,6 @@ public partial class AppShell : Shell
         InitializeComponent();
         
         Routing.RegisterRoute(nameof(MainPage), typeof(MainPage));
-        Routing.RegisterRoute(nameof(ClientsView), typeof(ClientsView));
+        Routing.RegisterRoute("program-builder", typeof(ProgramBuilderPage));
     }
 }

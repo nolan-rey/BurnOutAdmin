@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BurnOutAdmin.ViewModels.ProgramTemplateCreator"
+             x:Class="BurnOutAdmin.Views.ProgramTemplateCreator.TopNavigationBar"
+             x:DataType="vm:ProgramTemplateCreatorViewModel">
+
+    <Border BackgroundColor="White"
+            StrokeThickness="0,0,0,1"
+            Stroke="#E5E7EB"
+            Padding="0">
+        <Grid ColumnDefinitions="Auto,*,Auto"
+              HeightRequest="56"
+              Padding="24,0">
+
+            <!-- Left: Logo + Title -->
+            <HorizontalStackLayout Grid.Column="0"
+                                   Spacing="8"
+                                   VerticalOptions="Center">
+                <Label Text="🏋"
+                       FontSize="22"
+                       TextColor="#2563EB"
+                       VerticalTextAlignment="Center" />
+                <Label Text="Burnout Admin"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="#111827"
+                       VerticalTextAlignment="Center" />
+            </HorizontalStackLayout>
+
+            <!-- Center: Nav Links -->
+            <HorizontalStackLayout Grid.Column="1"
+                                   Spacing="24"
+                                   HorizontalOptions="End"
+                                   VerticalOptions="Center"
+                                   Margin="0,0,24,0">
+                <Label Text="Dashboard"
+                       FontSize="13"
+                       TextColor="#6B7280"
+                       VerticalTextAlignment="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Clients"
+                       FontSize="13"
+                       TextColor="#6B7280"
+                       VerticalTextAlignment="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Programmes"
+                       FontSize="13"
+                       TextColor="#6B7280"
+                       VerticalTextAlignment="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Bibliothèque"
+                       FontSize="13"
+                       FontAttributes="Bold"
+                       TextColor="#111827"
+                       VerticalTextAlignment="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer />
+                    </Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
+
+            <!-- Right: Publish + Avatar -->
+            <HorizontalStackLayout Grid.Column="2"
+                                   Spacing="12"
+                                   VerticalOptions="Center">
+                <Button Text="Publier"
+                        BackgroundColor="#2563EB"
+                        TextColor="White"
+                        FontSize="13"
+                        FontAttributes="Bold"
+                        CornerRadius="6"
+                        Padding="16,8"
+                        HeightRequest="36"
+                        Command="{Binding PublishCommand}" />
+
+                <Border StrokeShape="RoundRectangle 16"
+                        StrokeThickness="0"
+                        BackgroundColor="#D1D5DB"
+                        HeightRequest="32"
+                        WidthRequest="32">
+                    <Label Text="N"
+                           FontSize="14"
+                           FontAttributes="Bold"
+                           TextColor="#4B5563"
+                           HorizontalTextAlignment="Center"
+                           VerticalTextAlignment="Center" />
+                </Border>
+            </HorizontalStackLayout>
+        </Grid>
+    </Border>
+
+</ContentView>

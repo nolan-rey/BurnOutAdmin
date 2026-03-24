@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:BurnOutAdmin.ViewModels"
+             xmlns:models="clr-namespace:BurnOutAdmin.Models"
+             x:Class="BurnOutAdmin.Views.Dashboard.DashboardView"
+             x:DataType="viewmodels:DashboardViewModel"
+             BackgroundColor="#F8FAFC">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0" Padding="35,30,35,35">
+
+            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- TOP HEADER                                          -->
+            <!-- ═══════════════════════════════════════════════════ -->
+            <Grid Margin="0,0,0,35">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Breadcrumb -->
+                <HorizontalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="8">
+                    <Label Text="🏠" FontSize="16" TextColor="#64748B" VerticalOptions="Center"/>
+                    <Label Text="/" FontSize="16" TextColor="#CBD5E1" VerticalOptions="Center"/>
+                    <Label Text="Vue d'ensemble"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#1E293B"
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+
+                <!-- Status badges + avatar -->
+                <HorizontalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
+
+                    <!-- DB Status -->
+                    <Border BackgroundColor="#F0FDF4" Padding="12,6">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="20"/>
+                        </Border.StrokeShape>
+                        <Border.Stroke>Transparent</Border.Stroke>
+                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                            <Ellipse WidthRequest="8" HeightRequest="8" Fill="#22C55E" VerticalOptions="Center"/>
+                            <Label Text="DB: ACTIF" FontSize="12" FontAttributes="Bold" TextColor="#166534" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <!-- API Status -->
+                    <Border BackgroundColor="#EFF6FF" Padding="12,6">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="20"/>
+                        </Border.StrokeShape>
+                        <Border.Stroke>Transparent</Border.Stroke>
+                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                            <Ellipse WidthRequest="8" HeightRequest="8" Fill="#3B82F6" VerticalOptions="Center"/>
+                            <Label Text="API: CONNECTÉ" FontSize="12" FontAttributes="Bold" TextColor="#1E40AF" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <!-- Admin info -->
+                    <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                        <VerticalStackLayout VerticalOptions="Center">
+                            <Label Text="Admin Principal" FontAttributes="Bold" FontSize="14" TextColor="#1E293B" HorizontalOptions="End"/>
+                            <Label Text="Superviseur" FontSize="12" TextColor="#64748B" HorizontalOptions="End"/>
+                        </VerticalStackLayout>
+                        <Ellipse WidthRequest="45" HeightRequest="45" Fill="#E2E8F0" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </HorizontalStackLayout>
+            </Grid>
+
+            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- KPI CARDS — 4 colonnes                              -->
+            <!-- ═══════════════════════════════════════════════════ -->
+            <Grid ColumnSpacing="16" Margin="0,0,0,30">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Card 1 — Clients Actifs -->
+                <Border Grid.Column="0"
+                        BackgroundColor="White"
+                        Padding="25">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                    <Border.Stroke>#E2E8F0</Border.Stroke>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <VerticalStackLayout Grid.Column="0" Spacing="0">
+                            <Label Text="Clients Actifs" TextColor="#64748B" FontSize="14"/>
+                            <Label Text="{Binding ActiveClientsCount}" FontSize="32" FontAttributes="Bold" TextColor="#1E293B" Margin="0,8,0,0"/>
+                            <HorizontalStackLayout Spacing="4" Margin="0,4,0,0">
+                                <Label Text="↗ +5%" TextColor="#22C55E" FontAttributes="Bold" FontSize="13"/>
+                                <Label Text="ce mois" TextColor="#94A3B8" FontSize="13"/>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                        <Border Grid.Column="1" WidthRequest="45" HeightRequest="45"
+                                BackgroundColor="#EFF6FF"
+                                VerticalOptions="Start" HorizontalOptions="End">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                            <Border.Stroke>Transparent</Border.Stroke>
+                            <Label Text="👥" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Card 2 — Abonnements Expirants -->
+                <Border Grid.Column="1"
+                        BackgroundColor="White"
+                        Padding="25">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                    <Border.Stroke>#E2E8F0</Border.Stroke>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <VerticalStackLayout Grid.Column="0" Spacing="0">
+                            <Label Text="Abos. Expirants" TextColor="#64748B" FontSize="14"/>
+                            <Label Text="{Binding ExpiringSubscriptionsCount}" FontSize="32" FontAttributes="Bold" TextColor="#1E293B" Margin="0,8,0,0"/>
+                            <Border BackgroundColor="#FEF2F2" Padding="8,4" Margin="0,4,0,0" HorizontalOptions="Start">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                <Border.Stroke>Transparent</Border.Stroke>
+                                <Label Text="Action requise" TextColor="#EF4444" FontSize="11" FontAttributes="Bold"/>
+                            </Border>
+                        </VerticalStackLayout>
+                        <Border Grid.Column="1" WidthRequest="45" HeightRequest="45"
+                                BackgroundColor="#FFF1F2"
+                                VerticalOptions="Start" HorizontalOptions="End">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                            <Border.Stroke>Transparent</Border.Stroke>
+                            <Label Text="⚠️" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Card 3 — Entrées NFC (24h) -->
+                <Border Grid.Column="2"
+                        BackgroundColor="White"
+                        Padding="25">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                    <Border.Stroke>#E2E8F0</Border.Stroke>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <VerticalStackLayout Grid.Column="0" Spacing="0">
+                            <Label Text="Entrées NFC (24h)" TextColor="#64748B" FontSize="14"/>
+                            <Label Text="{Binding TodayNfcAccessCount}" FontSize="32" FontAttributes="Bold" TextColor="#1E293B" Margin="0,8,0,0"/>
+                            <Label Text="Pic d'activité: 18:00" TextColor="#94A3B8" FontSize="13" Margin="0,4,0,0"/>
+                        </VerticalStackLayout>
+                        <Border Grid.Column="1" WidthRequest="45" HeightRequest="45"
+                                BackgroundColor="#F5F3FF"
+                                VerticalOptions="Start" HorizontalOptions="End">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                            <Border.Stroke>Transparent</Border.Stroke>
+                            <Label Text="🆔" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Card 4 — Défis en cours -->
+                <Border Grid.Column="3"
+                        BackgroundColor="White"
+                        Padding="25">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                    <Border.Stroke>#E2E8F0</Border.Stroke>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <VerticalStackLayout Grid.Column="0" Spacing="0">
+                            <Label Text="Défis en cours" TextColor="#64748B" FontSize="14"/>
+                            <Label Text="{Binding ActiveChallengesCount}" FontSize="32" FontAttributes="Bold" TextColor="#1E293B" Margin="0,8,0,0"/>
+                            <Label Text="3 terminent bientôt" TextColor="#22C55E" FontSize="13" FontAttributes="Bold" Margin="0,4,0,0"/>
+                        </VerticalStackLayout>
+                        <Border Grid.Column="1" WidthRequest="45" HeightRequest="45"
+                                BackgroundColor="#F0FDF4"
+                                VerticalOptions="Start" HorizontalOptions="End">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                            <Border.Stroke>Transparent</Border.Stroke>
+                            <Label Text="🏆" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- BOTTOM SECTION — Tableau NFC + Activité récente    -->
+            <!-- ═══════════════════════════════════════════════════ -->
+            <Grid ColumnSpacing="25">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ─── Derniers Accès NFC ─── -->
+                <Border Grid.Column="0"
+                        BackgroundColor="White"
+                        Padding="25">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                    <Border.Stroke>#E2E8F0</Border.Stroke>
+                    <VerticalStackLayout Spacing="0">
+
+                        <!-- Table header -->
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
+                                <Label Text="🔄" FontSize="18"/>
+                                <Label Text="Derniers Accès NFC" FontSize="18" FontAttributes="Bold" TextColor="#1E293B" VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                            <Label Grid.Column="1" Text="Voir tout" TextColor="#2563EB" FontSize="14" VerticalOptions="Center"/>
+                        </Grid>
+
+                        <!-- Column headers -->
+                        <Grid Padding="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="70"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition Width="90"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Text="HEURE" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"/>
+                            <Label Grid.Column="1" Text="NOM" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"/>
+                            <Label Grid.Column="2" Text="LIEU" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"/>
+                            <Label Grid.Column="3" Text="STATUT" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"/>
+                        </Grid>
+
+                        <!-- Separator -->
+                        <BoxView HeightRequest="1" BackgroundColor="#F1F5F9" Margin="0,0,0,4"/>
+
+                        <!-- NFC Rows -->
+                        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                                           Color="#2563EB" HeightRequest="30" Margin="0,10"/>
+
+                        <CollectionView ItemsSource="{Binding RecentNfcAccesses}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:DashboardNfcEntry">
+                                    <Grid Padding="0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="70"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="130"/>
+                                            <ColumnDefinition Width="90"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Label Grid.Column="0" Text="{Binding Time}" FontSize="14" TextColor="#64748B" VerticalOptions="Center"/>
+                                        <HorizontalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
+                                            <Ellipse WidthRequest="30" HeightRequest="30" Fill="#E2E8F0"/>
+                                            <Label Text="{Binding ClientName}" FontAttributes="Bold" FontSize="14" TextColor="#1E293B" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                        <Label Grid.Column="2" Text="{Binding Door}" FontSize="13" TextColor="#64748B" VerticalOptions="Center"/>
+                                        <Border Grid.Column="3"
+                                                BackgroundColor="{Binding StatusBackground}"
+                                                Padding="8,4"
+                                                VerticalOptions="Center"
+                                                HorizontalOptions="Start">
+                                            <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                                            <Border.Stroke>Transparent</Border.Stroke>
+                                            <Label Text="{Binding StatusText}"
+                                                   TextColor="{Binding StatusColor}"
+                                                   FontSize="11"
+                                                   FontAttributes="Bold"
+                                                   HorizontalOptions="Center"/>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ─── Activité Récente ─── -->
+                <Border Grid.Column="1"
+                        BackgroundColor="White"
+                        Padding="25">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                    <Border.Stroke>#E2E8F0</Border.Stroke>
+                    <VerticalStackLayout Spacing="0">
+
+                        <!-- Section header -->
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
+                                <Label Text="🔔" FontSize="18"/>
+                                <Label Text="Activité Récente" FontSize="18" FontAttributes="Bold" TextColor="#1E293B" VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                            <Label Grid.Column="1" Text="Détails" TextColor="#2563EB" FontSize="14" VerticalOptions="Center"/>
+                        </Grid>
+
+                        <!-- Timeline item 1 -->
+                        <Grid Padding="0,14" MinimumHeightRequest="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" WidthRequest="36" HeightRequest="36"
+                                    BackgroundColor="#EFF6FF" Margin="0,0,12,0"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                                <Border.Stroke>Transparent</Border.Stroke>
+                                <Label Text="🏋️" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Sophie Martin" FontAttributes="Bold" FontSize="14" TextColor="#1E293B"/>
+                                <Label Text="A terminé le défi 'Marathon 5k'" FontSize="12" TextColor="#64748B"/>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" Text="10:30" FontSize="11" TextColor="#94A3B8" VerticalOptions="Start"/>
+                        </Grid>
+                        <BoxView HeightRequest="1" BackgroundColor="#F1F5F9"/>
+
+                        <!-- Timeline item 2 -->
+                        <Grid Padding="0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" WidthRequest="36" HeightRequest="36"
+                                    BackgroundColor="#F0FDF4" Margin="0,0,12,0"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                                <Border.Stroke>Transparent</Border.Stroke>
+                                <Label Text="✅" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Jean Dupont" FontAttributes="Bold" FontSize="14" TextColor="#1E293B"/>
+                                <Label Text="Abonnement renouvelé (Annuel)" FontSize="12" TextColor="#64748B"/>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" Text="09:15" FontSize="11" TextColor="#94A3B8" VerticalOptions="Start"/>
+                        </Grid>
+                        <BoxView HeightRequest="1" BackgroundColor="#F1F5F9"/>
+
+                        <!-- Timeline item 3 -->
+                        <Grid Padding="0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" WidthRequest="36" HeightRequest="36"
+                                    BackgroundColor="#FFF1F2" Margin="0,0,12,0"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                                <Border.Stroke>Transparent</Border.Stroke>
+                                <Label Text="⚠️" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Alice Martin" FontAttributes="Bold" FontSize="14" TextColor="#1E293B"/>
+                                <Label Text="Accès refusé — abo. expiré" FontSize="12" TextColor="#64748B"/>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" Text="08:47" FontSize="11" TextColor="#94A3B8" VerticalOptions="Start"/>
+                        </Grid>
+                        <BoxView HeightRequest="1" BackgroundColor="#F1F5F9"/>
+
+                        <!-- Timeline item 4 -->
+                        <Grid Padding="0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" WidthRequest="36" HeightRequest="36"
+                                    BackgroundColor="#F5F3FF" Margin="0,0,12,0"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                                <Border.Stroke>Transparent</Border.Stroke>
+                                <Label Text="🆕" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Lucas Bernard" FontAttributes="Bold" FontSize="14" TextColor="#1E293B"/>
+                                <Label Text="Nouveau client enregistré" FontSize="12" TextColor="#64748B"/>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" Text="08:02" FontSize="11" TextColor="#94A3B8" VerticalOptions="Start"/>
+                        </Grid>
+                        <BoxView HeightRequest="1" BackgroundColor="#F1F5F9"/>
+
+                        <!-- Timeline item 5 -->
+                        <Grid Padding="0,14,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" WidthRequest="36" HeightRequest="36"
+                                    BackgroundColor="#EFF6FF" Margin="0,0,12,0"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                                <Border.Stroke>Transparent</Border.Stroke>
+                                <Label Text="🏆" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Hugo Richard" FontAttributes="Bold" FontSize="14" TextColor="#1E293B"/>
+                                <Label Text="Défi 'Cardio 30j' démarré" FontSize="12" TextColor="#64748B"/>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" Text="Hier" FontSize="11" TextColor="#94A3B8" VerticalOptions="Start"/>
+                        </Grid>
+
+                    </VerticalStackLayout>
+                </Border>
+
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentView>

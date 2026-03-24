@@ -41,6 +41,11 @@
             
             <!-- Client Converters -->
             <converters:SelectedClientBackgroundConverter x:Key="SelectedClientBackgroundConverter" />
+            
+            <!-- Program Template Creator Converters -->
+            <converters:CategoryExpandedBgConverter x:Key="CategoryExpandedBgConverter" />
+            <converters:CategoryExpandedTextConverter x:Key="CategoryExpandedTextConverter" />
+            <converters:CategoryChevronConverter x:Key="CategoryChevronConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

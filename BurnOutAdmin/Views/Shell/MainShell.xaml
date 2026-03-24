@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:BurnOutAdmin.ViewModels"
+             xmlns:models="clr-namespace:BurnOutAdmin.Models"
+             xmlns:converters="clr-namespace:BurnOutAdmin.Converters"
+             x:Class="BurnOutAdmin.Views.Shell.MainShell"
+             x:DataType="viewmodels:MainShellViewModel"
+             Title="BurnOut Admin"
+             BackgroundColor="#F8FAFC">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style x:Key="NavButtonStyle" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="Transparent"/>
+                <Setter Property="BorderWidth" Value="0"/>
+                <Setter Property="HorizontalOptions" Value="Fill"/>
+                <Setter Property="Padding" Value="15,12"/>
+                <Setter Property="Margin" Value="0,2"/>
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="TextColor" Value="#64748B"/>
+                <Setter Property="CornerRadius" Value="8"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- SIDEBAR                                             -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <Grid Grid.Column="0">
+            <!-- White background + right border separator -->
+            <BoxView BackgroundColor="White" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+            <BoxView WidthRequest="1" BackgroundColor="#E2E8F0" HorizontalOptions="End" VerticalOptions="Fill"/>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Logo Section -->
+                <HorizontalStackLayout Grid.Row="0" Margin="25,28,25,40" Spacing="12">
+                    <Ellipse WidthRequest="40" HeightRequest="40" Fill="#0F172A" VerticalOptions="Center"/>
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="1">
+                        <Label Text="Burnout" FontSize="20" FontAttributes="Bold" TextColor="#1E293B"/>
+                        <Label Text="Supervision v1.2" FontSize="12" TextColor="#64748B"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <!-- Navigation Items -->
+                <VerticalStackLayout Grid.Row="1" Margin="20,0" Spacing="0">
+
+                    <Button Text="📊  Tableau de bord"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="Dashboard"
+                            BackgroundColor="{Binding MenuItems[0].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
+                            TextColor="{Binding MenuItems[0].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Text="👥  Clients"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="Clients"
+                            BackgroundColor="{Binding MenuItems[1].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
+                            TextColor="{Binding MenuItems[1].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Text="📅  Programmes"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="Programmes"
+                            BackgroundColor="{Binding MenuItems[2].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
+                            TextColor="{Binding MenuItems[2].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Text="🏗️  Program Builder"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="ProgramBuilder"
+                            BackgroundColor="{Binding MenuItems[3].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
+                            TextColor="{Binding MenuItems[3].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Text="📝  Créateur de Modèle"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="ProgramTemplateCreator"
+                            BackgroundColor="{Binding MenuItems[4].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
+                            TextColor="{Binding MenuItems[4].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Text="🏆  Challenges"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="Challenges"
+                            BackgroundColor="{Binding MenuItems[5].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
+                            TextColor="{Binding MenuItems[5].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Text="📱  Journal NFC"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="NfcLogs"
+                            BackgroundColor="{Binding MenuItems[6].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
+                            TextColor="{Binding MenuItems[6].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                    <!-- Separator -->
+                    <BoxView HeightRequest="1" BackgroundColor="#F1F5F9" Margin="0,20"/>
+
+                    <Button Text="⚙️  Paramètres"
+                            Command="{Binding NavigateToPageCommand}"
+                            CommandParameter="Settings"
+                            BackgroundColor="{Binding MenuItems[7].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
+                            TextColor="{Binding MenuItems[7].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                </VerticalStackLayout>
+
+                <!-- Logout Button -->
+                <Button Grid.Row="2"
+                        Command="{Binding LogoutCommand}"
+                        Margin="20,0,20,24"
+                        Style="{StaticResource NavButtonStyle}"
+                        TextColor="#E11D48">
+                    <Button.Text>🚪  Déconnexion</Button.Text>
+                </Button>
+
+            </Grid>
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- MAIN CONTENT AREA                                   -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <ContentView Grid.Column="1"
+                     x:Name="ContentArea"
+                     BackgroundColor="#F8FAFC"/>
+
+    </Grid>
+</ContentPage>
