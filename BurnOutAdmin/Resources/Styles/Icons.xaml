@@ -2,25 +2,74 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- Icon Styles -->
+    <!-- Material Icons Label Style -->
     <Style x:Key="IconLabel" TargetType="Label">
-        <Setter Property="FontFamily" Value="OpenSansSemibold"/>
+        <Setter Property="FontFamily" Value="MaterialIcons"/>
         <Setter Property="VerticalOptions" Value="Center"/>
         <Setter Property="HorizontalOptions" Value="Center"/>
+        <Setter Property="HorizontalTextAlignment" Value="Center"/>
+        <Setter Property="VerticalTextAlignment" Value="Center"/>
     </Style>
 
-    <!-- Icon Definitions (Unicode) -->
-    <x:String x:Key="IconAdd">+</x:String>
-    <x:String x:Key="IconSearch">🔍</x:String>
-    <x:String x:Key="IconFilter">⚙</x:String>
-    <x:String x:Key="IconEdit">✎</x:String>
-    <x:String x:Key="IconDelete">🗑</x:String>
-    <x:String x:Key="IconNfc">📡</x:String>
-    <x:String x:Key="IconClose">✕</x:String>
-    <x:String x:Key="IconCalendar">📅</x:String>
-    <x:String x:Key="IconInfo">ℹ</x:String>
-    <x:String x:Key="IconLink">🔗</x:String>
-    <x:String x:Key="IconScan">📷</x:String>
-    <x:String x:Key="IconContactless">📡</x:String>
-    
+    <!-- Navigation -->
+    <x:String x:Key="IconDashboard">&#xE871;</x:String>
+    <x:String x:Key="IconClients">&#xE7FB;</x:String>
+    <x:String x:Key="IconProgrammes">&#xE8DF;</x:String>
+    <x:String x:Key="IconProgramBuilder">&#xE869;</x:String>
+    <x:String x:Key="IconTemplates">&#xE258;</x:String>
+    <x:String x:Key="IconChallenges">&#xEAC9;</x:String>
+    <x:String x:Key="IconNfcLogs">&#xE1FA;</x:String>
+    <x:String x:Key="IconSettings">&#xE8B8;</x:String>
+    <x:String x:Key="IconLogout">&#xE9BA;</x:String>
+
+    <!-- Actions -->
+    <x:String x:Key="IconAdd">&#xE145;</x:String>
+    <x:String x:Key="IconEdit">&#xE3C9;</x:String>
+    <x:String x:Key="IconDelete">&#xE872;</x:String>
+    <x:String x:Key="IconClose">&#xE5CD;</x:String>
+    <x:String x:Key="IconSearch">&#xE8B6;</x:String>
+    <x:String x:Key="IconFilter">&#xE152;</x:String>
+    <x:String x:Key="IconRefresh">&#xE5D5;</x:String>
+    <x:String x:Key="IconMore">&#xE5D4;</x:String>
+    <x:String x:Key="IconArrowLeft">&#xE5C4;</x:String>
+    <x:String x:Key="IconArrowRight">&#xE5C8;</x:String>
+    <x:String x:Key="IconChevronDown">&#xE5CF;</x:String>
+    <x:String x:Key="IconChevronUp">&#xE5CE;</x:String>
+    <x:String x:Key="IconSave">&#xE161;</x:String>
+
+    <!-- Status / Info -->
+    <x:String x:Key="IconInfo">&#xE88E;</x:String>
+    <x:String x:Key="IconWarning">&#xE002;</x:String>
+    <x:String x:Key="IconCheck">&#xE876;</x:String>
+    <x:String x:Key="IconCheckCircle">&#xE86C;</x:String>
+    <x:String x:Key="IconError">&#xE000;</x:String>
+    <x:String x:Key="IconNotifications">&#xE7F4;</x:String>
+    <x:String x:Key="IconStar">&#xE838;</x:String>
+    <x:String x:Key="IconTrophy">&#xEAC9;</x:String>
+
+    <!-- NFC / RFID -->
+    <x:String x:Key="IconNfc">&#xE1FA;</x:String>
+    <x:String x:Key="IconContactless">&#xE1FA;</x:String>
+    <x:String x:Key="IconScan">&#xE8D3;</x:String>
+    <x:String x:Key="IconLink">&#xE157;</x:String>
+    <x:String x:Key="IconLinkOff">&#xE16F;</x:String>
+
+    <!-- People / Clients -->
+    <x:String x:Key="IconAccount">&#xE853;</x:String>
+    <x:String x:Key="IconGroup">&#xE7FB;</x:String>
+    <x:String x:Key="IconPersonAdd">&#xE7FE;</x:String>
+
+    <!-- Calendar / Time -->
+    <x:String x:Key="IconCalendar">&#xE935;</x:String>
+    <x:String x:Key="IconClock">&#xE192;</x:String>
+    <x:String x:Key="IconHistory">&#xE889;</x:String>
+
+    <!-- Misc -->
+    <x:String x:Key="IconHome">&#xE88A;</x:String>
+    <x:String x:Key="IconDoor">&#xE90E;</x:String>
+    <x:String x:Key="IconKey">&#xE73C;</x:String>
+    <x:String x:Key="IconBarChart">&#xE26B;</x:String>
+    <x:String x:Key="IconTrendUp">&#xE8E5;</x:String>
+    <x:String x:Key="IconFitness">&#xEB43;</x:String>
+
 </ResourceDictionary>
