@@ -8,7 +8,7 @@ public class MenuItemBackgroundConverter : IValueConverter
     {
         if (value is bool isSelected && isSelected)
         {
-            return Color.FromArgb("#512BD4");
+            return Color.FromArgb("#EFF6FF");
         }
         return Colors.Transparent;
     }

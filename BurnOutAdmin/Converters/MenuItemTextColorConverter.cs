@@ -8,9 +8,9 @@ public class MenuItemTextColorConverter : IValueConverter
     {
         if (value is bool isSelected && isSelected)
         {
-            return Colors.White;
+            return Color.FromArgb("#2563EB");
         }
-        return Color.FromArgb("#CCCCCC");
+        return Color.FromArgb("#64748B");
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

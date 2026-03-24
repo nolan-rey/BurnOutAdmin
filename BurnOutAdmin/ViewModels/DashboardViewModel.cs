@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using BurnOutAdmin.Models;
 using BurnOutAdmin.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -30,12 +31,19 @@ public partial class DashboardViewModel : BaseViewModel
     [ObservableProperty]
     private int _activeProgrammesCount;
 
+    [ObservableProperty]
+    private int _expiringSubscriptionsCount;
+
+    [ObservableProperty]
+    private bool _isOnline;
+
+    public ObservableCollection<DashboardNfcEntry> RecentNfcAccesses { get; } = new();
+
     public DashboardViewModel(IDashboardService dashboardService)
     {
         _dashboardService = dashboardService;
         Title = "Tableau de bord";
         
-        // Load data on initialization
         LoadDashboardDataCommand.ExecuteAsync(null);
     }
 
@@ -57,6 +65,12 @@ public partial class DashboardViewModel : BaseViewModel
             SystemStatusText = stats.SystemStatusText;
             ActiveChallengesCount = stats.ActiveChallengesCount;
             ActiveProgrammesCount = stats.ActiveProgrammesCount;
+            ExpiringSubscriptionsCount = stats.ExpiringSubscriptionsCount;
+            IsOnline = stats.IsOnline;
+
+            RecentNfcAccesses.Clear();
+            foreach (var entry in stats.RecentNfcAccesses)
+                RecentNfcAccesses.Add(entry);
         }
         catch (Exception ex)
         {
