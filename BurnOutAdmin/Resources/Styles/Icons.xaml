@@ -18,7 +18,7 @@
     <x:String x:Key="IconProgramBuilder">&#xE869;</x:String>
     <x:String x:Key="IconTemplates">&#xE258;</x:String>
     <x:String x:Key="IconChallenges">&#xEAC9;</x:String>
-    <x:String x:Key="IconNfcLogs">&#xE1FA;</x:String>
+    <x:String x:Key="IconNfcLogs">&#xEF6D;</x:String>
     <x:String x:Key="IconSettings">&#xE8B8;</x:String>
     <x:String x:Key="IconLogout">&#xE9BA;</x:String>
 
@@ -48,8 +48,8 @@
     <x:String x:Key="IconTrophy">&#xEAC9;</x:String>
 
     <!-- NFC / RFID -->
-    <x:String x:Key="IconNfc">&#xE1FA;</x:String>
-    <x:String x:Key="IconContactless">&#xE1FA;</x:String>
+    <x:String x:Key="IconNfc">&#xEF6D;</x:String>
+    <x:String x:Key="IconContactless">&#xEF6D;</x:String>
     <x:String x:Key="IconScan">&#xE8D3;</x:String>
     <x:String x:Key="IconLink">&#xE157;</x:String>
     <x:String x:Key="IconLinkOff">&#xE16F;</x:String>

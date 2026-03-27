@@ -121,50 +121,34 @@
                         </HorizontalStackLayout>
                     </Border>
 
-                    <!-- Créateur de Modèle -->
-                    <Border BackgroundColor="{Binding MenuItems[4].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
-                            StrokeThickness="0" StrokeShape="RoundRectangle 8">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding NavigateToPageCommand}" CommandParameter="ProgramTemplateCreator"/>
-                        </Border.GestureRecognizers>
-                        <HorizontalStackLayout Padding="14,11" Spacing="14">
-                            <Label Text="&#xE258;" FontFamily="MaterialIcons" FontSize="20"
-                                   TextColor="{Binding MenuItems[4].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
-                                   VerticalOptions="Center"/>
-                            <Label Text="Créateur de Modèle" FontSize="14"
-                                   TextColor="{Binding MenuItems[4].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
-                                   VerticalOptions="Center"/>
-                        </HorizontalStackLayout>
-                    </Border>
-
                     <!-- Challenges -->
-                    <Border BackgroundColor="{Binding MenuItems[5].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
+                    <Border BackgroundColor="{Binding MenuItems[4].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
                             StrokeThickness="0" StrokeShape="RoundRectangle 8">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding NavigateToPageCommand}" CommandParameter="Challenges"/>
                         </Border.GestureRecognizers>
                         <HorizontalStackLayout Padding="14,11" Spacing="14">
                             <Label Text="&#xEAC9;" FontFamily="MaterialIcons" FontSize="20"
-                                   TextColor="{Binding MenuItems[5].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                                   TextColor="{Binding MenuItems[4].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                             <Label Text="Challenges" FontSize="14"
-                                   TextColor="{Binding MenuItems[5].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                                   TextColor="{Binding MenuItems[4].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
                     </Border>
 
                     <!-- Journal NFC -->
-                    <Border BackgroundColor="{Binding MenuItems[6].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
+                    <Border BackgroundColor="{Binding MenuItems[5].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
                             StrokeThickness="0" StrokeShape="RoundRectangle 8">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding NavigateToPageCommand}" CommandParameter="NfcLogs"/>
                         </Border.GestureRecognizers>
                         <HorizontalStackLayout Padding="14,11" Spacing="14">
-                            <Label Text="&#xE1FA;" FontFamily="MaterialIcons" FontSize="20"
-                                   TextColor="{Binding MenuItems[6].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                            <Label Text="&#xEF6D;" FontFamily="MaterialIcons" FontSize="20"
+                                   TextColor="{Binding MenuItems[5].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                             <Label Text="Journal NFC" FontSize="14"
-                                   TextColor="{Binding MenuItems[6].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                                   TextColor="{Binding MenuItems[5].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
                     </Border>
@@ -173,17 +157,17 @@
                     <BoxView HeightRequest="1" BackgroundColor="#F1F5F9" Margin="4,14"/>
 
                     <!-- Paramètres -->
-                    <Border BackgroundColor="{Binding MenuItems[7].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
+                    <Border BackgroundColor="{Binding MenuItems[6].IsSelected, Converter={StaticResource MenuItemBackgroundConverter}}"
                             StrokeThickness="0" StrokeShape="RoundRectangle 8">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding NavigateToPageCommand}" CommandParameter="Settings"/>
                         </Border.GestureRecognizers>
                         <HorizontalStackLayout Padding="14,11" Spacing="14">
                             <Label Text="&#xE8B8;" FontFamily="MaterialIcons" FontSize="20"
-                                   TextColor="{Binding MenuItems[7].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                                   TextColor="{Binding MenuItems[6].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                             <Label Text="Paramètres" FontSize="14"
-                                   TextColor="{Binding MenuItems[7].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
+                                   TextColor="{Binding MenuItems[6].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
                     </Border>

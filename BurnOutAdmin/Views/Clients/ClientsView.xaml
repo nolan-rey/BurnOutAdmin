@@ -93,11 +93,9 @@
                         <RoundRectangle CornerRadius="8"/>
                     </Border.StrokeShape>
                     <Grid ColumnDefinitions="Auto,*" Padding="12,0">
-                        <Image Grid.Column="0" VerticalOptions="Center" WidthRequest="16" HeightRequest="16">
-                            <Image.Source>
-                                <FontImageSource Glyph="&#x1F50D;" Color="{StaticResource TextLight}" Size="16"/>
-                            </Image.Source>
-                        </Image>
+                        <Label Grid.Column="0" Text="&#xE8B6;" FontFamily="MaterialIcons"
+                               FontSize="16" TextColor="{StaticResource TextLight}"
+                               VerticalOptions="Center" HorizontalOptions="Center"/>
                         <Entry Grid.Column="1" Placeholder="Rechercher par Nom, ID ou UID NFC..."
                                PlaceholderColor="{StaticResource TextLight}" Text="{Binding SearchText}"
                                TextColor="{StaticResource TextDark}"
@@ -119,11 +117,9 @@
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="8"/>
                     </Border.StrokeShape>
-                    <Image WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
-                        <Image.Source>
-                            <FontImageSource Glyph="&#x2630;" Color="{StaticResource TextMedium}" Size="16"/>
-                        </Image.Source>
-                    </Image>
+                    <Label Text="&#xE152;" FontFamily="MaterialIcons"
+                           FontSize="18" TextColor="{StaticResource TextMedium}"
+                           HorizontalOptions="Center" VerticalOptions="Center"/>
                 </Border>
             </Grid>
 
@@ -252,48 +248,56 @@
                                                 </Border>
                                                 <Border IsVisible="{Binding HasNfcCard}" BackgroundColor="#EFF6FF" Stroke="#DBEAFE" StrokeThickness="1" Padding="3" VerticalOptions="Center">
                                                     <Border.StrokeShape><RoundRectangle CornerRadius="3"/></Border.StrokeShape>
-                                                    <Image WidthRequest="12" HeightRequest="12" VerticalOptions="Center" HorizontalOptions="Center">
-                                                        <Image.Source>
-                                                            <FontImageSource Glyph="&#x270E;" Color="{StaticResource Primary}" Size="12"/>
-                                                        </Image.Source>
-                                                    </Image>
+                                                    <Label Text="&#xE3C9;" FontFamily="MaterialIcons"
+                                                           FontSize="12" TextColor="{StaticResource Primary}"
+                                                           WidthRequest="14" HeightRequest="14"
+                                                           HorizontalOptions="Center" VerticalOptions="Center"
+                                                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
                                                 </Border>
                                                 <Label IsVisible="{Binding HasNfcCard, Converter={StaticResource InvertedBool}}" Text="Aucune carte associée" FontSize="11" TextColor="{StaticResource TextLight}" FontAttributes="Italic" VerticalOptions="Center"/>
                                             </HorizontalStackLayout>
                                             <!-- Actions: Programs (green) + RFID bind (blue) + Edit (amber) + Delete (red) -->
                                             <HorizontalStackLayout Grid.Column="4" Spacing="6" VerticalOptions="Center" HorizontalOptions="End">
-                                                <ImageButton BackgroundColor="Transparent" Padding="4"
-                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=ShowClientProgramsCommand}"
-                                                             CommandParameter="{Binding .}"
-                                                             HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
-                                                    <ImageButton.Source>
-                                                        <FontImageSource Glyph="&#x1F4CB;" Color="#16A34A" Size="16"/>
-                                                    </ImageButton.Source>
-                                                </ImageButton>
-                                                <ImageButton BackgroundColor="Transparent" Padding="4"
-                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=StartBindCommand}"
-                                                             CommandParameter="{Binding .}"
-                                                             HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
-                                                    <ImageButton.Source>
-                                                        <FontImageSource Glyph="&#x1F4F6;" Color="#137FEC" Size="16"/>
-                                                    </ImageButton.Source>
-                                                </ImageButton>
-                                                <ImageButton BackgroundColor="Transparent" Padding="4"
-                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=OpenEditFormCommand}"
-                                                             CommandParameter="{Binding .}"
-                                                             HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
-                                                    <ImageButton.Source>
-                                                        <FontImageSource Glyph="&#x270E;" Color="#D97706" Size="18"/>
-                                                    </ImageButton.Source>
-                                                </ImageButton>
-                                                <ImageButton BackgroundColor="Transparent" Padding="4"
-                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=DeleteClientCommand}"
-                                                             CommandParameter="{Binding .}"
-                                                             HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
-                                                    <ImageButton.Source>
-                                                        <FontImageSource Glyph="&#x2716;" Color="#DC2626" Size="16"/>
-                                                    </ImageButton.Source>
-                                                </ImageButton>
+                                                <Border BackgroundColor="Transparent" StrokeThickness="0"
+                                                        HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=ShowClientProgramsCommand}" CommandParameter="{Binding .}"/>
+                                                    </Border.GestureRecognizers>
+                                                    <Label Text="&#xE8DF;" FontFamily="MaterialIcons"
+                                                           FontSize="18" TextColor="#16A34A"
+                                                           HorizontalOptions="Center" VerticalOptions="Center"
+                                                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                                                </Border>
+                                                <Border BackgroundColor="Transparent" StrokeThickness="0"
+                                                        HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=StartBindCommand}" CommandParameter="{Binding .}"/>
+                                                    </Border.GestureRecognizers>
+                                                    <Label Text="&#xEF6D;" FontFamily="MaterialIcons"
+                                                           FontSize="18" TextColor="#137FEC"
+                                                           HorizontalOptions="Center" VerticalOptions="Center"
+                                                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                                                </Border>
+                                                <Border BackgroundColor="Transparent" StrokeThickness="0"
+                                                        HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=OpenEditFormCommand}" CommandParameter="{Binding .}"/>
+                                                    </Border.GestureRecognizers>
+                                                    <Label Text="&#xE3C9;" FontFamily="MaterialIcons"
+                                                           FontSize="18" TextColor="#D97706"
+                                                           HorizontalOptions="Center" VerticalOptions="Center"
+                                                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                                                </Border>
+                                                <Border BackgroundColor="Transparent" StrokeThickness="0"
+                                                        HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=DeleteClientCommand}" CommandParameter="{Binding .}"/>
+                                                    </Border.GestureRecognizers>
+                                                    <Label Text="&#xE872;" FontFamily="MaterialIcons"
+                                                           FontSize="18" TextColor="#DC2626"
+                                                           HorizontalOptions="Center" VerticalOptions="Center"
+                                                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                                                </Border>
                                             </HorizontalStackLayout>
                                         </Grid>
                                         <!-- Row separator -->
@@ -364,8 +368,15 @@
                             </Label>
                             <Label Text="Remplissez les informations du client" FontSize="12" TextColor="{StaticResource TextMedium}"/>
                         </VerticalStackLayout>
-                        <Button Grid.Column="1" Text="✕" FontSize="16" Padding="0" WidthRequest="32" HeightRequest="32"
-                                BackgroundColor="Transparent" TextColor="{StaticResource TextLight}" Command="{Binding CancelFormCommand}"/>
+                        <Label Grid.Column="1" Text="&#xE5CD;" FontFamily="MaterialIcons"
+                               FontSize="20" TextColor="{StaticResource TextLight}"
+                               WidthRequest="32" HeightRequest="32"
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               HorizontalTextAlignment="Center" VerticalTextAlignment="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CancelFormCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
                     </Grid>
 
                     <!-- Modal Body (scrollable) -->
@@ -377,11 +388,9 @@
                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNull}}">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
                                 <HorizontalStackLayout Spacing="8">
-                                    <Image WidthRequest="18" HeightRequest="18" VerticalOptions="Center">
-                                        <Image.Source>
-                                            <FontImageSource Glyph="&#x26A0;" Color="{StaticResource ErrorRed}" Size="18"/>
-                                        </Image.Source>
-                                    </Image>
+                                    <Label Text="&#xE000;" FontFamily="MaterialIcons"
+                                           FontSize="18" TextColor="{StaticResource ErrorRed}"
+                                           VerticalOptions="Center" HorizontalOptions="Center"/>
                                     <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource ErrorRed}" FontSize="13" VerticalOptions="Center"/>
                                 </HorizontalStackLayout>
                             </Border>
@@ -416,12 +425,21 @@
                                             <Entry Text="{Binding FormNfcUid}" Placeholder="Ex: 029EC135" PlaceholderColor="{StaticResource TextLight}" Style="{StaticResource InputEntry}" Margin="10,0"/>
                                         </Border>
                                         <!-- Bouton Scanner (visible quand PAS en attente) -->
-                                        <Button Grid.Column="1" Text="&#x1F4F6; Scanner"
-                                                Command="{Binding StartScanForClientCommand}"
+                                        <Border Grid.Column="1" BackgroundColor="#EFF6FF" Stroke="#DBEAFE" StrokeThickness="1"
                                                 IsVisible="{Binding IsWaitingForRfidScan, Converter={StaticResource InvertedBool}}"
-                                                BackgroundColor="#EFF6FF" TextColor="{StaticResource Primary}"
-                                                FontSize="12" FontAttributes="Bold" CornerRadius="6"
-                                                HeightRequest="40" Padding="12,0" VerticalOptions="Center"/>
+                                                HeightRequest="40" VerticalOptions="Center">
+                                            <Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding StartScanForClientCommand}"/>
+                                            </Border.GestureRecognizers>
+                                            <HorizontalStackLayout Spacing="4" Padding="10,0" VerticalOptions="Center">
+                                                <Label Text="&#xEF6D;" FontFamily="MaterialIcons"
+                                                       FontSize="14" TextColor="{StaticResource Primary}"
+                                                       VerticalOptions="Center"/>
+                                                <Label Text="Scanner" FontSize="12" FontAttributes="Bold"
+                                                       TextColor="{StaticResource Primary}" VerticalOptions="Center"/>
+                                            </HorizontalStackLayout>
+                                        </Border>
                                         <!-- Bouton Annuler (visible quand EN attente) -->
                                         <Button Grid.Column="1" Text="Annuler"
                                                 Command="{Binding CancelScanForClientCommand}"
@@ -542,10 +560,15 @@
                             <Label Text="Programmes assignés" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource TextDark}"/>
                             <Label Text="{Binding ViewingProgramsClient.FullName}" FontSize="13" TextColor="{StaticResource TextMedium}"/>
                         </VerticalStackLayout>
-                        <Button Grid.Column="1" Text="✕" FontSize="16" Padding="0"
-                                WidthRequest="32" HeightRequest="32"
-                                BackgroundColor="Transparent" TextColor="{StaticResource TextLight}"
-                                Command="{Binding CloseClientProgramsCommand}"/>
+                        <Label Grid.Column="1" Text="&#xE5CD;" FontFamily="MaterialIcons"
+                               FontSize="20" TextColor="{StaticResource TextLight}"
+                               WidthRequest="32" HeightRequest="32"
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               HorizontalTextAlignment="Center" VerticalTextAlignment="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CloseClientProgramsCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
                     </Grid>
 
                     <!-- Body -->
@@ -558,7 +581,8 @@
                                             VerticalScrollBarVisibility="Never">
                                 <CollectionView.EmptyView>
                                     <VerticalStackLayout HorizontalOptions="Center" Spacing="8" Padding="0,40">
-                                        <Label Text="&#x1F4CB;" FontSize="40" HorizontalTextAlignment="Center"/>
+                                        <Label Text="&#xE8DF;" FontFamily="MaterialIcons" FontSize="48"
+                                               TextColor="{StaticResource TextLight}" HorizontalTextAlignment="Center"/>
                                         <Label Text="Aucun programme assigné" FontSize="16" FontAttributes="Bold"
                                                TextColor="{StaticResource TextMedium}" HorizontalTextAlignment="Center"/>
                                         <Label Text="Assignez un programme depuis le Programme Builder." FontSize="13"
@@ -718,11 +742,10 @@
                     <Border BackgroundColor="#EFF6FF" StrokeThickness="0" HeightRequest="80" WidthRequest="80"
                             HorizontalOptions="Center">
                         <Border.StrokeShape><RoundRectangle CornerRadius="40"/></Border.StrokeShape>
-                        <Image WidthRequest="36" HeightRequest="36" HorizontalOptions="Center" VerticalOptions="Center">
-                            <Image.Source>
-                                <FontImageSource Glyph="&#x1F4F6;" Color="{StaticResource Primary}" Size="36"/>
-                            </Image.Source>
-                        </Image>
+                        <Label Text="&#xEF6D;" FontFamily="MaterialIcons"
+                               FontSize="40" TextColor="{StaticResource Primary}"
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
                     </Border>
                     <Label Text="Scanner le Badge NFC" FontSize="20" FontAttributes="Bold"
                            TextColor="{StaticResource TextDark}" HorizontalTextAlignment="Center"/>

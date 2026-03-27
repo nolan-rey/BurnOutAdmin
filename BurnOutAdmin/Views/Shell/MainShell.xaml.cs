@@ -1,11 +1,9 @@
 using BurnOutAdmin.ViewModels;
 using BurnOutAdmin.ViewModels.ProgramBuilder;
-using BurnOutAdmin.ViewModels.ProgramTemplateCreator;
 using BurnOutAdmin.Views.Dashboard;
 using BurnOutAdmin.Views.Clients;
 using BurnOutAdmin.Views.Programmes;
 using BurnOutAdmin.Views.ProgramBuilder;
-using BurnOutAdmin.Views.ProgramTemplateCreator;
 using BurnOutAdmin.Views.Challenges;
 using BurnOutAdmin.Views.NfcLogs;
 using BurnOutAdmin.Views.Settings;
@@ -55,7 +53,6 @@ public partial class MainShell : ContentPage
             ChallengesViewModel vm => new ChallengesView { BindingContext = vm },
             NfcLogsViewModel vm => new NfcLogsView { BindingContext = vm },
             SettingsViewModel vm => new SettingsView { BindingContext = vm },
-            ProgramTemplateCreatorViewModel vm => new ProgramTemplateCreatorView { BindingContext = vm },
             _ => null
         };
 

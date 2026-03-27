@@ -21,7 +21,7 @@
 
                 <!-- Breadcrumb -->
                 <HorizontalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="8">
-                    <Label Text="🏠" FontSize="16" TextColor="#64748B" VerticalOptions="Center"/>
+                    <Label Text="&#xE88A;" FontFamily="MaterialIcons" FontSize="18" TextColor="#64748B" VerticalOptions="Center"/>
                     <Label Text="/" FontSize="16" TextColor="#CBD5E1" VerticalOptions="Center"/>
                     <Label Text="Vue d'ensemble"
                            FontSize="18"
@@ -69,10 +69,11 @@
             </Grid>
 
             <!-- ═══════════════════════════════════════════════════ -->
-            <!-- KPI CARDS — 4 colonnes                              -->
+            <!-- KPI CARDS — 5 colonnes                              -->
             <!-- ═══════════════════════════════════════════════════ -->
             <Grid ColumnSpacing="16" Margin="0,0,0,30">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -103,7 +104,7 @@
                                 VerticalOptions="Start" HorizontalOptions="End">
                             <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
                             <Border.Stroke>Transparent</Border.Stroke>
-                            <Label Text="👥" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            <Label Text="&#xE7FB;" FontFamily="MaterialIcons" FontSize="22" TextColor="#2563EB" HorizontalOptions="Center" VerticalOptions="Center"/>
                         </Border>
                     </Grid>
                 </Border>
@@ -133,7 +134,7 @@
                                 VerticalOptions="Start" HorizontalOptions="End">
                             <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
                             <Border.Stroke>Transparent</Border.Stroke>
-                            <Label Text="⚠️" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            <Label Text="&#xE002;" FontFamily="MaterialIcons" FontSize="22" TextColor="#EF4444" HorizontalOptions="Center" VerticalOptions="Center"/>
                         </Border>
                     </Grid>
                 </Border>
@@ -159,7 +160,7 @@
                                 VerticalOptions="Start" HorizontalOptions="End">
                             <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
                             <Border.Stroke>Transparent</Border.Stroke>
-                            <Label Text="🆔" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            <Label Text="&#xEF6D;" FontFamily="MaterialIcons" FontSize="22" TextColor="#7C3AED" HorizontalOptions="Center" VerticalOptions="Center"/>
                         </Border>
                     </Grid>
                 </Border>
@@ -185,7 +186,33 @@
                                 VerticalOptions="Start" HorizontalOptions="End">
                             <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
                             <Border.Stroke>Transparent</Border.Stroke>
-                            <Label Text="🏆" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            <Label Text="&#xEAC9;" FontFamily="MaterialIcons" FontSize="22" TextColor="#16A34A" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Card 5 — Programmes Actifs -->
+                <Border Grid.Column="4"
+                        BackgroundColor="White"
+                        Padding="25">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                    <Border.Stroke>#E2E8F0</Border.Stroke>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <VerticalStackLayout Grid.Column="0" Spacing="0">
+                            <Label Text="Programmes Actifs" TextColor="#64748B" FontSize="14"/>
+                            <Label Text="{Binding ActiveProgrammesCount}" FontSize="32" FontAttributes="Bold" TextColor="#1E293B" Margin="0,8,0,0"/>
+                            <Label Text="En cours cette semaine" TextColor="#94A3B8" FontSize="13" Margin="0,4,0,0"/>
+                        </VerticalStackLayout>
+                        <Border Grid.Column="1" WidthRequest="45" HeightRequest="45"
+                                BackgroundColor="#FFF7ED"
+                                VerticalOptions="Start" HorizontalOptions="End">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                            <Border.Stroke>Transparent</Border.Stroke>
+                            <Label Text="&#xE869;" FontFamily="MaterialIcons" FontSize="22" TextColor="#EA580C" HorizontalOptions="Center" VerticalOptions="Center"/>
                         </Border>
                     </Grid>
                 </Border>
@@ -215,7 +242,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
-                                <Label Text="🔄" FontSize="18"/>
+                                <Label Text="&#xEF6D;" FontFamily="MaterialIcons" FontSize="20" TextColor="#2563EB" VerticalOptions="Center"/>
                                 <Label Text="Derniers Accès NFC" FontSize="18" FontAttributes="Bold" TextColor="#1E293B" VerticalOptions="Center"/>
                             </HorizontalStackLayout>
                             <Label Grid.Column="1" Text="Voir tout" TextColor="#2563EB" FontSize="14" VerticalOptions="Center"/>
@@ -294,7 +321,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
-                                <Label Text="🔔" FontSize="18"/>
+                                <Label Text="&#xE7F4;" FontFamily="MaterialIcons" FontSize="20" TextColor="#2563EB" VerticalOptions="Center"/>
                                 <Label Text="Activité Récente" FontSize="18" FontAttributes="Bold" TextColor="#1E293B" VerticalOptions="Center"/>
                             </HorizontalStackLayout>
                             <Label Grid.Column="1" Text="Détails" TextColor="#2563EB" FontSize="14" VerticalOptions="Center"/>
@@ -312,7 +339,7 @@
                                     VerticalOptions="Center">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
                                 <Border.Stroke>Transparent</Border.Stroke>
-                                <Label Text="🏋️" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
+                                <Label Text="&#xEAC9;" FontFamily="MaterialIcons" FontSize="18" TextColor="#2563EB" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                                 <Label Text="Sophie Martin" FontAttributes="Bold" FontSize="14" TextColor="#1E293B"/>
@@ -334,7 +361,7 @@
                                     VerticalOptions="Center">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
                                 <Border.Stroke>Transparent</Border.Stroke>
-                                <Label Text="✅" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
+                                <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="18" TextColor="#16A34A" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                                 <Label Text="Jean Dupont" FontAttributes="Bold" FontSize="14" TextColor="#1E293B"/>
@@ -356,7 +383,7 @@
                                     VerticalOptions="Center">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
                                 <Border.Stroke>Transparent</Border.Stroke>
-                                <Label Text="⚠️" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
+                                <Label Text="&#xE002;" FontFamily="MaterialIcons" FontSize="18" TextColor="#EF4444" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                                 <Label Text="Alice Martin" FontAttributes="Bold" FontSize="14" TextColor="#1E293B"/>
@@ -378,7 +405,7 @@
                                     VerticalOptions="Center">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
                                 <Border.Stroke>Transparent</Border.Stroke>
-                                <Label Text="🆕" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
+                                <Label Text="&#xE7FE;" FontFamily="MaterialIcons" FontSize="18" TextColor="#7C3AED" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                                 <Label Text="Lucas Bernard" FontAttributes="Bold" FontSize="14" TextColor="#1E293B"/>
@@ -400,7 +427,7 @@
                                     VerticalOptions="Center">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
                                 <Border.Stroke>Transparent</Border.Stroke>
-                                <Label Text="🏆" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
+                                <Label Text="&#xEAC9;" FontFamily="MaterialIcons" FontSize="18" TextColor="#EA580C" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                                 <Label Text="Hugo Richard" FontAttributes="Bold" FontSize="14" TextColor="#1E293B"/>

@@ -1,6 +1,5 @@
 using BurnOutAdmin.ViewModels;
 using BurnOutAdmin.ViewModels.ProgramBuilder;
-using BurnOutAdmin.ViewModels.ProgramTemplateCreator;
 
 namespace BurnOutAdmin.Services;
 
@@ -37,7 +36,6 @@ public class NavigationService : INavigationService
             { "Challenges", typeof(ChallengesViewModel) },
             { "NfcLogs", typeof(NfcLogsViewModel) },
             { "Settings", typeof(SettingsViewModel) },
-            { "ProgramTemplateCreator", typeof(ProgramTemplateCreatorViewModel) }
         };
     }
 

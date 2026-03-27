@@ -5,9 +5,7 @@ using BurnOutAdmin.Services.ProgramBuilder;
 using BurnOutAdmin.Services.Rfid;
 using BurnOutAdmin.ViewModels;
 using BurnOutAdmin.ViewModels.ProgramBuilder;
-using BurnOutAdmin.ViewModels.ProgramTemplateCreator;
 using BurnOutAdmin.Views.ProgramBuilder;
-using BurnOutAdmin.Views.ProgramTemplateCreator;
 using BurnOutAdmin.Views.Shell;
 using Microsoft.Extensions.Logging;
 
@@ -67,12 +65,10 @@ public static class MauiProgram
         builder.Services.AddTransient<ChallengesViewModel>();
         builder.Services.AddTransient<NfcLogsViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
-        builder.Services.AddTransient<ProgramTemplateCreatorViewModel>();
         
         // Views
         builder.Services.AddSingleton<MainShell>();
         builder.Services.AddTransient<ProgramBuilderPage>();
-        builder.Services.AddTransient<ProgramTemplateCreatorPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

@@ -41,7 +41,6 @@ public partial class MainShellViewModel : BaseViewModel
             new SidebarMenuItem { Title = "Clients", IconPath = "IconAccount", PageKey = "Clients" },
             new SidebarMenuItem { Title = "Programmes", IconPath = "IconCalendar", PageKey = "Programmes" },
             new SidebarMenuItem { Title = "Program Builder", IconPath = "IconCalendar", PageKey = "ProgramBuilder" },
-            new SidebarMenuItem { Title = "Créateur de Modèle", IconPath = "IconCalendar", PageKey = "ProgramTemplateCreator" },
             new SidebarMenuItem { Title = "Challenges", IconPath = "IconLogoBox", PageKey = "Challenges" },
             new SidebarMenuItem { Title = "Journal NFC", IconPath = "IconNfc", PageKey = "NfcLogs" },
             new SidebarMenuItem { Title = "Paramètres", IconPath = "IconSettings", PageKey = "Settings" }

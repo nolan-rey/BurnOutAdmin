@@ -1,0 +1,742 @@
+classDiagram
+direction TB
+
+%% ══════════════════════════════════════════
+%%  BASE
+%% ══════════════════════════════════════════
+
+class ObservableObject {
+    <<CommunityToolkit.Mvvm>>
+    +OnPropertyChanged(propertyName)
+    +SetProperty()
+}
+
+class BaseViewModel {
+    <<abstract>>
+    +bool IsBusy
+    +string Title
+}
+
+ObservableObject <|-- BaseViewModel
+
+%% ══════════════════════════════════════════
+%%  MODÈLES — Domaine principal
+%% ══════════════════════════════════════════
+
+class User {
+    +int Id
+    +string Name
+    +string Email
+    +bool IsActive
+}
+
+class Client {
+    +int Id
+    +string FirstName
+    +string LastName
+    +string Email
+    +string Status
+    +string? NfcUid
+    +Subscription? Subscription
+    +string FullName
+    +bool HasNfcCard
+    +string NfcDisplayText
+}
+
+class Subscription {
+    +string Type
+    +DateTime StartDate
+    +DateTime EndDate
+    +bool AutoRenewal
+    +string StartDateFormatted
+    +string EndDateFormatted
+}
+
+class Programme {
+    +int Id
+    +string Name
+    +string Description
+    +ProgrammeType Type
+    +int DurationWeeks
+    +int SessionsPerWeek
+    +ProgrammeLevel Level
+    +bool IsActive
+    +DateTime CreatedAt
+    +string TypeText
+    +string LevelText
+}
+
+class Challenge {
+    +int Id
+    +string Name
+    +string Description
+    +DateTime StartDate
+    +DateTime EndDate
+    +int ParticipantsCount
+    +int TargetGoal
+    +string GoalUnit
+    +ChallengeStatus Status
+    +string? RewardDescription
+    +string StatusText
+    +bool IsActive
+}
+
+class NfcLog {
+    <<SQLite Entity>>
+    +int Id
+    +string EventId
+    +string Uid
+    +int? ClientId
+    +string ClientName
+    +NfcAccessResult Result
+    +string? Reason
+    +DateTime TimestampUtc
+    +string? Door
+    +string Source
+    +string TimestampFormatted
+    +string ResultText
+    +bool IsAuthorized
+    +bool IsPending
+}
+
+class DashboardStats {
+    +int ActiveClientsCount
+    +int TodayNfcAccessCount
+    +int AlertsCount
+    +SystemStatus SystemStatus
+    +int ActiveChallengesCount
+    +int ActiveProgrammesCount
+    +int ExpiringSubscriptionsCount
+    +List~DashboardNfcEntry~ RecentNfcAccesses
+    +string SystemStatusText
+    +bool IsOnline
+}
+
+class DashboardNfcEntry {
+    +string Time
+    +string ClientName
+    +string Door
+    +bool IsAuthorized
+    +string StatusText
+    +string StatusColor
+    +string StatusBackground
+}
+
+class ClientProgramAssignment {
+    +Guid Id
+    +int ClientId
+    +string ProgramName
+    +DateTime AssignedAt
+    +List~AssignedSession~ Sessions
+}
+
+class AssignedSession {
+    +string Name
+    +int Order
+    +List~AssignedCategory~ Categories
+}
+
+class AssignedCategory {
+    +string Name
+    +List~AssignedExercise~ Exercises
+}
+
+class AssignedExercise {
+    +string Name
+    +int Sets
+    +int Reps
+    +double Weight
+    +double Rpe
+}
+
+class SidebarMenuItem {
+    +string Title
+    +string IconPath
+    +string PageKey
+    +bool IsSelected
+}
+
+%% ══════════════════════════════════════════
+%%  MODÈLES — Program Builder
+%% ══════════════════════════════════════════
+
+class ProgramModel {
+    +Guid Id
+    +string Name
+    +string Description
+    +List~SessionModel~ Sessions
+}
+
+class SessionModel {
+    +Guid Id
+    +string Name
+    +int Order
+    +List~CategoryModel~ Categories
+}
+
+class CategoryModel {
+    +Guid Id
+    +string Name
+    +int Order
+    +List~SubCategoryModel~ SubCategories
+}
+
+class SubCategoryModel {
+    +Guid Id
+    +string Name
+    +int Order
+    +int Sets
+    +int RestTime
+    +SubCategoryType Type
+    +List~ExerciseModel~ Exercises
+}
+
+class ExerciseModel {
+    +Guid Id
+    +string Name
+    +int Sets
+    +int Reps
+    +double Weight
+    +double Rpe
+    +int Order
+}
+
+class ExerciseLibraryItem {
+    +Guid Id
+    +string Name
+    +string Category
+    +List~string~ Tags
+}
+
+%% ══════════════════════════════════════════
+%%  ÉNUMÉRATIONS
+%% ══════════════════════════════════════════
+
+class ChallengeStatus {
+    <<enumeration>>
+    Upcoming
+    Active
+    Completed
+    Cancelled
+}
+
+class ProgrammeType {
+    <<enumeration>>
+    Strength
+    Cardio
+    Flexibility
+    Mixed
+}
+
+class ProgrammeLevel {
+    <<enumeration>>
+    Beginner
+    Intermediate
+    Advanced
+}
+
+class NfcAccessResult {
+    <<enumeration>>
+    Pending
+    Authorized
+    Denied
+}
+
+class SystemStatus {
+    <<enumeration>>
+    Online
+    Maintenance
+    Offline
+}
+
+class SubCategoryType {
+    <<enumeration>>
+    Normal
+    Superset
+    Circuit
+}
+
+%% ══════════════════════════════════════════
+%%  RELATIONS MODÈLES
+%% ══════════════════════════════════════════
+
+Client "1" o-- "0..1" Subscription
+Client ..> NfcLog
+DashboardStats "1" *-- "0..*" DashboardNfcEntry
+Challenge --> ChallengeStatus
+Programme --> ProgrammeType
+Programme --> ProgrammeLevel
+NfcLog --> NfcAccessResult
+DashboardStats --> SystemStatus
+ClientProgramAssignment "1" *-- "0..*" AssignedSession
+AssignedSession "1" *-- "0..*" AssignedCategory
+AssignedCategory "1" *-- "0..*" AssignedExercise
+ProgramModel "1" *-- "0..*" SessionModel
+SessionModel "1" *-- "0..*" CategoryModel
+CategoryModel "1" *-- "0..*" SubCategoryModel
+SubCategoryModel "1" *-- "0..*" ExerciseModel
+SubCategoryModel --> SubCategoryType
+
+%% ══════════════════════════════════════════
+%%  INTERFACES — SERVICES
+%% ══════════════════════════════════════════
+
+class INavigationService {
+    <<interface>>
+    +BaseViewModel? CurrentViewModel
+    +event Action~BaseViewModel~ CurrentViewModelChanged
+    +NavigateTo~TViewModel~()
+    +NavigateTo(pageKey)
+}
+
+class IClientService {
+    <<interface>>
+    +GetClientsAsync() Task~List~Client~~
+    +GetClientByIdAsync(id) Task~Client?~
+    +AddClientAsync(client) Task~bool~
+    +UpdateClientAsync(client) Task~bool~
+    +DeleteClientAsync(id) Task~bool~
+}
+
+class IDashboardService {
+    <<interface>>
+    +GetDashboardStatsAsync() Task~DashboardStats~
+}
+
+class IChallengeService {
+    <<interface>>
+    +GetChallengesAsync() Task~List~Challenge~~
+}
+
+class IProgrammeService {
+    <<interface>>
+    +GetProgrammesAsync() Task~List~Programme~~
+}
+
+class IUserService {
+    <<interface>>
+    +GetUsersAsync() Task~List~User~~
+    +GetUserByIdAsync(id) Task~User?~
+}
+
+class INfcService {
+    <<interface>>
+    +GetNfcLogsAsync() Task~List~NfcLog~~
+    +GetTodayLogsAsync() Task~List~NfcLog~~
+}
+
+class IProgramAssignmentService {
+    <<interface>>
+    +AssignProgramAsync(assignment) Task
+    +GetAssignmentsForClientAsync(clientId) Task~List~ClientProgramAssignment~~
+}
+
+class IAlertService {
+    <<interface>>
+    +ShowAlertAsync(title, message) Task
+}
+
+class INfcOrchestrator {
+    <<interface>>
+    +bool IsReaderConnected
+    +bool IsMqttConnected
+    +bool IsBindMode
+    +bool IsCaptureMode
+    +event EventHandler~NfcLog~ LogUpdated
+    +event EventHandler~string~ UidScanned
+    +StartAsync() Task
+    +StopAsync() Task
+    +StartBindMode(clientId, clientName)
+    +CancelBindMode()
+    +StartCaptureMode()
+    +StopCaptureMode()
+}
+
+class IRfidReaderService {
+    <<interface>>
+    +bool IsConnected
+    +event EventHandler~string~ UidReceived
+    +StartAsync() Task
+    +StopAsync() Task
+}
+
+class IProgramBuilderService {
+    <<interface>>
+    +GetSampleProgramAsync() Task~ProgramModel~
+}
+
+class INfcLogRepository {
+    <<interface>>
+    +SaveLogAsync(log) Task
+    +UpdateLogAsync(log) Task
+    +GetLogsAsync() Task~List~NfcLog~~
+    +GetTodayLogsAsync() Task~List~NfcLog~~
+    +GetLogByEventIdAsync(eventId) Task~NfcLog?~
+}
+
+%% ══════════════════════════════════════════
+%%  IMPLÉMENTATIONS — SERVICES
+%% ══════════════════════════════════════════
+
+class NavigationService {
+    -IServiceProvider _serviceProvider
+    -Dictionary~string,Type~ _pageKeyToViewModelType
+    +NavigateTo~TViewModel~()
+    +NavigateTo(pageKey)
+}
+
+class UserService {
+    -List~User~ _users
+    +GetUsersAsync() Task~List~User~~
+    +GetUserByIdAsync(id) Task~User?~
+}
+
+class NfcOrchestrator {
+    -IRfidReaderService _rfidReader
+    -INfcLogRepository _logRepo
+    +bool IsReaderConnected
+    +bool IsMqttConnected
+    +bool IsBindMode
+    +bool IsCaptureMode
+    +StartAsync() Task
+    +StopAsync() Task
+    +StartBindMode(clientId, clientName)
+    +StartCaptureMode()
+}
+
+class SqliteNfcLogRepository {
+    -SQLiteAsyncConnection _db
+    +SaveLogAsync(log) Task
+    +UpdateLogAsync(log) Task
+    +GetLogsAsync() Task~List~NfcLog~~
+    +GetTodayLogsAsync() Task~List~NfcLog~~
+    +GetLogByEventIdAsync(eventId) Task~NfcLog?~
+}
+
+class MockClientService {
+    -List~Client~ _clients
+    +GetClientsAsync() Task~List~Client~~
+    +AddClientAsync(client) Task~bool~
+    +UpdateClientAsync(client) Task~bool~
+    +DeleteClientAsync(id) Task~bool~
+}
+
+class MockDashboardService {
+    +GetDashboardStatsAsync() Task~DashboardStats~
+}
+
+class MockChallengeService {
+    -List~Challenge~ _challenges
+    +GetChallengesAsync() Task~List~Challenge~~
+}
+
+class MockProgrammeService {
+    -List~Programme~ _programmes
+    +GetProgrammesAsync() Task~List~Programme~~
+}
+
+class MockNfcService {
+    -INfcLogRepository _repository
+    +GetNfcLogsAsync() Task~List~NfcLog~~
+    +GetTodayLogsAsync() Task~List~NfcLog~~
+}
+
+class MockProgramAssignmentService {
+    -List~ClientProgramAssignment~ _assignments
+    +AssignProgramAsync(assignment) Task
+    +GetAssignmentsForClientAsync(clientId) Task~List~ClientProgramAssignment~~
+}
+
+class MauiAlertService {
+    +ShowAlertAsync(title, message) Task
+}
+
+INavigationService <|.. NavigationService
+IUserService <|.. UserService
+INfcOrchestrator <|.. NfcOrchestrator
+INfcLogRepository <|.. SqliteNfcLogRepository
+IClientService <|.. MockClientService
+IDashboardService <|.. MockDashboardService
+IChallengeService <|.. MockChallengeService
+IProgrammeService <|.. MockProgrammeService
+INfcService <|.. MockNfcService
+IProgramAssignmentService <|.. MockProgramAssignmentService
+IAlertService <|.. MauiAlertService
+
+NfcOrchestrator --> IRfidReaderService
+NfcOrchestrator --> INfcLogRepository
+MockNfcService --> INfcLogRepository
+
+%% ══════════════════════════════════════════
+%%  VIEWMODELS — Principaux
+%% ══════════════════════════════════════════
+
+class MainShellViewModel {
+    -INavigationService _navigationService
+    +bool IsSidebarExpanded
+    +BaseViewModel? CurrentViewModel
+    +SidebarMenuItem? SelectedMenuItem
+    +ObservableCollection~SidebarMenuItem~ MenuItems
+    +ToggleSidebarCommand
+    +NavigateToPageCommand
+    +LogoutCommand
+}
+
+class DashboardViewModel {
+    -IDashboardService _dashboardService
+    +int ActiveClientsCount
+    +int TodayNfcAccessCount
+    +int AlertsCount
+    +string SystemStatusText
+    +SystemStatus SystemStatus
+    +int ActiveChallengesCount
+    +int ActiveProgrammesCount
+    +int ExpiringSubscriptionsCount
+    +bool IsOnline
+    +ObservableCollection~DashboardNfcEntry~ RecentNfcAccesses
+    +LoadDashboardDataCommand
+}
+
+class ClientsViewModel {
+    -IClientService _clientService
+    -IAlertService _alertService
+    -INfcOrchestrator _orchestrator
+    -IRfidReaderService _rfidReader
+    -IProgramAssignmentService _assignmentService
+    +ObservableCollection~Client~ FilteredClients
+    +Client? SelectedClient
+    +string SearchText
+    +string SelectedStatus
+    +bool IsFormOpen
+    +bool IsEditMode
+    +bool IsWaitingForRfidScan
+    +bool IsBindMode
+    +int? BindTargetClientId
+    +string BindStatusText
+    +bool IsClientProgramsPanelOpen
+    +ObservableCollection~ClientProgramAssignment~ ClientPrograms
+    +string FormFirstName
+    +string FormLastName
+    +string FormEmail
+    +string? FormNfcUid
+    +string FormStatus
+    +DateTime FormStartDate
+    +DateTime FormEndDate
+    +bool FormAutoRenewal
+    +bool HasSelectedClient
+    +bool CanSave
+    +LoadClientsCommand
+    +SaveClientCommand
+    +DeleteClientCommand
+    +OpenAddFormCommand
+    +OpenEditFormCommand
+    +StartBindModeCommand
+    +CancelBindModeCommand
+    +ShowClientProgramsCommand
+}
+
+class ProgrammesViewModel {
+    -IProgrammeService _programmeService
+    +ObservableCollection~Programme~ Programmes
+    +Programme? SelectedProgramme
+    +LoadProgrammesCommand
+    +AddProgrammeCommand
+    +EditProgrammeCommand
+}
+
+class ChallengesViewModel {
+    -IChallengeService _challengeService
+    +ObservableCollection~Challenge~ Challenges
+    +Challenge? SelectedChallenge
+    +LoadChallengesCommand
+    +AddChallengeCommand
+    +ViewChallengeDetailsCommand
+}
+
+class NfcLogsViewModel {
+    -INfcService _nfcService
+    -INfcOrchestrator _orchestrator
+    -IRfidReaderService _rfidReader
+    +ObservableCollection~NfcLog~ NfcLogs
+    +NfcLog? SelectedLog
+    +bool ShowTodayOnly
+    +string SearchText
+    +bool IsLiveActive
+    +bool IsReaderConnected
+    +bool IsMqttConnected
+    +string SimulateUid
+    +LoadNfcLogsCommand
+    +StartLiveCommand
+    +StopLiveCommand
+    +ClearLogsCommand
+    +ToggleFilterCommand
+    +SimulateScanCommand
+}
+
+class SettingsViewModel {
+    +bool NotificationsEnabled
+    +bool DarkModeEnabled
+    +bool AutoSyncEnabled
+    +string SyncInterval
+    +string AppVersion
+    +SaveSettingsCommand
+    +ResetSettingsCommand
+    +ClearCacheCommand
+    +ExportDataCommand
+    +ShowAboutCommand
+}
+
+%% ══════════════════════════════════════════
+%%  VIEWMODELS — Program Builder
+%% ══════════════════════════════════════════
+
+class ProgramBuilderViewModel {
+    -IProgramBuilderService _programBuilderService
+    -IClientService _clientService
+    -IProgramAssignmentService _assignmentService
+    +ProgramModel? Model
+    +string ProgramName
+    +string ProgramDescription
+    +string SearchText
+    +bool IsAssignPanelOpen
+    +Client? SelectedClient
+    +DateTime AssignStartDate
+    +ObservableCollection~SessionViewModel~ Sessions
+    +ObservableCollection~LibraryCategoryViewModel~ LibraryCategories
+    +ObservableCollection~Client~ Clients
+    +LoadProgramCommand
+    +SaveProgramCommand
+    +AddSessionCommand
+    +AssignProgramCommand
+    +LoadClientsCommand
+}
+
+class SessionViewModel {
+    +SessionModel Model
+    +string Name
+    +int Order
+    +bool IsExpanded
+    +string ExpandIcon
+    +ObservableCollection~CategoryViewModel~ Categories
+    +ToggleExpandedCommand
+    +AddCategoryCommand
+    +DeleteSessionCommand
+}
+
+class CategoryViewModel {
+    +CategoryModel Model
+    +string Name
+    +int Order
+    +bool IsExpanded
+    +string ExpandIcon
+    +ObservableCollection~SubCategoryViewModel~ SubCategories
+    +ToggleExpandedCommand
+    +AddSubCategoryCommand
+    +DeleteCategoryCommand
+}
+
+class SubCategoryViewModel {
+    +SubCategoryModel Model
+    +string Name
+    +int Order
+    +int Sets
+    +int RestTime
+    +SubCategoryType Type
+    +bool IsExpanded
+    +string ExpandIcon
+    +ObservableCollection~ExerciseViewModel~ Exercises
+    +ToggleExpandedCommand
+    +AddExerciseCommand
+    +DeleteSubCategoryCommand
+    +AddExerciseFromLibrary(libraryItem)
+}
+
+class ExerciseViewModel {
+    +ExerciseModel Model
+    +string Name
+    +int Sets
+    +int Reps
+    +double Weight
+    +double Rpe
+    +int Order
+    +DeleteExerciseCommand
+}
+
+class LibraryCategoryViewModel {
+    <<ObservableObject>>
+    +string Name
+    +bool IsExpanded
+    +ObservableCollection~ExerciseLibraryItem~ Exercises
+    +ToggleExpandedCommand
+}
+
+%% ══════════════════════════════════════════
+%%  HÉRITAGE VIEWMODELS
+%% ══════════════════════════════════════════
+
+BaseViewModel <|-- MainShellViewModel
+BaseViewModel <|-- DashboardViewModel
+BaseViewModel <|-- ClientsViewModel
+BaseViewModel <|-- ProgrammesViewModel
+BaseViewModel <|-- ChallengesViewModel
+BaseViewModel <|-- NfcLogsViewModel
+BaseViewModel <|-- SettingsViewModel
+BaseViewModel <|-- ProgramBuilderViewModel
+BaseViewModel <|-- SessionViewModel
+BaseViewModel <|-- CategoryViewModel
+BaseViewModel <|-- SubCategoryViewModel
+BaseViewModel <|-- ExerciseViewModel
+ObservableObject <|-- LibraryCategoryViewModel
+
+%% ══════════════════════════════════════════
+%%  DÉPENDANCES VIEWMODELS → SERVICES
+%% ══════════════════════════════════════════
+
+MainShellViewModel --> INavigationService
+DashboardViewModel --> IDashboardService
+ClientsViewModel --> IClientService
+ClientsViewModel --> IAlertService
+ClientsViewModel --> INfcOrchestrator
+ClientsViewModel --> IRfidReaderService
+ClientsViewModel --> IProgramAssignmentService
+ProgrammesViewModel --> IProgrammeService
+ChallengesViewModel --> IChallengeService
+NfcLogsViewModel --> INfcService
+NfcLogsViewModel --> INfcOrchestrator
+NfcLogsViewModel --> IRfidReaderService
+ProgramBuilderViewModel --> IProgramBuilderService
+ProgramBuilderViewModel --> IClientService
+ProgramBuilderViewModel --> IProgramAssignmentService
+
+%% ══════════════════════════════════════════
+%%  COMPOSITION VIEWMODELS PROGRAM BUILDER
+%% ══════════════════════════════════════════
+
+ProgramBuilderViewModel "1" *-- "0..*" SessionViewModel
+ProgramBuilderViewModel "1" *-- "0..*" LibraryCategoryViewModel
+SessionViewModel "1" *-- "0..*" CategoryViewModel
+CategoryViewModel "1" *-- "0..*" SubCategoryViewModel
+SubCategoryViewModel "1" *-- "0..*" ExerciseViewModel
+
+%% ══════════════════════════════════════════
+%%  LIENS ViewModel ↔ Model
+%% ══════════════════════════════════════════
+
+ProgramBuilderViewModel --> ProgramModel
+SessionViewModel --> SessionModel
+CategoryViewModel --> CategoryModel
+SubCategoryViewModel --> SubCategoryModel
+ExerciseViewModel --> ExerciseModel
+LibraryCategoryViewModel --> ExerciseLibraryItem
+
+%% ══════════════════════════════════════════
+%%  RÉSOLUTION NAVIGATION (DI)
+%% ══════════════════════════════════════════
+
+NavigationService ..> DashboardViewModel
+NavigationService ..> ClientsViewModel
+NavigationService ..> ProgrammesViewModel
+NavigationService ..> ProgramBuilderViewModel
+NavigationService ..> ChallengesViewModel
+NavigationService ..> NfcLogsViewModel
+NavigationService ..> SettingsViewModel
