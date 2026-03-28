@@ -36,7 +36,7 @@ public partial class ChallengesViewModel : BaseViewModel
         {
             IsBusy = true;
             var challenges = await _challengeService.GetChallengesAsync();
-            
+
             Challenges.Clear();
             foreach (var challenge in challenges)
             {

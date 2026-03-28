@@ -10,7 +10,7 @@ public class DashboardStats
     public int ActiveProgrammesCount { get; set; }
     public int ExpiringSubscriptionsCount { get; set; }
     public List<DashboardNfcEntry> RecentNfcAccesses { get; set; } = new();
-    
+
     public string SystemStatusText => SystemStatus switch
     {
         SystemStatus.Online => "En ligne",
@@ -18,7 +18,7 @@ public class DashboardStats
         SystemStatus.Offline => "Hors ligne",
         _ => "Inconnu"
     };
-    
+
     public bool IsOnline => SystemStatus == SystemStatus.Online;
 }
 

@@ -36,7 +36,7 @@ public partial class ProgrammesViewModel : BaseViewModel
         {
             IsBusy = true;
             var programmes = await _programmeService.GetProgrammesAsync();
-            
+
             Programmes.Clear();
             foreach (var programme in programmes)
             {

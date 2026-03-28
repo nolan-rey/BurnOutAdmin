@@ -13,16 +13,16 @@ namespace BurnOutAdmin.Views.Shell;
 public partial class MainShell : ContentPage
 {
     private readonly MainShellViewModel _viewModel;
-    
+
     public MainShell(MainShellViewModel viewModel)
     {
         InitializeComponent();
         _viewModel = viewModel;
         BindingContext = viewModel;
-        
+
         // Subscribe to navigation changes
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        
+
         // Show initial view
         UpdateContentView();
     }

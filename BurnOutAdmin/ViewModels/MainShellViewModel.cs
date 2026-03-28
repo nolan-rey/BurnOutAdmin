@@ -28,9 +28,9 @@ public partial class MainShellViewModel : BaseViewModel
         _navigationService = navigationService;
         _alertService = alertService;
         _navigationService.CurrentViewModelChanged += HandleCurrentViewModelChanged;
-        
+
         InitializeMenuItems();
-        
+
         // Navigate to Dashboard by default
         NavigateToPage("Dashboard");
     }
@@ -66,13 +66,13 @@ public partial class MainShellViewModel : BaseViewModel
     private void NavigateToPage(string pageKey)
     {
         _navigationService.NavigateTo(pageKey);
-        
+
         // Update selected menu item
         foreach (var item in MenuItems)
         {
             item.IsSelected = item.PageKey == pageKey;
         }
-        
+
         SelectedMenuItem = MenuItems.FirstOrDefault(m => m.PageKey == pageKey);
     }
 

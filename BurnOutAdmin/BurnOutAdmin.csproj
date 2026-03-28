@@ -61,9 +61,22 @@
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
         <PackageReference Include="MQTTnet" Version="4.3.7.1207" />
-        <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.9" />
+        <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
         <PackageReference Include="System.IO.Ports" Version="9.0.0" />
+    </ItemGroup>
+
+    <!-- DLL natives SDK lecteur RFID SL500 (Windows uniquement — P/Invoke) -->
+    <!-- Ces DLLs ne sont PAS des assemblies .NET : elles sont chargées via DllImport -->
+    <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+        <Content Include="DLL-RFID\MasterRD.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Link>MasterRD.dll</Link>
+        </Content>
+        <Content Include="DLL-RFID\MasterCOM.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Link>MasterCOM.dll</Link>
+        </Content>
     </ItemGroup>
 
 </Project>

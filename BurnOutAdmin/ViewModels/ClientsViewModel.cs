@@ -94,6 +94,7 @@ public partial class ClientsViewModel : BaseViewModel
 
     public ObservableCollection<ClientProgramAssignment> ClientPrograms { get; } = new();
 
+
     // --- Bind NFC Mode ---
 
     [ObservableProperty]

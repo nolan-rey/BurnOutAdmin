@@ -43,6 +43,7 @@ public class MockDashboardService : IDashboardService
             new() { Time = "17:44", ClientName = "Camille Girard", Door = "Salle musculation",  IsAuthorized = true  },
         };
 
+
         return new DashboardStats
         {
             ActiveClientsCount = activeClientsCount,

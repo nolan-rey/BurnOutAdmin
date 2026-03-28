@@ -60,7 +60,7 @@ public partial class DashboardViewModel : BaseViewModel
         {
             IsBusy = true;
             var stats = await _dashboardService.GetDashboardStatsAsync();
-            
+
             ActiveClientsCount = stats.ActiveClientsCount;
             TodayNfcAccessCount = stats.TodayNfcAccessCount;
             AlertsCount = stats.AlertsCount;
