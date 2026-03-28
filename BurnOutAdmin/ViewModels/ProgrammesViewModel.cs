@@ -9,6 +9,7 @@ namespace BurnOutAdmin.ViewModels;
 public partial class ProgrammesViewModel : BaseViewModel
 {
     private readonly IProgrammeService _programmeService;
+    private readonly IAlertService _alertService;
 
     [ObservableProperty]
     private ObservableCollection<Programme> _programmes = new();
@@ -16,11 +17,12 @@ public partial class ProgrammesViewModel : BaseViewModel
     [ObservableProperty]
     private Programme? _selectedProgramme;
 
-    public ProgrammesViewModel(IProgrammeService programmeService)
+    public ProgrammesViewModel(IProgrammeService programmeService, IAlertService alertService)
     {
         _programmeService = programmeService;
+        _alertService = alertService;
         Title = "Programmes";
-        
+
         LoadProgrammesCommand.ExecuteAsync(null);
     }
 
@@ -54,18 +56,12 @@ public partial class ProgrammesViewModel : BaseViewModel
     [RelayCommand]
     private async Task AddProgrammeAsync()
     {
-        await Application.Current!.MainPage!.DisplayAlert(
-            "Info", 
-            "Création de programme - Fonctionnalité à venir", 
-            "OK");
+        await _alertService.AlertAsync("Info", "Création de programme - Fonctionnalité à venir");
     }
 
     [RelayCommand]
     private async Task EditProgrammeAsync(Programme programme)
     {
-        await Application.Current!.MainPage!.DisplayAlert(
-            "Info", 
-            $"Édition du programme: {programme.Name} - Fonctionnalité à venir", 
-            "OK");
+        await _alertService.AlertAsync("Info", $"Édition du programme: {programme.Name} - Fonctionnalité à venir");
     }
 }

@@ -43,8 +43,11 @@ public partial class DashboardViewModel : BaseViewModel
     {
         _dashboardService = dashboardService;
         Title = "Tableau de bord";
-        
-        LoadDashboardDataCommand.ExecuteAsync(null);
+    }
+
+    public override async Task OnActivatedAsync()
+    {
+        await LoadDashboardDataAsync();
     }
 
     [RelayCommand]

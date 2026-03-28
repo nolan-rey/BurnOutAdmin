@@ -21,7 +21,6 @@
             <!-- Sidebar Converters -->
             <converters:SidebarWidthConverter x:Key="SidebarWidthConverter" />
             <converters:MenuItemBackgroundConverter x:Key="MenuItemBackgroundConverter" />
-            <converters:MenuItemIconColorConverter x:Key="MenuItemIconColorConverter" />
             <converters:MenuItemTextColorConverter x:Key="MenuItemTextColorConverter" />
             <converters:IconKeyToPathConverter x:Key="IconKeyToPathConverter" />
             <converters:ViewModelToViewConverter x:Key="ViewModelToViewConverter" />

@@ -1,3 +1,4 @@
+using BurnOutAdmin.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -5,6 +6,8 @@ namespace BurnOutAdmin.ViewModels;
 
 public partial class SettingsViewModel : BaseViewModel
 {
+    private readonly IAlertService _alertService;
+
     [ObservableProperty]
     private bool _notificationsEnabled = true;
 
@@ -20,18 +23,16 @@ public partial class SettingsViewModel : BaseViewModel
     [ObservableProperty]
     private string _appVersion = "1.0.0 MVP";
 
-    public SettingsViewModel()
+    public SettingsViewModel(IAlertService alertService)
     {
+        _alertService = alertService;
         Title = "Paramètres";
     }
 
     [RelayCommand]
     private async Task SaveSettingsAsync()
     {
-        await Application.Current!.MainPage!.DisplayAlert(
-            "Info", 
-            "Paramètres sauvegardés (simulation)", 
-            "OK");
+        await _alertService.AlertAsync("Info", "Paramètres sauvegardés (simulation)");
     }
 
     [RelayCommand]
@@ -41,37 +42,27 @@ public partial class SettingsViewModel : BaseViewModel
         DarkModeEnabled = false;
         AutoSyncEnabled = true;
         SyncInterval = "15 minutes";
-        
-        await Application.Current!.MainPage!.DisplayAlert(
-            "Info", 
-            "Paramètres réinitialisés", 
-            "OK");
+
+        await _alertService.AlertAsync("Info", "Paramètres réinitialisés");
     }
 
     [RelayCommand]
     private async Task ClearCacheAsync()
     {
-        await Application.Current!.MainPage!.DisplayAlert(
-            "Info", 
-            "Cache vidé (simulation)", 
-            "OK");
+        await _alertService.AlertAsync("Info", "Cache vidé (simulation)");
     }
 
     [RelayCommand]
     private async Task ExportDataAsync()
     {
-        await Application.Current!.MainPage!.DisplayAlert(
-            "Info", 
-            "Export des données - Fonctionnalité à venir", 
-            "OK");
+        await _alertService.AlertAsync("Info", "Export des données - Fonctionnalité à venir");
     }
 
     [RelayCommand]
     private async Task ShowAboutAsync()
     {
-        await Application.Current!.MainPage!.DisplayAlert(
-            "À propos", 
-            $"BurnOut Admin\nVersion: {AppVersion}\n\nApplication d'administration pour salle de sport.\nDéveloppé avec .NET MAUI.", 
-            "OK");
+        await _alertService.AlertAsync(
+            "À propos",
+            $"BurnOut Admin\nVersion: {AppVersion}\n\nApplication d'administration pour salle de sport.\nDéveloppé avec .NET MAUI.");
     }
 }

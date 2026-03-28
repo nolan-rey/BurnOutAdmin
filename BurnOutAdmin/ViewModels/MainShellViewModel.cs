@@ -9,6 +9,7 @@ namespace BurnOutAdmin.ViewModels;
 public partial class MainShellViewModel : BaseViewModel
 {
     private readonly INavigationService _navigationService;
+    private readonly IAlertService _alertService;
 
     [ObservableProperty]
     private bool _isSidebarExpanded = true;
@@ -22,9 +23,10 @@ public partial class MainShellViewModel : BaseViewModel
     [ObservableProperty]
     private ObservableCollection<SidebarMenuItem> _menuItems = new();
 
-    public MainShellViewModel(INavigationService navigationService)
+    public MainShellViewModel(INavigationService navigationService, IAlertService alertService)
     {
         _navigationService = navigationService;
+        _alertService = alertService;
         _navigationService.CurrentViewModelChanged += HandleCurrentViewModelChanged;
         
         InitializeMenuItems();
@@ -77,10 +79,6 @@ public partial class MainShellViewModel : BaseViewModel
     [RelayCommand]
     private async Task LogoutAsync()
     {
-        // UI only - placeholder for future implementation
-        await Application.Current!.MainPage!.DisplayAlert(
-            "Déconnexion", 
-            "Fonctionnalité de déconnexion à implémenter", 
-            "OK");
+        await _alertService.AlertAsync("Déconnexion", "Fonctionnalité de déconnexion à implémenter");
     }
 }

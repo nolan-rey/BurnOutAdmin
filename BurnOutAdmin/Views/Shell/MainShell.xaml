@@ -9,31 +9,17 @@
              Title="BurnOut Admin"
              BackgroundColor="#F8FAFC">
 
-    <ContentPage.Resources>
-        <ResourceDictionary>
-            <Style x:Key="NavButtonStyle" TargetType="Button">
-                <Setter Property="BackgroundColor" Value="Transparent"/>
-                <Setter Property="BorderWidth" Value="0"/>
-                <Setter Property="HorizontalOptions" Value="Fill"/>
-                <Setter Property="Padding" Value="15,12"/>
-                <Setter Property="Margin" Value="0,2"/>
-                <Setter Property="FontSize" Value="15"/>
-                <Setter Property="TextColor" Value="#64748B"/>
-                <Setter Property="CornerRadius" Value="8"/>
-            </Style>
-        </ResourceDictionary>
-    </ContentPage.Resources>
-
-    <Grid>
+<Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="280"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!-- ═══════════════════════════════════════════════════ -->
         <!-- SIDEBAR                                             -->
         <!-- ═══════════════════════════════════════════════════ -->
-        <Grid Grid.Column="0">
+        <Grid Grid.Column="0"
+              WidthRequest="{Binding IsSidebarExpanded, Converter={StaticResource SidebarWidthConverter}}">
             <!-- White background + right border separator -->
             <BoxView BackgroundColor="White" HorizontalOptions="Fill" VerticalOptions="Fill"/>
             <BoxView WidthRequest="1" BackgroundColor="#E2E8F0" HorizontalOptions="End" VerticalOptions="Fill"/>
@@ -45,14 +31,29 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Logo Section -->
-                <HorizontalStackLayout Grid.Row="0" Margin="25,28,25,40" Spacing="12">
-                    <Ellipse WidthRequest="40" HeightRequest="40" Fill="#0F172A" VerticalOptions="Center"/>
-                    <VerticalStackLayout VerticalOptions="Center" Spacing="1">
-                        <Label Text="Burnout" FontSize="20" FontAttributes="Bold" TextColor="#1E293B"/>
-                        <Label Text="Supervision v1.2" FontSize="12" TextColor="#64748B"/>
-                    </VerticalStackLayout>
-                </HorizontalStackLayout>
+                <!-- Logo Section + Toggle Button -->
+                <Grid Grid.Row="0" Margin="12,20,12,28">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <HorizontalStackLayout Grid.Column="0" Spacing="12" VerticalOptions="Center"
+                                           IsVisible="{Binding IsSidebarExpanded}">
+                        <Ellipse WidthRequest="36" HeightRequest="36" Fill="#0F172A" VerticalOptions="Center"/>
+                        <VerticalStackLayout VerticalOptions="Center" Spacing="1">
+                            <Label Text="Burnout" FontSize="18" FontAttributes="Bold" TextColor="#1E293B"/>
+                            <Label Text="Supervision v1.2" FontSize="11" TextColor="#64748B"/>
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                    <Border Grid.Column="1" StrokeThickness="0" WidthRequest="36" HeightRequest="36"
+                            VerticalOptions="Center" HorizontalOptions="End">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleSidebarCommand}"/>
+                        </Border.GestureRecognizers>
+                        <Label Text="&#xE5D2;" FontFamily="MaterialIcons" FontSize="22"
+                               TextColor="#64748B" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
+                </Grid>
 
                 <!-- Navigation Items -->
                 <VerticalStackLayout Grid.Row="1" Margin="12,0" Spacing="2">
@@ -68,6 +69,7 @@
                                    TextColor="{Binding MenuItems[0].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                             <Label Text="Tableau de bord" FontSize="14"
+                                   IsVisible="{Binding IsSidebarExpanded}"
                                    TextColor="{Binding MenuItems[0].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
@@ -84,6 +86,7 @@
                                    TextColor="{Binding MenuItems[1].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                             <Label Text="Clients" FontSize="14"
+                                   IsVisible="{Binding IsSidebarExpanded}"
                                    TextColor="{Binding MenuItems[1].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
@@ -100,6 +103,7 @@
                                    TextColor="{Binding MenuItems[2].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                             <Label Text="Programmes" FontSize="14"
+                                   IsVisible="{Binding IsSidebarExpanded}"
                                    TextColor="{Binding MenuItems[2].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
@@ -116,6 +120,7 @@
                                    TextColor="{Binding MenuItems[3].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                             <Label Text="Program Builder" FontSize="14"
+                                   IsVisible="{Binding IsSidebarExpanded}"
                                    TextColor="{Binding MenuItems[3].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
@@ -132,6 +137,7 @@
                                    TextColor="{Binding MenuItems[4].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                             <Label Text="Challenges" FontSize="14"
+                                   IsVisible="{Binding IsSidebarExpanded}"
                                    TextColor="{Binding MenuItems[4].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
@@ -148,6 +154,7 @@
                                    TextColor="{Binding MenuItems[5].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                             <Label Text="Journal NFC" FontSize="14"
+                                   IsVisible="{Binding IsSidebarExpanded}"
                                    TextColor="{Binding MenuItems[5].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
@@ -167,6 +174,7 @@
                                    TextColor="{Binding MenuItems[6].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                             <Label Text="Paramètres" FontSize="14"
+                                   IsVisible="{Binding IsSidebarExpanded}"
                                    TextColor="{Binding MenuItems[6].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
@@ -183,6 +191,7 @@
                         <Label Text="&#xE9BA;" FontFamily="MaterialIcons" FontSize="20"
                                TextColor="#E11D48" VerticalOptions="Center"/>
                         <Label Text="Déconnexion" FontSize="14"
+                               IsVisible="{Binding IsSidebarExpanded}"
                                TextColor="#E11D48" VerticalOptions="Center"/>
                     </HorizontalStackLayout>
                 </Border>

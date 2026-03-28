@@ -13,6 +13,7 @@ public partial class ProgramBuilderViewModel : BaseViewModel
     private readonly IProgramBuilderService _programBuilderService;
     private readonly IClientService _clientService;
     private readonly IProgramAssignmentService _assignmentService;
+    private readonly IAlertService _alertService;
 
     public ProgramModel? Model { get; private set; }
 
@@ -43,11 +44,12 @@ public partial class ProgramBuilderViewModel : BaseViewModel
 
     public ObservableCollection<Client> Clients { get; } = new();
 
-    public ProgramBuilderViewModel(IProgramBuilderService programBuilderService, IClientService clientService, IProgramAssignmentService assignmentService)
+    public ProgramBuilderViewModel(IProgramBuilderService programBuilderService, IClientService clientService, IProgramAssignmentService assignmentService, IAlertService alertService)
     {
         _programBuilderService = programBuilderService;
         _clientService = clientService;
         _assignmentService = assignmentService;
+        _alertService = alertService;
         Title = "Program Builder";
         InitializeLibrary();
     }
@@ -197,8 +199,7 @@ public partial class ProgramBuilderViewModel : BaseViewModel
         }
         catch
         {
-            if (Application.Current?.MainPage != null)
-                await Application.Current.MainPage.DisplayAlert("Erreur", "Impossible de charger la liste des clients.", "OK");
+            await _alertService.AlertAsync("Erreur", "Impossible de charger la liste des clients.");
         }
     }
 
@@ -213,15 +214,13 @@ public partial class ProgramBuilderViewModel : BaseViewModel
     {
         if (SelectedClient == null)
         {
-            if (Application.Current?.MainPage != null)
-                await Application.Current.MainPage.DisplayAlert("Attention", "Veuillez sélectionner un client.", "OK");
+            await _alertService.AlertAsync("Attention", "Veuillez sélectionner un client.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(ProgramName))
         {
-            if (Application.Current?.MainPage != null)
-                await Application.Current.MainPage.DisplayAlert("Attention", "Veuillez donner un nom au programme avant de l'assigner.", "OK");
+            await _alertService.AlertAsync("Attention", "Veuillez donner un nom au programme avant de l'assigner.");
             return;
         }
 
@@ -255,11 +254,9 @@ public partial class ProgramBuilderViewModel : BaseViewModel
 
         IsAssignPanelOpen = false;
 
-        if (Application.Current?.MainPage != null)
-            await Application.Current.MainPage.DisplayAlert(
-                "Programme assigné",
-                $"Le programme \"{ProgramName}\" a été assigné à {SelectedClient.FirstName} {SelectedClient.LastName}.",
-                "OK");
+        await _alertService.AlertAsync(
+            "Programme assigné",
+            $"Le programme \"{ProgramName}\" a été assigné à {SelectedClient.FirstName} {SelectedClient.LastName}.");
     }
 
     [RelayCommand]
@@ -267,13 +264,11 @@ public partial class ProgramBuilderViewModel : BaseViewModel
     {
         if (string.IsNullOrWhiteSpace(ProgramName))
         {
-            if (Application.Current?.MainPage != null)
-                await Application.Current.MainPage.DisplayAlert("Attention", "Veuillez donner un nom au modèle avant de sauvegarder.", "OK");
+            await _alertService.AlertAsync("Attention", "Veuillez donner un nom au modèle avant de sauvegarder.");
             return;
         }
 
-        if (Application.Current?.MainPage != null)
-            await Application.Current.MainPage.DisplayAlert("Sauvegardé", $"Le modèle \"{ProgramName}\" a été sauvegardé dans la bibliothèque.", "OK");
+        await _alertService.AlertAsync("Sauvegardé", $"Le modèle \"{ProgramName}\" a été sauvegardé dans la bibliothèque.");
     }
 
     private void RecalculateOrders()

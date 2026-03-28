@@ -43,6 +43,7 @@ public class NavigationService : INavigationService
     {
         var viewModel = _serviceProvider.GetRequiredService<TViewModel>();
         CurrentViewModel = viewModel;
+        ActivateAsync(viewModel);
     }
 
     public void NavigateTo(string pageKey)
@@ -51,6 +52,19 @@ public class NavigationService : INavigationService
         {
             var viewModel = (BaseViewModel)_serviceProvider.GetRequiredService(viewModelType);
             CurrentViewModel = viewModel;
+            ActivateAsync(viewModel);
+        }
+    }
+
+    private async void ActivateAsync(BaseViewModel viewModel)
+    {
+        try
+        {
+            await viewModel.OnActivatedAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[NavigationService] ViewModel activation error: {ex.Message}");
         }
     }
 }

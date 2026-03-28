@@ -32,7 +32,7 @@ public static class MauiProgram
 
         // MQTT Client (Raspberry Pi broker — réseau local)
         builder.Services.AddSingleton<IMqttService>(sp =>
-            new MqttService("172.31.254.200", 1883));
+            new MqttService(AppConfiguration.MqttBrokerHost, AppConfiguration.MqttBrokerPort));
 
         // SQLite Log Repository
         builder.Services.AddSingleton<INfcLogRepository, SqliteNfcLogRepository>();
