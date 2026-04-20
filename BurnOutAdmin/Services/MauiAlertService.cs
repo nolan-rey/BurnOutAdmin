@@ -5,17 +5,17 @@ namespace BurnOutAdmin.Services;
 /// </summary>
 public class MauiAlertService : IAlertService
 {
-    public async Task<bool> ConfirmAsync(string title, string message, string accept = "Oui", string cancel = "Non")
+    public Task<bool> ConfirmAsync(string title, string message, string accept = "Oui", string cancel = "Non")
     {
         var page = Application.Current?.Windows.FirstOrDefault()?.Page;
-        if (page is null) return false;
-        return await page.DisplayAlertAsync(title, message, accept, cancel);
+        if (page is null) return Task.FromResult(false);
+        return MainThread.InvokeOnMainThreadAsync(() => page.DisplayAlert(title, message, accept, cancel));
     }
 
-    public async Task AlertAsync(string title, string message, string cancel = "OK")
+    public Task AlertAsync(string title, string message, string cancel = "OK")
     {
         var page = Application.Current?.Windows.FirstOrDefault()?.Page;
-        if (page is null) return;
-        await page.DisplayAlertAsync(title, message, cancel);
+        if (page is null) return Task.CompletedTask;
+        return MainThread.InvokeOnMainThreadAsync(() => page.DisplayAlert(title, message, cancel));
     }
 }

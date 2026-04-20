@@ -92,6 +92,14 @@ public partial class ClientsViewModel : BaseViewModel
     [ObservableProperty]
     private Client? _viewingProgramsClient;
 
+    // --- Delete Confirmation Popup ---
+
+    [ObservableProperty]
+    private bool _isDeleteConfirmOpen;
+
+    [ObservableProperty]
+    private Client? _clientPendingDelete;
+
     public ObservableCollection<ClientProgramAssignment> ClientPrograms { get; } = new();
 
 
@@ -335,17 +343,30 @@ public partial class ClientsViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private async Task DeleteClientAsync(Client? client)
+    private void DeleteClient(Client? client)
     {
         var target = client ?? SelectedClient;
         if (target is null) return;
 
-        var confirmed = await _alertService.ConfirmAsync(
-            "Confirmer la suppression",
-            $"Voulez-vous vraiment supprimer {target.FirstName} {target.LastName} ?");
+        ClientPendingDelete = target;
+        IsDeleteConfirmOpen = true;
+    }
 
-        if (!confirmed) return;
+    [RelayCommand]
+    private void CancelDelete()
+    {
+        IsDeleteConfirmOpen = false;
+        ClientPendingDelete = null;
+    }
 
+    [RelayCommand]
+    private async Task ConfirmDeleteAsync()
+    {
+        var target = ClientPendingDelete;
+        IsDeleteConfirmOpen = false;
+        ClientPendingDelete = null;
+
+        if (target is null) return;
         if (IsBusy) return;
 
         try
