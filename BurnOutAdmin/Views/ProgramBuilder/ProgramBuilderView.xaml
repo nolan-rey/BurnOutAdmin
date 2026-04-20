@@ -10,768 +10,769 @@
              x:Name="RootView"
              BackgroundColor="#F8FAFC">
 
-    <Grid>
-    <Grid Padding="30">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+<Grid>
+<Grid Padding="30">
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
 
-        <!-- ═══ Header Section ═══ -->
-        <VerticalStackLayout Grid.Row="0" Spacing="0" Padding="0,0,0,25">
+    <!-- ═══ Header ═══ -->
+    <VerticalStackLayout Grid.Row="0" Spacing="0" Padding="0,0,0,20">
+        <HorizontalStackLayout Spacing="0" Padding="0,0,0,10">
+            <Label Text="Accueil" TextColor="#64748B" FontSize="14"/>
+            <Label Text=" / " TextColor="#64748B" FontSize="14"/>
+            <Label Text="Bibliothèque" TextColor="#64748B" FontSize="14"/>
+            <Label Text=" / " TextColor="#64748B" FontSize="14"/>
+            <Label Text="Créateur de Programme" TextColor="#1E293B" FontSize="14" FontAttributes="Bold"/>
+        </HorizontalStackLayout>
 
-            <!-- Breadcrumb -->
-            <HorizontalStackLayout Spacing="0" Padding="0,0,0,10">
-                <Label Text="Accueil" TextColor="#64748B" FontSize="14"/>
-                <Label Text=" / " TextColor="#64748B" FontSize="14"/>
-                <Label Text="Bibliothèque" TextColor="#64748B" FontSize="14"/>
-                <Label Text=" / " TextColor="#64748B" FontSize="14"/>
-                <Label Text="Créateur de Modèle" TextColor="#1E293B" FontSize="14" FontAttributes="Bold"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <VerticalStackLayout Grid.Column="0" Spacing="4">
+                <Label Text="Créateur de Programmes" FontSize="26" FontAttributes="Bold" TextColor="#0F172A"/>
+                <Label Text="Constituez vos séances en glissant des exercices depuis la bibliothèque."
+                       TextColor="#64748B" FontSize="13"/>
+            </VerticalStackLayout>
+
+            <HorizontalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
+                <Button Text="Assigner à un client"
+                        Command="{Binding OpenAssignPanelCommand}"
+                        BackgroundColor="#2563EB" TextColor="White"
+                        FontAttributes="Bold" FontSize="13"
+                        Padding="16,10" CornerRadius="8"/>
+                <Border Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                        BackgroundColor="White" Padding="0">
+                    <Button Text="Sauvegarder le modèle"
+                            Command="{Binding SaveToLibraryCommand}"
+                            BackgroundColor="White" TextColor="#1E293B"
+                            FontAttributes="Bold" FontSize="13"
+                            Padding="16,10" BorderWidth="0"/>
+                </Border>
             </HorizontalStackLayout>
+        </Grid>
+    </VerticalStackLayout>
 
-            <!-- Title Row -->
-            <Grid>
+    <!-- ═══ Main : Bibliothèque | Builder ═══ -->
+    <Grid Grid.Row="1" ColumnDefinitions="300,*" ColumnSpacing="20">
+
+        <!-- ══ COLONNE GAUCHE : Bibliothèque d'exercices ══ -->
+        <Border Grid.Column="0"
+                BackgroundColor="White"
+                StrokeShape="RoundRectangle 12"
+                Stroke="#E2E8F0" StrokeThickness="1"
+                Padding="0">
+            <Grid RowDefinitions="Auto,Auto,*">
+
+                <!-- En-tête bibliothèque -->
+                <VerticalStackLayout Grid.Row="0" Padding="16,16,16,12" Spacing="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Text="Bibliothèque" FontSize="16"
+                               FontAttributes="Bold" TextColor="#0F172A" VerticalTextAlignment="Center"/>
+                        <Button Grid.Column="1"
+                                Text="+ Exercice"
+                                Command="{Binding OpenAddExerciseCommand}"
+                                BackgroundColor="#EFF6FF" TextColor="#2563EB"
+                                FontAttributes="Bold" FontSize="12"
+                                Padding="10,6" CornerRadius="6"/>
+                    </Grid>
+
+                    <!-- Barre de recherche -->
+                    <Border Stroke="#E2E8F0" StrokeThickness="1"
+                            StrokeShape="RoundRectangle 8"
+                            BackgroundColor="#F8FAFC" Padding="0">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Label Grid.Column="0" Text="&#xE8B6;" FontFamily="MaterialIcons"
+                                   FontSize="16" TextColor="#94A3B8"
+                                   VerticalTextAlignment="Center" Margin="10,0,6,0"/>
+                            <Entry Grid.Column="1"
+                                   Text="{Binding LibrarySearchText}"
+                                   Placeholder="Rechercher un exercice..."
+                                   PlaceholderColor="#94A3B8"
+                                   TextColor="#0F172A" FontSize="13"
+                                   Margin="0,0,8,0"/>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+
+                <BoxView Grid.Row="1" HeightRequest="1" BackgroundColor="#F1F5F9"/>
+
+                <!-- Liste des catégories et exercices -->
+                <ScrollView Grid.Row="2">
+                    <CollectionView ItemsSource="{Binding LibraryCategories}"
+                                    ItemsLayout="VerticalList"
+                                    VerticalScrollBarVisibility="Never">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LibraryCategoryViewModel">
+                                <VerticalStackLayout IsVisible="{Binding IsVisible}" Spacing="0">
+
+                                    <!-- En-tête catégorie -->
+                                    <Grid Padding="16,10" ColumnDefinitions="Auto,*,Auto">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding ToggleExpandedCommand}"/>
+                                        </Grid.GestureRecognizers>
+                                        <Label Grid.Column="0"
+                                               Text="{Binding IsExpanded, Converter={StaticResource CategoryChevronConverter}}"
+                                               FontSize="14" TextColor="#64748B"
+                                               VerticalTextAlignment="Center"
+                                               Margin="0,0,8,0"/>
+                                        <Label Grid.Column="1"
+                                               Text="{Binding Name}"
+                                               FontSize="13" FontAttributes="Bold"
+                                               TextColor="#374151" VerticalTextAlignment="Center"/>
+                                        <Label Grid.Column="2"
+                                               Text="{Binding Exercises.Count}"
+                                               FontSize="11" TextColor="#94A3B8"
+                                               VerticalTextAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Exercices de la catégorie -->
+                                    <CollectionView ItemsSource="{Binding Exercises}"
+                                                    ItemsLayout="VerticalList"
+                                                    VerticalScrollBarVisibility="Never"
+                                                    IsVisible="{Binding IsExpanded}">
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate x:DataType="models:ExerciseLibraryItem">
+                                                <!-- Exercice draggable -->
+                                                <Border BackgroundColor="White"
+                                                        Stroke="Transparent" StrokeThickness="0"
+                                                        Padding="0">
+                                                    <Border.GestureRecognizers>
+                                                        <DragGestureRecognizer CanDrag="True"
+                                                            DragStarting="OnLibraryExerciseDragStarting"/>
+                                                    </Border.GestureRecognizers>
+                                                    <Grid Padding="16,7,12,7" ColumnDefinitions="Auto,*,Auto">
+                                                        <!-- Icône drag -->
+                                                        <Label Grid.Column="0"
+                                                               Text="&#xE945;" FontFamily="MaterialIcons"
+                                                               FontSize="14" TextColor="#CBD5E1"
+                                                               VerticalTextAlignment="Center"
+                                                               Margin="0,0,8,0"/>
+                                                        <VerticalStackLayout Grid.Column="1" Spacing="1">
+                                                            <Label Text="{Binding Name}"
+                                                                   FontSize="13" TextColor="#1E293B"
+                                                                   LineBreakMode="TailTruncation"/>
+                                                            <Label Text="{Binding MuscleGroup}"
+                                                                   FontSize="10" TextColor="#94A3B8"
+                                                                   IsVisible="{Binding MuscleGroup, Converter={StaticResource IsNotNullConverter}}"/>
+                                                        </VerticalStackLayout>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+
+                                    <BoxView HeightRequest="1" BackgroundColor="#F1F5F9"/>
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </ScrollView>
+
+            </Grid>
+        </Border>
+
+        <!-- ══ COLONNE DROITE : Builder de programme ══ -->
+        <Border Grid.Column="1"
+                BackgroundColor="White"
+                StrokeShape="RoundRectangle 12"
+                Stroke="#E2E8F0" StrokeThickness="1"
+                Padding="25">
+            <ScrollView>
+            <VerticalStackLayout Spacing="0">
+
+                <!-- Infos du programme -->
+                <Label Text="Informations du Programme"
+                       FontSize="16" FontAttributes="Bold"
+                       TextColor="#0F172A" Padding="0,0,0,16"/>
+
+                <Label Text="Titre du Programme" FontAttributes="Bold"
+                       TextColor="#1E293B" FontSize="13" Padding="0,0,0,6"/>
+                <Border Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                        BackgroundColor="White" Padding="0" Margin="0,0,0,14">
+                    <Entry Text="{Binding ProgramName}"
+                           Placeholder="Nom du programme"
+                           PlaceholderColor="#94A3B8"
+                           TextColor="#0F172A" FontSize="14" Margin="12,0"/>
+                </Border>
+
+                <Label Text="Description" FontAttributes="Bold"
+                       TextColor="#1E293B" FontSize="13" Padding="0,0,0,6"/>
+                <Border Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                        BackgroundColor="White" Padding="0" Margin="0,0,0,24">
+                    <Editor Text="{Binding ProgramDescription}"
+                            Placeholder="Description du programme"
+                            PlaceholderColor="#94A3B8"
+                            TextColor="#0F172A" FontSize="14"
+                            HeightRequest="70" Margin="12,8"/>
+                </Border>
+
+                <!-- Séances -->
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Text="Séances" FontSize="16"
+                           FontAttributes="Bold" TextColor="#0F172A"
+                           VerticalTextAlignment="Center"/>
+                    <Label Grid.Column="1"
+                           Text="Glissez des exercices depuis la bibliothèque sur une séance"
+                           FontSize="11" TextColor="#94A3B8"
+                           VerticalTextAlignment="Center"/>
+                </Grid>
+
+                <!-- Liste des séances -->
+                <CollectionView ItemsSource="{Binding Sessions}"
+                                ItemsLayout="VerticalList"
+                                VerticalScrollBarVisibility="Never">
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout Padding="20" HorizontalOptions="Center">
+                            <Label Text="Aucune séance pour le moment"
+                                   FontSize="14" FontAttributes="Italic"
+                                   HorizontalTextAlignment="Center" TextColor="#94A3B8"/>
+                            <Label Text="Ajoutez une séance ci-dessous, puis glissez des exercices dessus"
+                                   FontSize="12" HorizontalTextAlignment="Center"
+                                   TextColor="#CBD5E1" Margin="0,4,0,0"/>
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SessionViewModel">
+
+                            <!-- SESSION CARD avec zone de drop -->
+                            <Border Stroke="#E2E8F0" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="#F8FAFC"
+                                    Margin="0,0,0,16">
+                                <Border.GestureRecognizers>
+                                    <DropGestureRecognizer AllowDrop="True"
+                                        Drop="OnSessionDrop"
+                                        DragOver="OnSessionDragOver"
+                                        DragLeave="OnSessionDragLeave"/>
+                                </Border.GestureRecognizers>
+
+                                <VerticalStackLayout Padding="18" Spacing="0">
+
+                                    <!-- En-tête de séance -->
+                                    <Grid Padding="0,0,0,12" ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
+                                        <Label Grid.Column="0"
+                                               Text="{Binding Order, StringFormat='Séance {0}'}"
+                                               FontSize="14" FontAttributes="Bold"
+                                               TextColor="#2563EB" VerticalTextAlignment="Center"/>
+                                        <Entry Grid.Column="1"
+                                               Text="{Binding Name}"
+                                               FontSize="15" FontAttributes="Bold"
+                                               TextColor="#0F172A" VerticalOptions="Center"/>
+                                        <Button Grid.Column="2"
+                                                Text="{Binding ExpandIcon}"
+                                                FontSize="11" BackgroundColor="Transparent"
+                                                TextColor="#64748B" Padding="6,3"
+                                                Command="{Binding ToggleExpandedCommand}"/>
+                                        <Button Grid.Column="3"
+                                                Text="+ Catégorie"
+                                                FontSize="11" BackgroundColor="#EFF6FF"
+                                                TextColor="#2563EB" Padding="8,5"
+                                                CornerRadius="6"
+                                                Command="{Binding AddCategoryCommand}"/>
+                                        <Button Grid.Column="4"
+                                                Text="✕" FontSize="13"
+                                                BackgroundColor="#FEF2F2" TextColor="#DC2626"
+                                                Padding="7,3" CornerRadius="6"
+                                                Command="{Binding DeleteSessionCommand}"/>
+                                    </Grid>
+
+                                    <!-- Zone de drop visible (hint) -->
+                                    <Border Stroke="#BFDBFE" StrokeThickness="1"
+                                            StrokeDashArray="6,4"
+                                            StrokeShape="RoundRectangle 8"
+                                            BackgroundColor="#EFF6FF"
+                                            Padding="12,8" Margin="0,0,0,10">
+                                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                                            <Label Text="&#xE945;" FontFamily="MaterialIcons"
+                                                   FontSize="14" TextColor="#93C5FD"
+                                                   VerticalTextAlignment="Center"/>
+                                            <Label Text="Glissez des exercices ici"
+                                                   FontSize="12" TextColor="#60A5FA"
+                                                   VerticalTextAlignment="Center"/>
+                                        </HorizontalStackLayout>
+                                    </Border>
+
+                                    <!-- Contenu de la séance (expandable) -->
+                                    <VerticalStackLayout IsVisible="{Binding IsExpanded}" Spacing="8">
+
+                                        <CollectionView ItemsSource="{Binding Categories}"
+                                                        ItemsLayout="VerticalList"
+                                                        VerticalScrollBarVisibility="Never">
+                                            <CollectionView.EmptyView>
+                                                <Label Text="Aucune catégorie – ajoutez-en une"
+                                                       FontSize="12" FontAttributes="Italic"
+                                                       TextColor="#94A3B8" Margin="10,4"/>
+                                            </CollectionView.EmptyView>
+
+                                            <CollectionView.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:CategoryViewModel">
+
+                                                    <!-- CATEGORY BLOCK -->
+                                                    <Border Stroke="#E2E8F0" StrokeThickness="1"
+                                                            StrokeShape="RoundRectangle 8"
+                                                            Padding="12" Margin="0,0,0,8"
+                                                            BackgroundColor="White">
+                                                        <VerticalStackLayout Spacing="6">
+
+                                                            <Grid ColumnSpacing="6"
+                                                                  ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+                                                                <Label Grid.Column="0"
+                                                                       Text="{Binding Order, StringFormat='C{0}'}"
+                                                                       FontSize="12" FontAttributes="Bold"
+                                                                       TextColor="#2563EB"
+                                                                       VerticalTextAlignment="Center"/>
+                                                                <Entry Grid.Column="1"
+                                                                       Text="{Binding Name}"
+                                                                       FontSize="13" FontAttributes="Bold"
+                                                                       TextColor="#0F172A"
+                                                                       VerticalOptions="Center"/>
+                                                                <Button Grid.Column="2"
+                                                                        Text="{Binding ExpandIcon}"
+                                                                        FontSize="10" BackgroundColor="Transparent"
+                                                                        TextColor="#64748B" Padding="5,2"
+                                                                        Command="{Binding ToggleExpandedCommand}"/>
+                                                                <Button Grid.Column="3"
+                                                                        Text="+ Sous-Cat"
+                                                                        FontSize="10" BackgroundColor="#EFF6FF"
+                                                                        TextColor="#2563EB" Padding="7,4"
+                                                                        CornerRadius="6"
+                                                                        Command="{Binding AddSubCategoryCommand}"/>
+                                                                <Button Grid.Column="4"
+                                                                        Text="✕" FontSize="11"
+                                                                        BackgroundColor="#FEF2F2"
+                                                                        TextColor="#DC2626" Padding="5,2"
+                                                                        CornerRadius="6"
+                                                                        Command="{Binding DeleteCategoryCommand}"/>
+                                                            </Grid>
+
+                                                            <VerticalStackLayout IsVisible="{Binding IsExpanded}" Spacing="4">
+                                                                <CollectionView ItemsSource="{Binding SubCategories}"
+                                                                                ItemsLayout="VerticalList"
+                                                                                VerticalScrollBarVisibility="Never">
+                                                                    <CollectionView.EmptyView>
+                                                                        <Label Text="Aucune sous-catégorie"
+                                                                               FontSize="11" FontAttributes="Italic"
+                                                                               TextColor="#94A3B8" Margin="12,4"/>
+                                                                    </CollectionView.EmptyView>
+
+                                                                    <CollectionView.ItemTemplate>
+                                                                        <DataTemplate x:DataType="vm:SubCategoryViewModel">
+
+                                                                            <!-- SUBCATEGORY BLOCK -->
+                                                                            <Border Stroke="#E2E8F0"
+                                                                                    StrokeThickness="1"
+                                                                                    StrokeShape="RoundRectangle 6"
+                                                                                    Padding="10"
+                                                                                    Margin="12,0,0,6"
+                                                                                    BackgroundColor="#FAFBFC">
+                                                                                <VerticalStackLayout Spacing="6">
+
+                                                                                    <Grid ColumnSpacing="6"
+                                                                                          ColumnDefinitions="Auto,*,Auto,Auto">
+                                                                                        <Label Grid.Column="0"
+                                                                                               Text="{Binding Order, StringFormat='SC{0}'}"
+                                                                                               FontSize="10"
+                                                                                               FontAttributes="Bold"
+                                                                                               TextColor="#64748B"
+                                                                                               VerticalTextAlignment="Center"/>
+                                                                                        <Entry Grid.Column="1"
+                                                                                               Text="{Binding Name}"
+                                                                                               FontSize="12"
+                                                                                               FontAttributes="Bold"
+                                                                                               TextColor="#0F172A"
+                                                                                               VerticalOptions="Center"/>
+                                                                                        <Button Grid.Column="2"
+                                                                                                Text="{Binding ExpandIcon}"
+                                                                                                FontSize="10"
+                                                                                                BackgroundColor="Transparent"
+                                                                                                TextColor="#64748B"
+                                                                                                Padding="4,2"
+                                                                                                Command="{Binding ToggleExpandedCommand}"/>
+                                                                                        <Button Grid.Column="3"
+                                                                                                Text="✕" FontSize="10"
+                                                                                                BackgroundColor="#FEF2F2"
+                                                                                                TextColor="#DC2626"
+                                                                                                Padding="4,2"
+                                                                                                CornerRadius="6"
+                                                                                                Command="{Binding DeleteSubCategoryCommand}"/>
+                                                                                    </Grid>
+
+                                                                                    <!-- Propriétés sous-catégorie -->
+                                                                                    <Grid ColumnSpacing="8"
+                                                                                          ColumnDefinitions="*,*,*">
+                                                                                        <HorizontalStackLayout Grid.Column="0" Spacing="4">
+                                                                                            <Label Text="Sets:" FontSize="10" TextColor="#64748B" VerticalTextAlignment="Center"/>
+                                                                                            <Entry Text="{Binding Sets}" FontSize="10" WidthRequest="36" Keyboard="Numeric" TextColor="#0F172A"/>
+                                                                                        </HorizontalStackLayout>
+                                                                                        <HorizontalStackLayout Grid.Column="1" Spacing="4">
+                                                                                            <Label Text="Repos:" FontSize="10" TextColor="#64748B" VerticalTextAlignment="Center"/>
+                                                                                            <Entry Text="{Binding RestTime}" FontSize="10" WidthRequest="36" Keyboard="Numeric" TextColor="#0F172A"/>
+                                                                                            <Label Text="s" FontSize="10" TextColor="#64748B" VerticalTextAlignment="Center"/>
+                                                                                        </HorizontalStackLayout>
+                                                                                        <HorizontalStackLayout Grid.Column="2" Spacing="4">
+                                                                                            <Label Text="Type:" FontSize="10" TextColor="#64748B" VerticalTextAlignment="Center"/>
+                                                                                            <Picker SelectedItem="{Binding Type}" FontSize="10">
+                                                                                                <Picker.ItemsSource>
+                                                                                                    <x:Array Type="{x:Type models:SubCategoryType}">
+                                                                                                        <models:SubCategoryType>Normal</models:SubCategoryType>
+                                                                                                        <models:SubCategoryType>Circuit</models:SubCategoryType>
+                                                                                                        <models:SubCategoryType>AMRAP</models:SubCategoryType>
+                                                                                                    </x:Array>
+                                                                                                </Picker.ItemsSource>
+                                                                                            </Picker>
+                                                                                        </HorizontalStackLayout>
+                                                                                    </Grid>
+
+                                                                                    <VerticalStackLayout IsVisible="{Binding IsExpanded}" Spacing="4">
+
+                                                                                        <!-- Bouton ajouter exercice manuellement -->
+                                                                                        <Border Stroke="#CBD5E1"
+                                                                                                StrokeThickness="1"
+                                                                                                StrokeDashArray="4,4"
+                                                                                                StrokeShape="RoundRectangle 6"
+                                                                                                BackgroundColor="Transparent"
+                                                                                                Padding="10" Margin="0,2">
+                                                                                            <Border.GestureRecognizers>
+                                                                                                <TapGestureRecognizer Command="{Binding AddExerciseCommand}"/>
+                                                                                            </Border.GestureRecognizers>
+                                                                                            <Label Text="+ Ajouter un exercice manuellement"
+                                                                                                   TextColor="#64748B" FontSize="11"
+                                                                                                   HorizontalTextAlignment="Center"/>
+                                                                                        </Border>
+
+                                                                                        <!-- Liste exercices -->
+                                                                                        <CollectionView ItemsSource="{Binding Exercises}"
+                                                                                                        ItemsLayout="VerticalList"
+                                                                                                        VerticalScrollBarVisibility="Never">
+                                                                                            <CollectionView.EmptyView>
+                                                                                                <Label Text="Aucun exercice"
+                                                                                                       FontSize="10"
+                                                                                                       FontAttributes="Italic"
+                                                                                                       TextColor="#94A3B8"
+                                                                                                       Margin="20,4"/>
+                                                                                            </CollectionView.EmptyView>
+
+                                                                                            <CollectionView.ItemTemplate>
+                                                                                                <DataTemplate x:DataType="vm:ExerciseViewModel">
+                                                                                                    <!-- EXERCISE ROW -->
+                                                                                                    <Grid ColumnSpacing="5"
+                                                                                                          Margin="0,3" Padding="6,3"
+                                                                                                          ColumnDefinitions="*,70,70,100,70,Auto">
+                                                                                                        <Entry Grid.Column="0"
+                                                                                                               Text="{Binding Name}"
+                                                                                                               FontSize="12"
+                                                                                                               FontAttributes="Bold"
+                                                                                                               TextColor="#0F172A"
+                                                                                                               VerticalOptions="Center"/>
+                                                                                                        <VerticalStackLayout Grid.Column="1" Spacing="1" Margin="3,0">
+                                                                                                            <Label Text="Sets" FontSize="9" TextColor="#94A3B8"/>
+                                                                                                            <Border Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 4" Padding="0">
+                                                                                                                <Entry Text="{Binding Sets}" FontSize="11" Keyboard="Numeric" TextColor="#0F172A" Margin="6,0"/>
+                                                                                                            </Border>
+                                                                                                        </VerticalStackLayout>
+                                                                                                        <VerticalStackLayout Grid.Column="2" Spacing="1" Margin="3,0">
+                                                                                                            <Label Text="Reps" FontSize="9" TextColor="#94A3B8"/>
+                                                                                                            <Border Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 4" Padding="0">
+                                                                                                                <Entry Text="{Binding Reps}" FontSize="11" Keyboard="Numeric" TextColor="#0F172A" Margin="6,0"/>
+                                                                                                            </Border>
+                                                                                                        </VerticalStackLayout>
+                                                                                                        <VerticalStackLayout Grid.Column="3" Spacing="1" Margin="3,0">
+                                                                                                            <Label Text="Charge (kg)" FontSize="9" TextColor="#94A3B8"/>
+                                                                                                            <Border Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 4" Padding="0">
+                                                                                                                <Entry Text="{Binding Weight}" FontSize="11" Keyboard="Numeric" TextColor="#0F172A" Placeholder="kg/%1RM" PlaceholderColor="#CBD5E1" Margin="6,0"/>
+                                                                                                            </Border>
+                                                                                                        </VerticalStackLayout>
+                                                                                                        <VerticalStackLayout Grid.Column="4" Spacing="1" Margin="3,0">
+                                                                                                            <Label Text="RPE" FontSize="9" TextColor="#94A3B8"/>
+                                                                                                            <Border Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 4" Padding="0">
+                                                                                                                <Entry Text="{Binding Rpe}" FontSize="11" Keyboard="Numeric" TextColor="#0F172A" Margin="6,0"/>
+                                                                                                            </Border>
+                                                                                                        </VerticalStackLayout>
+                                                                                                        <Button Grid.Column="5"
+                                                                                                                Text="✕" FontSize="10"
+                                                                                                                BackgroundColor="#FEF2F2"
+                                                                                                                TextColor="#DC2626"
+                                                                                                                Padding="5,3" CornerRadius="5"
+                                                                                                                VerticalOptions="End"
+                                                                                                                Command="{Binding DeleteExerciseCommand}"/>
+                                                                                                    </Grid>
+                                                                                                </DataTemplate>
+                                                                                            </CollectionView.ItemTemplate>
+                                                                                        </CollectionView>
+                                                                                    </VerticalStackLayout>
+
+                                                                                </VerticalStackLayout>
+                                                                            </Border>
+
+                                                                        </DataTemplate>
+                                                                    </CollectionView.ItemTemplate>
+                                                                </CollectionView>
+                                                            </VerticalStackLayout>
+
+                                                        </VerticalStackLayout>
+                                                    </Border>
+
+                                                </DataTemplate>
+                                            </CollectionView.ItemTemplate>
+                                        </CollectionView>
+
+                                    </VerticalStackLayout>
+
+                                </VerticalStackLayout>
+                            </Border>
+
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Bouton ajouter séance -->
+                <Border Stroke="#CBD5E1" StrokeThickness="1"
+                        StrokeDashArray="4,4"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="Transparent"
+                        Padding="20" Margin="0,4,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding AddSessionCommand}"/>
+                    </Border.GestureRecognizers>
+                    <Label Text="+ Ajouter une séance"
+                           FontAttributes="Bold" TextColor="#64748B"
+                           FontSize="14" HorizontalTextAlignment="Center"/>
+                </Border>
+
+            </VerticalStackLayout>
+            </ScrollView>
+        </Border>
+
+    </Grid>
+</Grid>
+
+<!-- ═══ Overlay : Assignation client ═══ -->
+<Grid IsVisible="{Binding IsAssignPanelOpen}" BackgroundColor="#80000000">
+    <Border BackgroundColor="#F8FAFC"
+            StrokeShape="RoundRectangle 16"
+            Stroke="#E2E8F0" StrokeThickness="1"
+            HorizontalOptions="Fill" VerticalOptions="Fill"
+            Margin="40">
+        <Grid Margin="25">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-
-                <VerticalStackLayout Grid.Column="0" Spacing="5">
-                    <Label Text="Création et Import de Modèles de Programmes"
-                           FontSize="28"
-                           FontAttributes="Bold"
-                           TextColor="#0F172A"/>
-                    <Label Text="Créez et sauvegardez des modèles de programmes d'entraînement pour une utilisation ultérieure."
-                           TextColor="#64748B"
-                           FontSize="14"/>
+                <VerticalStackLayout Grid.Column="0" Spacing="0">
+                    <Label Text="Assignation de Programme au Client"
+                           FontSize="20" FontAttributes="Bold" TextColor="#0F172A"/>
+                    <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" Margin="0,12,0,0"/>
                 </VerticalStackLayout>
-
-                <HorizontalStackLayout Grid.Column="1" Spacing="12" VerticalOptions="Center">
-                    <Button Text="Assigner à un client"
-                            Command="{Binding OpenAssignPanelCommand}"
-                            BackgroundColor="#2563EB"
-                            TextColor="White"
-                            FontAttributes="Bold"
-                            FontSize="14"
-                            Padding="20,10"
-                            CornerRadius="8"/>
-                    <Border Stroke="#E2E8F0"
-                            StrokeThickness="1"
-                            StrokeShape="RoundRectangle 8"
-                            BackgroundColor="White"
-                            Padding="0">
-                        <Button Text="Sauvegarder dans la Bibliothèque"
-                                Command="{Binding SaveToLibraryCommand}"
-                                BackgroundColor="White"
-                                TextColor="#1E293B"
-                                FontAttributes="Bold"
-                                FontSize="14"
-                                Padding="20,10"
-                                BorderWidth="0"/>
-                    </Border>
-                </HorizontalStackLayout>
+                <Button Grid.Column="1" Text="✕"
+                        VerticalOptions="Start"
+                        BackgroundColor="Transparent" TextColor="#64748B"
+                        FontSize="16" Padding="8,4"
+                        Command="{Binding CancelAssignCommand}"/>
             </Grid>
-        </VerticalStackLayout>
 
-        <!-- ═══ Editor ═══ -->
-        <Grid Grid.Row="1">
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="300"/>
+                </Grid.ColumnDefinitions>
 
-            <!-- ──── Editor ──── -->
-            <Border
-                    BackgroundColor="White"
-                    StrokeShape="RoundRectangle 12"
-                    Stroke="#E2E8F0"
-                    StrokeThickness="1"
-                    Padding="25">
-                <ScrollView>
-                <VerticalStackLayout Spacing="0">
-
-                    <Label Text="Créateur de Programme"
-                           FontSize="20"
-                           FontAttributes="Bold"
-                           TextColor="#0F172A"
-                           Padding="0,0,0,20"/>
-
-                    <!-- Program Title -->
-                    <Label Text="Titre du Modèle"
-                           FontAttributes="Bold"
-                           TextColor="#1E293B"
-                           Padding="0,0,0,8"/>
-                    <Border Stroke="#E2E8F0"
-                            StrokeThickness="1"
-                            StrokeShape="RoundRectangle 8"
-                            BackgroundColor="White"
-                            Padding="0"
-                            Margin="0,0,0,20">
-                        <Entry Text="{Binding ProgramName}"
-                               Placeholder="Nom du programme"
-                               PlaceholderColor="#94A3B8"
-                               TextColor="#0F172A"
-                               FontSize="14"
-                               Margin="12,0"/>
+                <Grid Grid.Column="0" Margin="0,0,20,0" RowDefinitions="Auto,Auto,*">
+                    <Label Grid.Row="0" Text="Sélectionner un Client"
+                           FontAttributes="Bold" FontSize="14"
+                           TextColor="#1E293B" Margin="0,0,0,10"/>
+                    <Border Grid.Row="1" Stroke="#E2E8F0" StrokeThickness="1"
+                            StrokeShape="RoundRectangle 8" BackgroundColor="White"
+                            Padding="0" Margin="0,0,0,10">
+                        <Entry Text="{Binding AssignSearchText}"
+                               Placeholder="🔍  Rechercher un client..."
+                               PlaceholderColor="#94A3B8" TextColor="#0F172A"
+                               FontSize="14" Margin="10,0"/>
                     </Border>
-
-                    <!-- Program Description -->
-                    <Label Text="Description"
-                           FontAttributes="Bold"
-                           TextColor="#1E293B"
-                           Padding="0,0,0,8"/>
-                    <Border Stroke="#E2E8F0"
-                            StrokeThickness="1"
-                            StrokeShape="RoundRectangle 8"
-                            BackgroundColor="White"
-                            Padding="0"
-                            Margin="0,0,0,30">
-                        <Editor Text="{Binding ProgramDescription}"
-                                Placeholder="Description du programme"
-                                PlaceholderColor="#94A3B8"
-                                TextColor="#0F172A"
-                                FontSize="14"
-                                HeightRequest="100"
-                                Margin="12,8"/>
-                    </Border>
-
-                    <!-- Séances Title -->
-                    <Label Text="Séances"
-                           FontSize="20"
-                           FontAttributes="Bold"
-                           TextColor="#0F172A"
-                           Padding="0,0,0,20"/>
-
-                    <!-- Sessions List -->
-                    <CollectionView ItemsSource="{Binding Sessions}"
-                                    ItemsLayout="VerticalList"
-                                    VerticalScrollBarVisibility="Never">
-
-                        <CollectionView.EmptyView>
-                            <VerticalStackLayout Padding="20" HorizontalOptions="Center">
-                                <Label Text="Aucune séance pour le moment"
-                                       FontSize="14"
-                                       FontAttributes="Italic"
-                                       HorizontalTextAlignment="Center"
-                                       TextColor="#94A3B8"/>
-                            </VerticalStackLayout>
-                        </CollectionView.EmptyView>
-
+                    <CollectionView Grid.Row="2" ItemsSource="{Binding Clients}"
+                                    SelectionMode="Single"
+                                    SelectedItem="{Binding SelectedClient}">
                         <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="vm:SessionViewModel">
-
-                                <!-- SESSION CARD -->
-                                <Border BackgroundColor="#F8FAFC"
-                                        Stroke="#E2E8F0"
-                                        StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 12"
-                                        Margin="0,0,0,20">
-                                    <VerticalStackLayout Padding="20" Spacing="0">
-
-                                        <!-- Session Header -->
-                                        <Grid Padding="0,0,0,15">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <Label Grid.Column="0"
-                                                   Text="{Binding Order, StringFormat='Séance {0} : '}"
-                                                   FontSize="16"
-                                                   FontAttributes="Bold"
-                                                   TextColor="#0F172A"
+                            <DataTemplate x:DataType="clientModels:Client">
+                                <Border Padding="12,10" Margin="0,0,0,8"
+                                        StrokeShape="RoundRectangle 8"
+                                        Stroke="#E2E8F0" StrokeThickness="1"
+                                        BackgroundColor="White">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <Border Grid.Column="0"
+                                                BackgroundColor="#CBD5E1"
+                                                StrokeShape="RoundRectangle 20"
+                                                Stroke="Transparent"
+                                                WidthRequest="38" HeightRequest="38"
+                                                Margin="0,0,10,0" VerticalOptions="Center">
+                                            <Label Text="{Binding FirstName, StringFormat='{0:0}'}"
+                                                   FontSize="13" FontAttributes="Bold"
+                                                   TextColor="White"
+                                                   HorizontalTextAlignment="Center"
                                                    VerticalTextAlignment="Center"/>
-                                            <Entry Grid.Column="1"
-                                                   Text="{Binding Name}"
-                                                   FontSize="16"
-                                                   FontAttributes="Bold"
-                                                   TextColor="#0F172A"
-                                                   VerticalOptions="Center"/>
-
-                                            <Button Grid.Column="2"
-                                                    Text="{Binding ExpandIcon}"
-                                                    FontSize="12"
-                                                    BackgroundColor="Transparent"
-                                                    TextColor="#64748B"
-                                                    Padding="8,4"
-                                                    Command="{Binding ToggleExpandedCommand}"/>
-
-                                            <Button Grid.Column="3"
-                                                    Text="+ Catégorie"
-                                                    FontSize="12"
-                                                    BackgroundColor="#EFF6FF"
-                                                    TextColor="#2563EB"
-                                                    Padding="10,6"
-                                                    CornerRadius="6"
-                                                    Command="{Binding AddCategoryCommand}"/>
-
-                                            <Button Grid.Column="4"
-                                                    Text="✕"
-                                                    FontSize="14"
-                                                    BackgroundColor="#FEF2F2"
-                                                    TextColor="#DC2626"
-                                                    Padding="8,4"
-                                                    CornerRadius="6"
-                                                    Command="{Binding DeleteSessionCommand}"/>
-                                        </Grid>
-
-                                        <!-- Session Content (expandable) -->
-                                        <VerticalStackLayout IsVisible="{Binding IsExpanded}" Spacing="8">
-
-                                            <!-- Categories -->
-                                            <CollectionView ItemsSource="{Binding Categories}"
-                                                            ItemsLayout="VerticalList"
-                                                            VerticalScrollBarVisibility="Never">
-
-                                                <CollectionView.EmptyView>
-                                                    <Label Text="Aucune catégorie – ajoutez-en une"
-                                                           FontSize="12"
-                                                           FontAttributes="Italic"
-                                                           TextColor="#94A3B8"
-                                                           Margin="10,4"/>
-                                                </CollectionView.EmptyView>
-
-                                                <CollectionView.ItemTemplate>
-                                                    <DataTemplate x:DataType="vm:CategoryViewModel">
-
-                                                        <!-- CATEGORY BLOCK -->
-                                                        <Border Stroke="#E2E8F0"
-                                                                StrokeThickness="1"
-                                                                StrokeShape="RoundRectangle 8"
-                                                                Padding="12"
-                                                                Margin="0,0,0,8"
-                                                                BackgroundColor="White">
-                                                            <VerticalStackLayout Spacing="6">
-
-                                                                <!-- Category Header -->
-                                                                <Grid ColumnSpacing="6">
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="Auto"/>
-                                                                        <ColumnDefinition Width="*"/>
-                                                                        <ColumnDefinition Width="Auto"/>
-                                                                        <ColumnDefinition Width="Auto"/>
-                                                                        <ColumnDefinition Width="Auto"/>
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <Label Grid.Column="0"
-                                                                           Text="{Binding Order, StringFormat='C{0}'}"
-                                                                           FontSize="12"
-                                                                           FontAttributes="Bold"
-                                                                           TextColor="#2563EB"
-                                                                           VerticalTextAlignment="Center"/>
-
-                                                                    <Entry Grid.Column="1"
-                                                                           Text="{Binding Name}"
-                                                                           FontSize="14"
-                                                                           FontAttributes="Bold"
-                                                                           TextColor="#0F172A"
-                                                                           VerticalOptions="Center"/>
-
-                                                                    <Button Grid.Column="2"
-                                                                            Text="{Binding ExpandIcon}"
-                                                                            FontSize="11"
-                                                                            BackgroundColor="Transparent"
-                                                                            TextColor="#64748B"
-                                                                            Padding="6,2"
-                                                                            Command="{Binding ToggleExpandedCommand}"/>
-
-                                                                    <Button Grid.Column="3"
-                                                                            Text="+ Sous-Cat"
-                                                                            FontSize="11"
-                                                                            BackgroundColor="#EFF6FF"
-                                                                            TextColor="#2563EB"
-                                                                            Padding="8,4"
-                                                                            CornerRadius="6"
-                                                                            Command="{Binding AddSubCategoryCommand}"/>
-
-                                                                    <Button Grid.Column="4"
-                                                                            Text="✕"
-                                                                            FontSize="12"
-                                                                            BackgroundColor="#FEF2F2"
-                                                                            TextColor="#DC2626"
-                                                                            Padding="6,2"
-                                                                            CornerRadius="6"
-                                                                            Command="{Binding DeleteCategoryCommand}"/>
-                                                                </Grid>
-
-                                                                <!-- Category Content (expandable) -->
-                                                                <VerticalStackLayout IsVisible="{Binding IsExpanded}" Spacing="4">
-
-                                                                    <!-- SubCategories -->
-                                                                    <CollectionView ItemsSource="{Binding SubCategories}"
-                                                                                    ItemsLayout="VerticalList"
-                                                                                    VerticalScrollBarVisibility="Never">
-
-                                                                        <CollectionView.EmptyView>
-                                                                            <Label Text="Aucune sous-catégorie"
-                                                                                   FontSize="11"
-                                                                                   FontAttributes="Italic"
-                                                                                   TextColor="#94A3B8"
-                                                                                   Margin="12,4"/>
-                                                                        </CollectionView.EmptyView>
-
-                                                                        <CollectionView.ItemTemplate>
-                                                                            <DataTemplate x:DataType="vm:SubCategoryViewModel">
-
-                                                                                <!-- SUBCATEGORY BLOCK -->
-                                                                                <Border Stroke="#E2E8F0"
-                                                                                        StrokeThickness="1"
-                                                                                        StrokeShape="RoundRectangle 6"
-                                                                                        Padding="10"
-                                                                                        Margin="12,0,0,6"
-                                                                                        BackgroundColor="#FAFBFC">
-                                                                                    <VerticalStackLayout Spacing="6">
-
-                                                                                        <!-- SubCategory Header -->
-                                                                                        <Grid ColumnSpacing="6">
-                                                                                            <Grid.ColumnDefinitions>
-                                                                                                <ColumnDefinition Width="Auto"/>
-                                                                                                <ColumnDefinition Width="*"/>
-                                                                                                <ColumnDefinition Width="Auto"/>
-                                                                                                <ColumnDefinition Width="Auto"/>
-                                                                                            </Grid.ColumnDefinitions>
-                                                                                            <Label Grid.Column="0"
-                                                                                                   Text="{Binding Order, StringFormat='SC{0}'}"
-                                                                                                   FontSize="11"
-                                                                                                   FontAttributes="Bold"
-                                                                                                   TextColor="#64748B"
-                                                                                                   VerticalTextAlignment="Center"/>
-
-                                                                                            <Entry Grid.Column="1"
-                                                                                                   Text="{Binding Name}"
-                                                                                                   FontSize="13"
-                                                                                                   FontAttributes="Bold"
-                                                                                                   TextColor="#0F172A"
-                                                                                                   VerticalOptions="Center"/>
-
-                                                                                            <Button Grid.Column="2"
-                                                                                                    Text="{Binding ExpandIcon}"
-                                                                                                    FontSize="10"
-                                                                                                    BackgroundColor="Transparent"
-                                                                                                    TextColor="#64748B"
-                                                                                                    Padding="4,2"
-                                                                                                    Command="{Binding ToggleExpandedCommand}"/>
-
-                                                                                            <Button Grid.Column="3"
-                                                                                                    Text="✕"
-                                                                                                    FontSize="11"
-                                                                                                    BackgroundColor="#FEF2F2"
-                                                                                                    TextColor="#DC2626"
-                                                                                                    Padding="4,2"
-                                                                                                    CornerRadius="6"
-                                                                                                    Command="{Binding DeleteSubCategoryCommand}"/>
-                                                                                        </Grid>
-
-                                                                                        <!-- SubCategory Properties -->
-                                                                                        <Grid ColumnSpacing="8">
-                                                                                            <Grid.ColumnDefinitions>
-                                                                                                <ColumnDefinition Width="*"/>
-                                                                                                <ColumnDefinition Width="*"/>
-                                                                                                <ColumnDefinition Width="*"/>
-                                                                                            </Grid.ColumnDefinitions>
-                                                                                            <HorizontalStackLayout Grid.Column="0" Spacing="4">
-                                                                                                <Label Text="Sets:" FontSize="11" TextColor="#64748B" VerticalTextAlignment="Center"/>
-                                                                                                <Entry Text="{Binding Sets}" FontSize="11" WidthRequest="40" Keyboard="Numeric" TextColor="#0F172A"/>
-                                                                                            </HorizontalStackLayout>
-                                                                                            <HorizontalStackLayout Grid.Column="1" Spacing="4">
-                                                                                                <Label Text="Repos:" FontSize="11" TextColor="#64748B" VerticalTextAlignment="Center"/>
-                                                                                                <Entry Text="{Binding RestTime}" FontSize="11" WidthRequest="40" Keyboard="Numeric" TextColor="#0F172A"/>
-                                                                                                <Label Text="s" FontSize="11" TextColor="#64748B" VerticalTextAlignment="Center"/>
-                                                                                            </HorizontalStackLayout>
-                                                                                            <HorizontalStackLayout Grid.Column="2" Spacing="4">
-                                                                                                <Label Text="Type:" FontSize="11" TextColor="#64748B" VerticalTextAlignment="Center"/>
-                                                                                                <Picker SelectedItem="{Binding Type}" FontSize="11">
-                                                                                                    <Picker.ItemsSource>
-                                                                                                        <x:Array Type="{x:Type models:SubCategoryType}">
-                                                                                                            <models:SubCategoryType>Normal</models:SubCategoryType>
-                                                                                                            <models:SubCategoryType>Circuit</models:SubCategoryType>
-                                                                                                            <models:SubCategoryType>AMRAP</models:SubCategoryType>
-                                                                                                        </x:Array>
-                                                                                                    </Picker.ItemsSource>
-                                                                                                </Picker>
-                                                                                            </HorizontalStackLayout>
-                                                                                        </Grid>
-
-                                                                                        <!-- SubCategory Content (expandable) -->
-                                                                                        <VerticalStackLayout IsVisible="{Binding IsExpanded}" Spacing="6">
-
-                                                                                            <!-- Add exercise button (dashed style) -->
-                                                                                            <Border Stroke="#CBD5E1"
-                                                                                                    StrokeThickness="1"
-                                                                                                    StrokeDashArray="4,4"
-                                                                                                    StrokeShape="RoundRectangle 8"
-                                                                                                    BackgroundColor="Transparent"
-                                                                                                    Padding="12"
-                                                                                                    Margin="0,4">
-                                                                                                <Border.GestureRecognizers>
-                                                                                                    <TapGestureRecognizer Command="{Binding AddExerciseCommand}"/>
-                                                                                                </Border.GestureRecognizers>
-                                                                                                <Label Text="+ Ajouter un exercice"
-                                                                                                       TextColor="#64748B"
-                                                                                                       FontSize="13"
-                                                                                                       HorizontalTextAlignment="Center"/>
-                                                                                            </Border>
-
-                                                                                            <!-- Exercises -->
-                                                                                            <CollectionView ItemsSource="{Binding Exercises}"
-                                                                                                            ItemsLayout="VerticalList"
-                                                                                                            VerticalScrollBarVisibility="Never">
-
-                                                                                                <CollectionView.EmptyView>
-                                                                                                    <Label Text="Aucun exercice"
-                                                                                                           FontSize="10"
-                                                                                                           FontAttributes="Italic"
-                                                                                                           TextColor="#94A3B8"
-                                                                                                           Margin="20,4"/>
-                                                                                                </CollectionView.EmptyView>
-
-                                                                                                <CollectionView.ItemTemplate>
-                                                                                                    <DataTemplate x:DataType="vm:ExerciseViewModel">
-
-                                                                                                        <!-- EXERCISE ROW -->
-                                                                                                        <Grid ColumnSpacing="5"
-                                                                                                              Margin="0,4"
-                                                                                                              Padding="8,4">
-                                                                                                            <Grid.ColumnDefinitions>
-                                                                                                                <ColumnDefinition Width="*"/>
-                                                                                                                <ColumnDefinition Width="80"/>
-                                                                                                                <ColumnDefinition Width="80"/>
-                                                                                                                <ColumnDefinition Width="120"/>
-                                                                                                                <ColumnDefinition Width="80"/>
-                                                                                                                <ColumnDefinition Width="Auto"/>
-                                                                                                            </Grid.ColumnDefinitions>
-
-                                                                                                            <!-- Exercise Name -->
-                                                                                                            <Entry Grid.Column="0"
-                                                                                                                   Text="{Binding Name}"
-                                                                                                                   FontSize="13"
-                                                                                                                   FontAttributes="Bold"
-                                                                                                                   TextColor="#0F172A"
-                                                                                                                   VerticalOptions="Center"/>
-
-                                                                                                            <!-- Sets -->
-                                                                                                            <VerticalStackLayout Grid.Column="1" Spacing="2" Margin="5,0">
-                                                                                                                <Label Text="Sets" FontSize="10" TextColor="#64748B"/>
-                                                                                                                <Border Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 4" Padding="0">
-                                                                                                                    <Entry Text="{Binding Sets}" FontSize="12" Keyboard="Numeric" TextColor="#0F172A" Margin="8,0"/>
-                                                                                                                </Border>
-                                                                                                            </VerticalStackLayout>
-
-                                                                                                            <!-- Reps -->
-                                                                                                            <VerticalStackLayout Grid.Column="2" Spacing="2" Margin="5,0">
-                                                                                                                <Label Text="Reps" FontSize="10" TextColor="#64748B"/>
-                                                                                                                <Border Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 4" Padding="0">
-                                                                                                                    <Entry Text="{Binding Reps}" FontSize="12" Keyboard="Numeric" TextColor="#0F172A" Margin="8,0"/>
-                                                                                                                </Border>
-                                                                                                            </VerticalStackLayout>
-
-                                                                                                            <!-- Charge -->
-                                                                                                            <VerticalStackLayout Grid.Column="3" Spacing="2" Margin="5,0">
-                                                                                                                <Label Text="Charge (kg/%1RM)" FontSize="10" TextColor="#64748B"/>
-                                                                                                                <Border Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 4" Padding="0">
-                                                                                                                    <Entry Text="{Binding Weight}" FontSize="12" Keyboard="Numeric" TextColor="#0F172A" Placeholder="kg/%1RM" PlaceholderColor="#94A3B8" Margin="8,0"/>
-                                                                                                                </Border>
-                                                                                                            </VerticalStackLayout>
-
-                                                                                                            <!-- RPE -->
-                                                                                                            <VerticalStackLayout Grid.Column="4" Spacing="2" Margin="5,0">
-                                                                                                                <Label Text="RPE" FontSize="10" TextColor="#64748B"/>
-                                                                                                                <Border Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 4" Padding="0">
-                                                                                                                    <Entry Text="{Binding Rpe}" FontSize="12" Keyboard="Numeric" TextColor="#0F172A" Margin="8,0"/>
-                                                                                                                </Border>
-                                                                                                            </VerticalStackLayout>
-
-                                                                                                            <!-- Delete -->
-                                                                                                            <Button Grid.Column="5"
-                                                                                                                    Text="✕"
-                                                                                                                    FontSize="10"
-                                                                                                                    BackgroundColor="#FEF2F2"
-                                                                                                                    TextColor="#DC2626"
-                                                                                                                    Padding="6,4"
-                                                                                                                    CornerRadius="6"
-                                                                                                                    VerticalOptions="End"
-                                                                                                                    Command="{Binding DeleteExerciseCommand}"/>
-                                                                                                        </Grid>
-
-                                                                                                    </DataTemplate>
-                                                                                                </CollectionView.ItemTemplate>
-                                                                                            </CollectionView>
-
-                                                                                        </VerticalStackLayout>
-
-                                                                                    </VerticalStackLayout>
-                                                                                </Border>
-
-                                                                            </DataTemplate>
-                                                                        </CollectionView.ItemTemplate>
-                                                                    </CollectionView>
-
-                                                                </VerticalStackLayout>
-
-                                                            </VerticalStackLayout>
-                                                        </Border>
-
-                                                    </DataTemplate>
-                                                </CollectionView.ItemTemplate>
-                                            </CollectionView>
-
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                            <Label Text="{Binding FullName}" FontSize="13"
+                                                   FontAttributes="Bold" TextColor="#1E293B"/>
+                                            <Label Text="{Binding Subscription.Type, FallbackValue='—'}"
+                                                   FontSize="11" TextColor="#64748B"/>
                                         </VerticalStackLayout>
-
-                                    </VerticalStackLayout>
+                                        <Label Grid.Column="2" Text="{Binding Status}"
+                                               FontSize="11" TextColor="#16A34A"
+                                               VerticalTextAlignment="Center"/>
+                                    </Grid>
                                 </Border>
-
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+                </Grid>
 
-                    <!-- Add Session Placeholder (dashed border) -->
-                    <Border Stroke="#CBD5E1"
-                            StrokeThickness="1"
-                            StrokeDashArray="4,4"
-                            StrokeShape="RoundRectangle 12"
-                            BackgroundColor="Transparent"
-                            Padding="20">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding AddSessionCommand}"/>
-                        </Border.GestureRecognizers>
-                        <Label Text="+ Ajouter une séance"
-                               FontAttributes="Bold"
-                               TextColor="#64748B"
-                               FontSize="14"
-                               HorizontalTextAlignment="Center"/>
+                <ScrollView Grid.Column="1">
+                    <Border BackgroundColor="White" StrokeShape="RoundRectangle 12"
+                            Stroke="#E2E8F0" StrokeThickness="1" Padding="18">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Détails de l'Assignation"
+                                   FontAttributes="Bold" FontSize="14"
+                                   TextColor="#1E293B" Margin="0,0,0,8"/>
+                            <Label Text="Résumé du Programme" FontSize="11"
+                                   FontAttributes="Bold" TextColor="#64748B"/>
+                            <Label Text="{Binding ProgramName, StringFormat='Modèle : {0}'}"
+                                   FontSize="12" TextColor="#1E293B"/>
+                            <Label Text="{Binding Sessions.Count, StringFormat='Séances : {0}'}"
+                                   FontSize="12" TextColor="#1E293B"/>
+                            <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" Margin="0,8"/>
+                            <Label Text="Date de début" FontSize="11"
+                                   FontAttributes="Bold" TextColor="#64748B" Margin="0,0,0,6"/>
+                            <DatePicker Date="{Binding AssignStartDate}"
+                                        MinimumDate="{x:Static sys:DateTime.Today}"
+                                        TextColor="#1E293B" FontSize="13"
+                                        Format="dd/MM/yyyy" HorizontalOptions="Fill"/>
+                            <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" Margin="0,8"/>
+                            <Label Text="Client sélectionné" FontSize="11"
+                                   FontAttributes="Bold" TextColor="#64748B"/>
+                            <Label Text="{Binding SelectedClient.FullName, FallbackValue='Aucun client sélectionné'}"
+                                   FontSize="13" FontAttributes="Bold" TextColor="#2563EB"/>
+                        </VerticalStackLayout>
                     </Border>
-
-                </VerticalStackLayout>
                 </ScrollView>
-            </Border>
-
-        </Grid>
-    </Grid>
-
-    <!-- ═══ Client Assignment Overlay ═══ -->
-    <Grid IsVisible="{Binding IsAssignPanelOpen}" BackgroundColor="#80000000">
-        <Border BackgroundColor="#F8FAFC"
-                StrokeShape="RoundRectangle 16"
-                Stroke="#E2E8F0"
-                StrokeThickness="1"
-                HorizontalOptions="Fill"
-                VerticalOptions="Fill"
-                Margin="40">
-            <Grid Margin="25">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- Header -->
-                <Grid Grid.Row="0" Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <VerticalStackLayout Grid.Column="0" Spacing="0">
-                        <Label Text="Assignation de Modèle au Client"
-                               FontSize="22"
-                               FontAttributes="Bold"
-                               TextColor="#0F172A"/>
-                        <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" Margin="0,14,0,0"/>
-                    </VerticalStackLayout>
-                    <Button Grid.Column="1"
-                            Text="✕"
-                            VerticalOptions="Start"
-                            BackgroundColor="Transparent"
-                            TextColor="#64748B"
-                            FontSize="16"
-                            Padding="8,4"
-                            Command="{Binding CancelAssignCommand}"/>
-                </Grid>
-
-                <!-- Main Content — two columns -->
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="320"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Left: Client Selection -->
-                    <Grid Grid.Column="0" Margin="0,0,20,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <Label Grid.Row="0"
-                               Text="Sélectionner un Client"
-                               FontAttributes="Bold"
-                               FontSize="15"
-                               TextColor="#1E293B"
-                               Margin="0,0,0,12"/>
-
-                        <!-- Search box -->
-                        <Border Grid.Row="1"
-                                Stroke="#E2E8F0"
-                                StrokeThickness="1"
-                                StrokeShape="RoundRectangle 8"
-                                BackgroundColor="White"
-                                Padding="0"
-                                Margin="0,0,0,12">
-                            <Entry Text="{Binding AssignSearchText}"
-                                   Placeholder="🔍  Rechercher un client..."
-                                   PlaceholderColor="#94A3B8"
-                                   TextColor="#0F172A"
-                                   FontSize="14"
-                                   Margin="10,0"/>
-                        </Border>
-
-                        <!-- Client list -->
-                        <CollectionView Grid.Row="2"
-                                        ItemsSource="{Binding Clients}"
-                                        SelectionMode="Single"
-                                        SelectedItem="{Binding SelectedClient}"
-                                        VerticalScrollBarVisibility="Default">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate x:DataType="clientModels:Client">
-                                    <Border Padding="12,10"
-                                            Margin="0,0,0,8"
-                                            StrokeShape="RoundRectangle 8"
-                                            Stroke="#E2E8F0"
-                                            StrokeThickness="1"
-                                            BackgroundColor="White">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <!-- Avatar circle -->
-                                            <Border Grid.Column="0"
-                                                    BackgroundColor="#CBD5E1"
-                                                    StrokeShape="RoundRectangle 20"
-                                                    Stroke="Transparent"
-                                                    WidthRequest="40"
-                                                    HeightRequest="40"
-                                                    Margin="0,0,12,0"
-                                                    VerticalOptions="Center">
-                                                <Label Text="{Binding FirstName, StringFormat='{0:0}'}"
-                                                       FontSize="14"
-                                                       FontAttributes="Bold"
-                                                       TextColor="White"
-                                                       HorizontalTextAlignment="Center"
-                                                       VerticalTextAlignment="Center"/>
-                                            </Border>
-                                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                                                <Label Text="{Binding FullName}"
-                                                       FontSize="14"
-                                                       FontAttributes="Bold"
-                                                       TextColor="#1E293B"/>
-                                                <Label Text="{Binding Subscription.Type, FallbackValue='—'}"
-                                                       FontSize="12"
-                                                       TextColor="#64748B"/>
-                                            </VerticalStackLayout>
-                                            <Label Grid.Column="2"
-                                                   Text="{Binding Status}"
-                                                   FontSize="11"
-                                                   TextColor="#16A34A"
-                                                   VerticalTextAlignment="Center"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
-                    </Grid>
-
-                    <!-- Right: Assignment Details -->
-                    <ScrollView Grid.Column="1">
-                        <Border BackgroundColor="White"
-                                StrokeShape="RoundRectangle 12"
-                                Stroke="#E2E8F0"
-                                StrokeThickness="1"
-                                Padding="20">
-                            <VerticalStackLayout Spacing="6">
-                                <Label Text="Détails de l'Assignation"
-                                       FontAttributes="Bold"
-                                       FontSize="15"
-                                       TextColor="#1E293B"
-                                       Margin="0,0,0,10"/>
-
-                                <Label Text="Résumé du Modèle"
-                                       FontSize="12"
-                                       FontAttributes="Bold"
-                                       TextColor="#64748B"/>
-                                <Label Text="{Binding ProgramName, StringFormat='Modèle : {0}'}"
-                                       FontSize="13"
-                                       TextColor="#1E293B"/>
-                                <Label Text="{Binding Sessions.Count, StringFormat='Sessions : {0} séance(s) / programme'}"
-                                       FontSize="13"
-                                       TextColor="#1E293B"/>
-
-                                <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" Margin="0,10"/>
-
-                                <Label Text="Date de début du programme"
-                                       FontSize="12"
-                                       FontAttributes="Bold"
-                                       TextColor="#64748B"
-                                       Margin="0,0,0,8"/>
-                                <DatePicker Date="{Binding AssignStartDate}"
-                                            MinimumDate="{x:Static sys:DateTime.Today}"
-                                            TextColor="#1E293B"
-                                            FontSize="14"
-                                            Format="dd/MM/yyyy"
-                                            HorizontalOptions="Fill"/>
-
-                                <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" Margin="0,10"/>
-
-                                <Label Text="Client sélectionné"
-                                       FontSize="12"
-                                       FontAttributes="Bold"
-                                       TextColor="#64748B"/>
-                                <Label Text="{Binding SelectedClient.FullName, FallbackValue='Aucun client sélectionné'}"
-                                       FontSize="13"
-                                       FontAttributes="Bold"
-                                       TextColor="#2563EB"/>
-                                <Label Text="{Binding SelectedClient.Email, FallbackValue=' '}"
-                                       FontSize="12"
-                                       TextColor="#64748B"/>
-                            </VerticalStackLayout>
-                        </Border>
-                    </ScrollView>
-                </Grid>
-
-                <!-- Footer Actions -->
-                <Grid Grid.Row="2" ColumnSpacing="12" Margin="0,20,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Button Grid.Column="1"
-                            Text="Annuler"
-                            WidthRequest="120"
-                            Command="{Binding CancelAssignCommand}"
-                            BackgroundColor="#F1F5F9"
-                            TextColor="#475569"
-                            FontAttributes="Bold"
-                            FontSize="14"
-                            CornerRadius="8"
-                            BorderWidth="0"
-                            Padding="15,10"/>
-                    <Button Grid.Column="2"
-                            Text="Confirmer l'assignation"
-                            WidthRequest="200"
-                            Command="{Binding ConfirmAssignCommand}"
-                            BackgroundColor="#2563EB"
-                            TextColor="White"
-                            FontAttributes="Bold"
-                            FontSize="14"
-                            CornerRadius="8"
-                            BorderWidth="0"
-                            Padding="15,10"/>
-                </Grid>
-
             </Grid>
-        </Border>
-    </Grid>
 
-    </Grid>
+            <Grid Grid.Row="2" ColumnSpacing="10" Margin="0,16,0,0"
+                  ColumnDefinitions="*,Auto,Auto">
+                <Button Grid.Column="1" Text="Annuler" WidthRequest="110"
+                        Command="{Binding CancelAssignCommand}"
+                        BackgroundColor="#F1F5F9" TextColor="#475569"
+                        FontAttributes="Bold" FontSize="13" CornerRadius="8" Padding="12,9"/>
+                <Button Grid.Column="2" Text="Confirmer l'assignation" WidthRequest="190"
+                        Command="{Binding ConfirmAssignCommand}"
+                        BackgroundColor="#2563EB" TextColor="White"
+                        FontAttributes="Bold" FontSize="13" CornerRadius="8" Padding="12,9"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Grid>
 
+<!-- ═══ Overlay : Ajouter un exercice à la bibliothèque ═══ -->
+<Grid IsVisible="{Binding IsAddExerciseOpen}" BackgroundColor="#80000000"
+      VerticalOptions="Fill" HorizontalOptions="Fill">
+    <Grid.GestureRecognizers>
+        <TapGestureRecognizer Command="{Binding CancelAddExerciseCommand}"/>
+    </Grid.GestureRecognizers>
+
+    <Border BackgroundColor="White" WidthRequest="440"
+            VerticalOptions="Center" HorizontalOptions="Center"
+            Stroke="#E2E8F0" StrokeThickness="1">
+        <Border.StrokeShape><RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+        <Border.Shadow><Shadow Brush="#000" Offset="0,8" Radius="32" Opacity="0.15"/></Border.Shadow>
+        <Border.GestureRecognizers><TapGestureRecognizer/></Border.GestureRecognizers>
+
+        <VerticalStackLayout Padding="28" Spacing="20">
+
+            <!-- Titre -->
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Grid.Column="0" Text="Ajouter un exercice"
+                       FontSize="18" FontAttributes="Bold" TextColor="#0F172A"
+                       VerticalTextAlignment="Center"/>
+                <Button Grid.Column="1" Text="✕"
+                        Command="{Binding CancelAddExerciseCommand}"
+                        BackgroundColor="Transparent" TextColor="#94A3B8"
+                        FontSize="16" Padding="6,4"/>
+            </Grid>
+
+            <!-- Nom -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Nom de l'exercice *" FontSize="13"
+                       FontAttributes="Bold" TextColor="#374151"/>
+                <Border Stroke="#E2E8F0" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" BackgroundColor="White" Padding="0">
+                    <Entry Text="{Binding NewExerciseName}"
+                           Placeholder="Ex : Squat Barre"
+                           PlaceholderColor="#94A3B8"
+                           TextColor="#0F172A" FontSize="14" Margin="12,0"/>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Catégorie -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Catégorie *" FontSize="13"
+                       FontAttributes="Bold" TextColor="#374151"/>
+                <Border Stroke="#E2E8F0" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" BackgroundColor="White" Padding="0">
+                    <Picker SelectedItem="{Binding NewExerciseCategory}"
+                            ItemsSource="{Binding KnownCategories}"
+                            FontSize="14" TextColor="#0F172A"
+                            Margin="8,0"/>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Groupe musculaire -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Groupe musculaire" FontSize="13"
+                       FontAttributes="Bold" TextColor="#374151"/>
+                <Border Stroke="#E2E8F0" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" BackgroundColor="White" Padding="0">
+                    <Entry Text="{Binding NewExerciseMuscleGroup}"
+                           Placeholder="Ex : Jambes, Dos, Pectoraux…"
+                           PlaceholderColor="#94A3B8"
+                           TextColor="#0F172A" FontSize="14" Margin="12,0"/>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Boutons -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,4,0,0">
+                <Button Grid.Column="0" Text="Annuler"
+                        Command="{Binding CancelAddExerciseCommand}"
+                        BackgroundColor="#F1F5F9" TextColor="#475569"
+                        FontAttributes="Bold" FontSize="13" CornerRadius="8" HeightRequest="44"/>
+                <Button Grid.Column="1" Text="Ajouter à la bibliothèque"
+                        Command="{Binding ConfirmAddExerciseCommand}"
+                        BackgroundColor="#2563EB" TextColor="White"
+                        FontAttributes="Bold" FontSize="13" CornerRadius="8" HeightRequest="44"/>
+            </Grid>
+
+        </VerticalStackLayout>
+    </Border>
+</Grid>
+
+</Grid>
 </ContentView>
