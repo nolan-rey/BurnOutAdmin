@@ -27,7 +27,7 @@ public partial class ProgramBuilderView : ContentView
 
         e.Data.Properties["ExerciseName"] = item.Name;
         e.Data.Properties["ExerciseCategory"] = item.Category;
-        e.Data.Text = item.Name;
+        // Ne pas définir e.Data.Text — MAUI l'insère dans l'Entry focusée
     }
 
     // ── Drop sur une séance ──────────────────────────────────────
