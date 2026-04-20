@@ -9,7 +9,7 @@
     Shell.FlyoutBehavior="Disabled">
 
     <ShellContent
-        Title="Program Builder"
+        Title="Créateur de Séance"
         ContentTemplate="{DataTemplate views:ProgramBuilderPage}"
         Route="ProgramBuilderPage" />
 

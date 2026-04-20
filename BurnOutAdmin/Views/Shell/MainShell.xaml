@@ -119,7 +119,7 @@
                             <Label Text="&#xE869;" FontFamily="MaterialIcons" FontSize="20"
                                    TextColor="{Binding MenuItems[3].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>
-                            <Label Text="Program Builder" FontSize="14"
+                            <Label Text="Créateur de Séance" FontSize="14"
                                    IsVisible="{Binding IsSidebarExpanded}"
                                    TextColor="{Binding MenuItems[3].IsSelected, Converter={StaticResource MenuItemTextColorConverter}}"
                                    VerticalOptions="Center"/>

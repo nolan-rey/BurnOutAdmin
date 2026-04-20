@@ -2,7 +2,6 @@ using BurnOutAdmin.Services;
 using BurnOutAdmin.Services.ExerciseLibrary;
 using BurnOutAdmin.Services.Mqtt;
 using BurnOutAdmin.Services.Nfc;
-using BurnOutAdmin.Services.ProgramBuilder;
 using BurnOutAdmin.Services.Rfid;
 using BurnOutAdmin.ViewModels;
 using BurnOutAdmin.ViewModels.ProgramBuilder;
@@ -55,8 +54,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IChallengeService, MockChallengeService>();
         builder.Services.AddSingleton<IDashboardService, MockDashboardService>();
         builder.Services.AddSingleton<IAlertService, MauiAlertService>();
-        builder.Services.AddSingleton<IProgramBuilderService, MockProgramBuilderService>();
-        builder.Services.AddSingleton<IProgramAssignmentService, MockProgramAssignmentService>();
+builder.Services.AddSingleton<IProgramAssignmentService, MockProgramAssignmentService>();
         builder.Services.AddSingleton<IExerciseLibraryService, SqliteExerciseLibraryService>();
         
         // Navigation Service - Singleton for app-wide navigation
