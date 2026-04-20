@@ -1,5 +1,6 @@
 using BurnOutAdmin.Models.Program;
 using BurnOutAdmin.ViewModels.ProgramBuilder;
+using Microsoft.Maui.Graphics;
 
 namespace BurnOutAdmin.Views.ProgramBuilder;
 
@@ -30,35 +31,42 @@ public partial class ProgramBuilderView : ContentView
         // Ne pas définir e.Data.Text — MAUI l'insère dans l'Entry focusée
     }
 
-    // ── Drop sur une séance ──────────────────────────────────────
+    // ── Drop sur une sous-catégorie ──────────────────────────────
 
-    private void OnSessionDrop(object sender, DropEventArgs e)
+    private void OnSubCategoryDrop(object sender, DropEventArgs e)
     {
-        if (ViewModel is null) return;
-        if ((sender as Element)?.BindingContext is not SessionViewModel session) return;
+        if ((sender as Element)?.BindingContext is not SubCategoryViewModel subCat) return;
 
         var name = e.Data.Properties.TryGetValue("ExerciseName", out var n) ? n?.ToString() ?? "" : "";
-        var category = e.Data.Properties.TryGetValue("ExerciseCategory", out var c) ? c?.ToString() ?? "" : "";
-
         if (string.IsNullOrWhiteSpace(name)) return;
 
-        ViewModel.DropExerciseOnSession(session, name, category);
+        var item = new ExerciseLibraryItem { Name = name };
+        subCat.AddExerciseFromLibrary(item);
+        subCat.IsExpanded = true;
 
-        // Réinitialiser le style du fond de la séance
         if (sender is Border border)
-            border.BackgroundColor = Color.FromArgb("#F8FAFC");
+        {
+            border.BackgroundColor = Colors.White;
+            border.Stroke = new SolidColorBrush(Color.FromArgb("#E2E8F0"));
+        }
     }
 
-    private void OnSessionDragOver(object sender, DragEventArgs e)
+    private void OnSubCategoryDragOver(object sender, DragEventArgs e)
     {
         e.AcceptedOperation = DataPackageOperation.Copy;
         if (sender is Border border)
-            border.BackgroundColor = Color.FromArgb("#EFF6FF");
+        {
+            border.BackgroundColor = Color.FromArgb("#F0F9FF");
+            border.Stroke = new SolidColorBrush(Color.FromArgb("#93C5FD"));
+        }
     }
 
-    private void OnSessionDragLeave(object sender, DragEventArgs e)
+    private void OnSubCategoryDragLeave(object sender, DragEventArgs e)
     {
         if (sender is Border border)
-            border.BackgroundColor = Color.FromArgb("#F8FAFC");
+        {
+            border.BackgroundColor = Colors.White;
+            border.Stroke = new SolidColorBrush(Color.FromArgb("#E2E8F0"));
+        }
     }
 }

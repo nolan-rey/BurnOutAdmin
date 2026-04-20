@@ -266,13 +266,6 @@
                                 <Border.Shadow>
                                     <Shadow Brush="#000" Offset="0,2" Radius="8" Opacity="0.05"/>
                                 </Border.Shadow>
-                                <Border.GestureRecognizers>
-                                    <DropGestureRecognizer AllowDrop="True"
-                                        Drop="OnSessionDrop"
-                                        DragOver="OnSessionDragOver"
-                                        DragLeave="OnSessionDragLeave"/>
-                                </Border.GestureRecognizers>
-
                                 <Grid ColumnDefinitions="5,*">
                                     <!-- Accent bleu gauche -->
                                     <BoxView Grid.Column="0" Color="#3B82F6"/>
@@ -324,22 +317,6 @@
                                                     VerticalOptions="Center"
                                                     Command="{Binding DeleteSessionCommand}"/>
                                         </Grid>
-
-                                        <!-- Zone de drop (toujours visible) -->
-                                        <Border Stroke="#BFDBFE" StrokeThickness="1.5"
-                                                StrokeDashArray="6,4"
-                                                StrokeShape="RoundRectangle 8"
-                                                BackgroundColor="#F0F9FF"
-                                                Padding="0,9" Margin="0,0,0,12">
-                                            <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
-                                                <Label Text="&#xE2C4;" FontFamily="MaterialIcons"
-                                                       FontSize="15" TextColor="#93C5FD"
-                                                       VerticalTextAlignment="Center"/>
-                                                <Label Text="Déposez un exercice ici"
-                                                       FontSize="12" TextColor="#60A5FA"
-                                                       VerticalTextAlignment="Center"/>
-                                            </HorizontalStackLayout>
-                                        </Border>
 
                                         <!-- Contenu séance (catégories) -->
                                         <VerticalStackLayout IsVisible="{Binding IsExpanded}" Spacing="8">
@@ -434,6 +411,12 @@
                                                                                         BackgroundColor="White"
                                                                                         Margin="0,0,0,6"
                                                                                         Padding="0">
+                                                                                    <Border.GestureRecognizers>
+                                                                                        <DropGestureRecognizer AllowDrop="True"
+                                                                                            Drop="OnSubCategoryDrop"
+                                                                                            DragOver="OnSubCategoryDragOver"
+                                                                                            DragLeave="OnSubCategoryDragLeave"/>
+                                                                                    </Border.GestureRecognizers>
                                                                                     <VerticalStackLayout>
 
                                                                                         <!-- Header sous-cat -->
@@ -492,6 +475,22 @@
                                                                                         <!-- Contenu exercices -->
                                                                                         <VerticalStackLayout IsVisible="{Binding IsExpanded}"
                                                                                                              Padding="0">
+
+                                                                                            <!-- Zone de drop dans la sous-catégorie -->
+                                                                                            <Border Stroke="#BFDBFE" StrokeThickness="1"
+                                                                                                    StrokeDashArray="5,4"
+                                                                                                    StrokeShape="RoundRectangle 6"
+                                                                                                    BackgroundColor="#F0F9FF"
+                                                                                                    Padding="0,8" Margin="10,8,10,4">
+                                                                                                <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                                                                                                    <Label Text="&#xE2C4;" FontFamily="MaterialIcons"
+                                                                                                           FontSize="13" TextColor="#93C5FD"
+                                                                                                           VerticalTextAlignment="Center"/>
+                                                                                                    <Label Text="Déposez un exercice ici"
+                                                                                                           FontSize="11" TextColor="#60A5FA"
+                                                                                                           VerticalTextAlignment="Center"/>
+                                                                                                </HorizontalStackLayout>
+                                                                                            </Border>
 
                                                                                             <!-- Header colonnes exercices (affiché UNE FOIS) -->
                                                                                             <Grid ColumnDefinitions="*,55,55,85,55,32"
