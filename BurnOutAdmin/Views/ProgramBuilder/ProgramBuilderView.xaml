@@ -181,7 +181,7 @@
                 StrokeShape="RoundRectangle 14"
                 Stroke="#E2E8F0" StrokeThickness="1"
                 Padding="24">
-            <ScrollView VerticalScrollBarVisibility="Auto">
+            <ScrollView VerticalScrollBarVisibility="Default">
             <VerticalStackLayout Spacing="0">
 
                 <!-- ── Informations du programme ── -->
