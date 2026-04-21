@@ -3,7 +3,7 @@ using BurnOutAdmin.Models;
 using BurnOutAdmin.Models.Program;
 using BurnOutAdmin.Services;
 using BurnOutAdmin.Services.ExerciseLibrary;
-using BurnOutAdmin.Services.ProgramBuilder;
+using BurnOutAdmin.Services.SessionLibrary;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -15,6 +15,7 @@ public partial class ProgramBuilderViewModel : BaseViewModel
     private readonly IProgramAssignmentService _assignmentService;
     private readonly IAlertService _alertService;
     private readonly IExerciseLibraryService _libraryService;
+    private readonly ISessionLibraryService _sessionLibraryService;
 
     // ── Séance courante (unique) ──────────────────────────────────
     [ObservableProperty] private SessionViewModel? _currentSession;
@@ -45,12 +46,14 @@ public partial class ProgramBuilderViewModel : BaseViewModel
         IClientService clientService,
         IProgramAssignmentService assignmentService,
         IAlertService alertService,
-        IExerciseLibraryService libraryService)
+        IExerciseLibraryService libraryService,
+        ISessionLibraryService sessionLibraryService)
     {
         _clientService = clientService;
         _assignmentService = assignmentService;
         _alertService = alertService;
         _libraryService = libraryService;
+        _sessionLibraryService = sessionLibraryService;
         Title = "Créateur de Séance";
     }
 
@@ -259,7 +262,22 @@ public partial class ProgramBuilderViewModel : BaseViewModel
             await _alertService.AlertAsync("Attention", "Donnez un nom à la séance avant de sauvegarder.");
             return;
         }
-        await _alertService.AlertAsync("Séance sauvegardée", $"La séance \"{SeanceName}\" a été sauvegardée.");
+        if (CurrentSession is null || !CurrentSession.Categories.Any())
+        {
+            await _alertService.AlertAsync("Attention", "Ajoutez au moins une catégorie avant de sauvegarder.");
+            return;
+        }
+
+        await _sessionLibraryService.InitializeAsync();
+        await _sessionLibraryService.SaveSessionAsync(
+            SeanceName.Trim(),
+            SeanceDescription.Trim(),
+            CurrentSession.Model);
+
+        await _alertService.AlertAsync("Séance sauvegardée",
+            $"La séance \"{SeanceName}\" est disponible dans la bibliothèque des Programmes.");
+
+        InitNewSeance(); // Réinitialise pour une nouvelle séance
     }
 
     // ── Helpers ──────────────────────────────────────────────────

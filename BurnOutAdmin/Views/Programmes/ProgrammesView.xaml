@@ -1,97 +1,377 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:viewmodels="clr-namespace:BurnOutAdmin.ViewModels"
-             xmlns:models="clr-namespace:BurnOutAdmin.Models"
+             xmlns:vm="clr-namespace:BurnOutAdmin.ViewModels"
+             xmlns:cards="clr-namespace:BurnOutAdmin.ViewModels.ProgramBuilder"
              x:Class="BurnOutAdmin.Views.Programmes.ProgrammesView"
-             x:DataType="viewmodels:ProgrammesViewModel"
-             BackgroundColor="#F5F5F5">
+             x:DataType="vm:ProgrammesViewModel"
+             BackgroundColor="#F1F5F9">
 
-    <Grid Padding="24" RowDefinitions="Auto,*">
-        
-        <!-- Header -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,24">
-            <VerticalStackLayout Grid.Column="0" Spacing="4">
-                <Label Text="📅 Programmes"
-                       FontSize="28"
-                       FontAttributes="Bold"
-                       TextColor="#1E1E2E"/>
-                <Label Text="Création et planification de programmes d'entraînement"
-                       FontSize="14"
-                       TextColor="#666666"/>
+    <Grid Padding="28,24" RowDefinitions="Auto,*">
+
+        <!-- ═══ Header ═══ -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <VerticalStackLayout Grid.Column="0" Spacing="3">
+                <HorizontalStackLayout Spacing="6">
+                    <Label Text="Programmes" TextColor="#94A3B8" FontSize="12"/>
+                    <Label Text="›" TextColor="#CBD5E1" FontSize="12"/>
+                    <Label Text="Bibliothèque &amp; Programmes" TextColor="#475569" FontSize="12" FontAttributes="Bold"/>
+                </HorizontalStackLayout>
+                <Label Text="Programmes" FontSize="24" FontAttributes="Bold" TextColor="#0F172A"/>
+                <Label Text="Gérez vos séances et créez des programmes complets."
+                       FontSize="13" TextColor="#94A3B8"/>
             </VerticalStackLayout>
-            
+
+            <!-- Bouton Nouveau Programme (masqué pendant création) -->
             <Button Grid.Column="1"
-                    Text="+ Nouveau Programme"
-                    Command="{Binding AddProgrammeCommand}"
-                    BackgroundColor="#512BD4"
-                    TextColor="White"
-                    FontAttributes="Bold"
-                    Padding="20,12"
-                    CornerRadius="8"/>
+                    IsVisible="{Binding IsCreateProgramOpen, Converter={StaticResource InvertedBoolConverter}}"
+                    Text="+ Nouveau programme"
+                    Command="{Binding OpenCreateProgramCommand}"
+                    BackgroundColor="#4F46E5" TextColor="White"
+                    FontAttributes="Bold" FontSize="13"
+                    Padding="18,10" CornerRadius="8"/>
         </Grid>
-        
-        <!-- Programmes List -->
-        <CollectionView Grid.Row="1"
-                        ItemsSource="{Binding Programmes}"
-                        SelectionMode="Single"
-                        SelectedItem="{Binding SelectedProgramme}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:Programme">
-                    <Border BackgroundColor="White"
-                            StrokeThickness="0"
-                            Padding="20"
-                            Margin="0,0,0,12">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="12"/>
-                        </Border.StrokeShape>
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
-                            
-                            <!-- Icon -->
-                            <Label Grid.Column="0" Text="🏋️" FontSize="32" VerticalOptions="Center"/>
-                            
-                            <!-- Programme Info -->
-                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
-                                <Label Text="{Binding Name}"
-                                       FontSize="16"
-                                       FontAttributes="Bold"
-                                       TextColor="#1E1E2E"/>
-                                <Label Text="{Binding Description}"
-                                       FontSize="13"
-                                       TextColor="#666666"
-                                       LineBreakMode="TailTruncation"
-                                       MaxLines="1"/>
-                                <Label Text="{Binding DurationWeeks, StringFormat='{0} semaines • {0} séances/sem.'}"
-                                       FontSize="12"
-                                       TextColor="#888888"/>
+
+        <!-- ═══ Deux colonnes ═══ -->
+        <Grid Grid.Row="1" ColumnDefinitions="380,*" ColumnSpacing="20">
+
+            <!-- ── COLONNE GAUCHE : Bibliothèque de Séances ── -->
+            <Border Grid.Column="0"
+                    BackgroundColor="White"
+                    Stroke="#E2E8F0" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="20">
+                <Grid RowDefinitions="Auto,Auto,*">
+
+                    <!-- En-tête bibliothèque -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+                        <Label Grid.Column="0"
+                               Text="Bibliothèque de Séances"
+                               FontSize="15" FontAttributes="Bold"
+                               TextColor="#1E293B" VerticalOptions="Center"/>
+                        <Border Grid.Column="1"
+                                BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                Padding="10,4" StrokeShape="RoundRectangle 12"
+                                VerticalOptions="Center">
+                            <Label Text="{Binding SavedSessions.Count}"
+                                   FontSize="12" TextColor="#4F46E5" FontAttributes="Bold"/>
+                        </Border>
+                    </Grid>
+
+                    <!-- Hint de sélection (visible en mode création) -->
+                    <Border Grid.Row="1"
+                            IsVisible="{Binding IsCreateProgramOpen}"
+                            BackgroundColor="#EFF6FF" Stroke="#BFDBFE"
+                            StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                            Padding="12,8" Margin="0,0,0,12">
+                        <HorizontalStackLayout Spacing="6">
+                            <Label Text="👆" FontSize="13"/>
+                            <Label Text="Cliquez sur les séances à inclure dans votre programme"
+                                   FontSize="12" TextColor="#1E40AF" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <!-- Liste des séances -->
+                    <ScrollView Grid.Row="2" VerticalScrollBarVisibility="Default">
+                        <VerticalStackLayout Spacing="0">
+
+                            <!-- État vide -->
+                            <VerticalStackLayout IsVisible="{Binding IsSessionsEmpty}"
+                                                 Padding="16,40" Spacing="8">
+                                <Label Text="📭" FontSize="32" HorizontalTextAlignment="Center"/>
+                                <Label Text="Aucune séance sauvegardée"
+                                       FontSize="14" FontAttributes="Bold"
+                                       TextColor="#64748B" HorizontalTextAlignment="Center"/>
+                                <Label Text="Créez une séance dans le Créateur de Séance, puis sauvegardez-la."
+                                       FontSize="12" TextColor="#94A3B8"
+                                       HorizontalTextAlignment="Center" LineBreakMode="WordWrap"/>
                             </VerticalStackLayout>
-                            
-                            <!-- Status -->
-                            <Border Grid.Column="2"
-                                    BackgroundColor="#4CAF50"
-                                    StrokeThickness="0"
-                                    Padding="12,6"
-                                    VerticalOptions="Center">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="12"/>
-                                </Border.StrokeShape>
-                                <Label Text="Actif"
-                                       FontSize="12"
-                                       FontAttributes="Bold"
-                                       TextColor="White"/>
+
+                            <!-- Cartes de séances -->
+                            <CollectionView ItemsSource="{Binding SavedSessions}"
+                                            VerticalScrollBarVisibility="Never"
+                                            IsVisible="{Binding IsSessionsEmpty, Converter={StaticResource InvertedBoolConverter}}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="cards:SavedSessionCardViewModel">
+
+                                        <Border Margin="0,0,0,10"
+                                                BackgroundColor="{Binding CardBackground}"
+                                                Stroke="{Binding CardBorderColor}"
+                                                StrokeThickness="2"
+                                                StrokeShape="RoundRectangle 10"
+                                                Padding="14,12">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding ToggleSelectionCommand}"/>
+                                            </Border.GestureRecognizers>
+
+                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+
+                                                <!-- Indicateur de sélection -->
+                                                <Border Grid.Column="0"
+                                                        IsVisible="{Binding ShowSelectionMark}"
+                                                        BackgroundColor="#2563EB" StrokeThickness="0"
+                                                        WidthRequest="22" HeightRequest="22"
+                                                        StrokeShape="RoundRectangle 11"
+                                                        VerticalOptions="Center">
+                                                    <Label Text="✓" FontSize="11" TextColor="White"
+                                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                </Border>
+                                                <Border Grid.Column="0"
+                                                        IsVisible="{Binding ShowSelectionMark, Converter={StaticResource InvertedBoolConverter}}"
+                                                        Stroke="#CBD5E1" StrokeThickness="1.5"
+                                                        BackgroundColor="Transparent"
+                                                        WidthRequest="22" HeightRequest="22"
+                                                        StrokeShape="RoundRectangle 11"
+                                                        VerticalOptions="Center"/>
+
+                                                <!-- Infos séance -->
+                                                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                                    <Label Text="{Binding Name}"
+                                                           FontSize="14" FontAttributes="Bold"
+                                                           TextColor="{Binding CardNameColor}"
+                                                           LineBreakMode="TailTruncation"/>
+                                                    <Label Text="{Binding SubTitle}"
+                                                           FontSize="11" TextColor="#94A3B8"/>
+                                                    <Label Text="{Binding CreatedAt}"
+                                                           FontSize="10" TextColor="#CBD5E1"/>
+                                                </VerticalStackLayout>
+
+                                                <!-- Bouton supprimer -->
+                                                <Button Grid.Column="2"
+                                                        Text="✕" FontSize="12"
+                                                        BackgroundColor="Transparent"
+                                                        TextColor="#CBD5E1"
+                                                        Padding="6,4" MinimumWidthRequest="0"
+                                                        Command="{Binding DeleteCommand}"
+                                                        VerticalOptions="Start"/>
+                                            </Grid>
+                                        </Border>
+
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                </Grid>
+            </Border>
+
+            <!-- ── COLONNE DROITE ── -->
+            <Grid Grid.Column="1">
+
+                <!-- ── Liste des programmes (mode normal) ── -->
+                <Border IsVisible="{Binding IsCreateProgramOpen, Converter={StaticResource InvertedBoolConverter}}"
+                        BackgroundColor="White"
+                        Stroke="#E2E8F0" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="20">
+                    <Grid RowDefinitions="Auto,*">
+
+                        <Label Grid.Row="0"
+                               Text="Programmes"
+                               FontSize="15" FontAttributes="Bold"
+                               TextColor="#1E293B" Margin="0,0,0,14"/>
+
+                        <!-- État vide -->
+                        <VerticalStackLayout Grid.Row="1"
+                                             IsVisible="{Binding IsProgrammesEmpty}"
+                                             VerticalOptions="Center" Spacing="10">
+                            <Label Text="📋" FontSize="40" HorizontalTextAlignment="Center"/>
+                            <Label Text="Aucun programme créé"
+                                   FontSize="16" FontAttributes="Bold"
+                                   TextColor="#64748B" HorizontalTextAlignment="Center"/>
+                            <Label Text="Cliquez sur '+ Nouveau programme', sélectionnez des séances&#x0a;dans la bibliothèque et donnez un nom à votre programme."
+                                   FontSize="13" TextColor="#94A3B8"
+                                   HorizontalTextAlignment="Center" LineBreakMode="WordWrap"/>
+                            <Button Text="+ Nouveau programme"
+                                    Command="{Binding OpenCreateProgramCommand}"
+                                    BackgroundColor="#4F46E5" TextColor="White"
+                                    FontSize="14" Padding="20,12" CornerRadius="8"
+                                    HorizontalOptions="Center" Margin="0,8,0,0"/>
+                        </VerticalStackLayout>
+
+                        <!-- Liste programmes -->
+                        <ScrollView Grid.Row="1"
+                                    IsVisible="{Binding IsProgrammesEmpty, Converter={StaticResource InvertedBoolConverter}}"
+                                    VerticalScrollBarVisibility="Default">
+                            <CollectionView ItemsSource="{Binding SavedProgrammes}"
+                                            VerticalScrollBarVisibility="Never">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SavedProgrammeViewModel">
+
+                                        <Border Margin="0,0,0,12"
+                                                BackgroundColor="#FAFAFA"
+                                                Stroke="#E2E8F0" StrokeThickness="1"
+                                                StrokeShape="RoundRectangle 12"
+                                                Padding="18,14">
+                                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+
+                                                <!-- Icône -->
+                                                <Border Grid.Column="0"
+                                                        BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                                        WidthRequest="44" HeightRequest="44"
+                                                        StrokeShape="RoundRectangle 10"
+                                                        VerticalOptions="Center">
+                                                    <Label Text="📅" FontSize="20"
+                                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                </Border>
+
+                                                <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                                    <Grid ColumnDefinitions="*,Auto">
+                                                        <Label Grid.Column="0"
+                                                               Text="{Binding Name}"
+                                                               FontSize="15" FontAttributes="Bold"
+                                                               TextColor="#1E293B"/>
+                                                        <Label Grid.Column="1"
+                                                               Text="{Binding CreatedAt}"
+                                                               FontSize="11" TextColor="#94A3B8"
+                                                               VerticalOptions="Center"/>
+                                                    </Grid>
+
+                                                    <Label Text="{Binding SubTitle}"
+                                                           FontSize="12" TextColor="#4F46E5"
+                                                           FontAttributes="Bold"/>
+
+                                                    <Label Text="{Binding SessionsPreview}"
+                                                           FontSize="12" TextColor="#64748B"
+                                                           LineBreakMode="TailTruncation"/>
+                                                </VerticalStackLayout>
+                                            </Grid>
+                                        </Border>
+
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </ScrollView>
+
+                    </Grid>
+                </Border>
+
+                <!-- ── Formulaire de création (mode création) ── -->
+                <Border IsVisible="{Binding IsCreateProgramOpen}"
+                        BackgroundColor="White"
+                        Stroke="#BFDBFE" StrokeThickness="2"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="24">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" RowSpacing="16">
+
+                        <!-- Titre formulaire -->
+                        <VerticalStackLayout Grid.Row="0" Spacing="4">
+                            <Label Text="Créer un Programme"
+                                   FontSize="18" FontAttributes="Bold" TextColor="#1E293B"/>
+                            <Label Text="Nommez votre programme, puis sélectionnez les séances à inclure dans la liste de gauche."
+                                   FontSize="12" TextColor="#94A3B8" LineBreakMode="WordWrap"/>
+                        </VerticalStackLayout>
+
+                        <!-- Nom du programme -->
+                        <Border Grid.Row="1"
+                                Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="0" BackgroundColor="White">
+                            <Entry Text="{Binding NewProgramName}"
+                                   Placeholder="Nom du programme *"
+                                   PlaceholderColor="#94A3B8"
+                                   FontSize="14" TextColor="#1E293B"
+                                   Margin="14,0"/>
+                        </Border>
+
+                        <!-- Description -->
+                        <Border Grid.Row="2"
+                                Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="0" BackgroundColor="White">
+                            <Entry Text="{Binding NewProgramDescription}"
+                                   Placeholder="Description (optionnel)"
+                                   PlaceholderColor="#94A3B8"
+                                   FontSize="14" TextColor="#1E293B"
+                                   Margin="14,0"/>
+                        </Border>
+
+                        <!-- Séances sélectionnées — header -->
+                        <Grid Grid.Row="3" ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0"
+                                   Text="Séances sélectionnées"
+                                   FontSize="13" FontAttributes="Bold" TextColor="#374151"
+                                   VerticalOptions="Center"/>
+                            <Border Grid.Column="1"
+                                    BackgroundColor="#4F46E5" StrokeThickness="0"
+                                    Padding="10,4" StrokeShape="RoundRectangle 12">
+                                <Label Text="{Binding SelectedSessions.Count}"
+                                       FontSize="12" TextColor="White" FontAttributes="Bold"/>
                             </Border>
                         </Grid>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        
-        <!-- Loading -->
-        <ActivityIndicator Grid.Row="1"
-                           IsRunning="{Binding IsBusy}"
-                           IsVisible="{Binding IsBusy}"
-                           Color="#512BD4"
-                           HeightRequest="40"
-                           VerticalOptions="Center"/>
+
+                        <!-- Liste séances sélectionnées -->
+                        <Grid Grid.Row="4">
+                            <!-- Hint si aucune sélection -->
+                            <Border IsVisible="{Binding HasSelectedSessions, Converter={StaticResource InvertedBoolConverter}}"
+                                    BackgroundColor="#F8FAFC" Stroke="#E2E8F0"
+                                    StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                                    Padding="16">
+                                <VerticalStackLayout VerticalOptions="Center" Spacing="6">
+                                    <Label Text="←" FontSize="20" TextColor="#CBD5E1" HorizontalTextAlignment="Center"/>
+                                    <Label Text="Sélectionnez des séances dans la bibliothèque"
+                                           FontSize="13" TextColor="#94A3B8"
+                                           HorizontalTextAlignment="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Séances sélectionnées -->
+                            <ScrollView IsVisible="{Binding HasSelectedSessions}"
+                                        VerticalScrollBarVisibility="Default">
+                                <CollectionView ItemsSource="{Binding SelectedSessions}"
+                                                VerticalScrollBarVisibility="Never">
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="cards:SavedSessionCardViewModel">
+                                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10"
+                                                  Padding="0,4">
+                                                <Border Grid.Column="0"
+                                                        BackgroundColor="#4F46E5" StrokeThickness="0"
+                                                        WidthRequest="24" HeightRequest="24"
+                                                        StrokeShape="RoundRectangle 12"
+                                                        VerticalOptions="Center">
+                                                    <Label Text="✓" FontSize="12" TextColor="White"
+                                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                </Border>
+                                                <Label Grid.Column="1"
+                                                       Text="{Binding Name}"
+                                                       FontSize="13" FontAttributes="Bold"
+                                                       TextColor="#1E293B" VerticalOptions="Center"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </ScrollView>
+                        </Grid>
+
+                        <!-- Boutons Annuler / Confirmer -->
+                        <Grid Grid.Row="5" ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <Button Grid.Column="0"
+                                    Text="Annuler"
+                                    Command="{Binding CancelCreateProgramCommand}"
+                                    BackgroundColor="#F1F5F9" TextColor="#374151"
+                                    FontAttributes="Bold" FontSize="14"
+                                    Padding="0,14" CornerRadius="8"/>
+                            <Button Grid.Column="1"
+                                    Text="Créer le programme"
+                                    Command="{Binding ConfirmCreateProgramCommand}"
+                                    BackgroundColor="#4F46E5" TextColor="White"
+                                    FontAttributes="Bold" FontSize="14"
+                                    Padding="0,14" CornerRadius="8"/>
+                        </Grid>
+
+                    </Grid>
+                </Border>
+
+            </Grid>
+
+        </Grid>
     </Grid>
+
 </ContentView>
