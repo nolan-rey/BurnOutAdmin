@@ -2,7 +2,8 @@ using System.Collections.ObjectModel;
 using BurnOutAdmin.Models;
 using BurnOutAdmin.Models.Program;
 using BurnOutAdmin.Services;
-using BurnOutAdmin.Services.ProgramBuilder;
+using BurnOutAdmin.Services.ExerciseLibrary;
+using BurnOutAdmin.Services.SessionLibrary;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -10,105 +11,66 @@ namespace BurnOutAdmin.ViewModels.ProgramBuilder;
 
 public partial class ProgramBuilderViewModel : BaseViewModel
 {
-    private readonly IProgramBuilderService _programBuilderService;
     private readonly IClientService _clientService;
     private readonly IProgramAssignmentService _assignmentService;
     private readonly IAlertService _alertService;
+    private readonly IExerciseLibraryService _libraryService;
+    private readonly ISessionLibraryService _sessionLibraryService;
 
-    public ProgramModel? Model { get; private set; }
+    // ── Séance courante (unique) ──────────────────────────────────
+    [ObservableProperty] private SessionViewModel? _currentSession;
+    [ObservableProperty] private string _seanceName = string.Empty;
+    [ObservableProperty] private string _seanceDescription = string.Empty;
 
-    [ObservableProperty]
-    private string _programName = string.Empty;
+    // ── Bibliothèque ─────────────────────────────────────────────
+    [ObservableProperty] private string _librarySearchText = string.Empty;
 
-    [ObservableProperty]
-    private string _programDescription = string.Empty;
+    // ── Assignation client ────────────────────────────────────────
+    [ObservableProperty] private bool _isAssignPanelOpen;
+    [ObservableProperty] private Client? _selectedClient;
+    [ObservableProperty] private string _assignSearchText = string.Empty;
+    [ObservableProperty] private DateTime _assignStartDate = DateTime.Today;
 
-    [ObservableProperty]
-    private string _searchText = string.Empty;
+    // ── Popup ajout exercice à la bibliothèque ────────────────────
+    [ObservableProperty] private bool _isAddExerciseOpen;
+    [ObservableProperty] private string _newExerciseName = string.Empty;
+    [ObservableProperty] private string _newExerciseCategory = string.Empty;
+    [ObservableProperty] private string _newExerciseMuscleGroup = string.Empty;
 
-    [ObservableProperty]
-    private bool _isAssignPanelOpen;
-
-    [ObservableProperty]
-    private Client? _selectedClient;
-
-    [ObservableProperty]
-    private string _assignSearchText = string.Empty;
-
-    [ObservableProperty]
-    private DateTime _assignStartDate = DateTime.Today;
-
-    public ObservableCollection<SessionViewModel> Sessions { get; } = new();
-
+    // ── Collections ───────────────────────────────────────────────
     public ObservableCollection<LibraryCategoryViewModel> LibraryCategories { get; } = new();
-
     public ObservableCollection<Client> Clients { get; } = new();
+    public ObservableCollection<string> KnownCategories { get; } = new();
 
-    public ProgramBuilderViewModel(IProgramBuilderService programBuilderService, IClientService clientService, IProgramAssignmentService assignmentService, IAlertService alertService)
+    public ProgramBuilderViewModel(
+        IClientService clientService,
+        IProgramAssignmentService assignmentService,
+        IAlertService alertService,
+        IExerciseLibraryService libraryService,
+        ISessionLibraryService sessionLibraryService)
     {
-        _programBuilderService = programBuilderService;
         _clientService = clientService;
         _assignmentService = assignmentService;
         _alertService = alertService;
-        Title = "Program Builder";
-        InitializeLibrary();
+        _libraryService = libraryService;
+        _sessionLibraryService = sessionLibraryService;
+        Title = "Créateur de Séance";
     }
 
-    private void InitializeLibrary()
-    {
-        LibraryCategories.Add(new LibraryCategoryViewModel("Échauffement", new List<ExerciseLibraryItem>
-        {
-            new() { Id = Guid.NewGuid(), Name = "Rameur 5 min", Category = "Échauffement", Tags = new List<string> { "Cardio" } },
-            new() { Id = Guid.NewGuid(), Name = "Mobilité Épaules", Category = "Échauffement", Tags = new List<string> { "Mobilité" } },
-            new() { Id = Guid.NewGuid(), Name = "Band Pull Apart", Category = "Échauffement", Tags = new List<string> { "Activation" } }
-        }));
-
-        LibraryCategories.Add(new LibraryCategoryViewModel("Musculation", new List<ExerciseLibraryItem>
-        {
-            new() { Id = Guid.NewGuid(), Name = "Squat Barre", Category = "Musculation", Tags = new List<string> { "Jambes", "Force" } },
-            new() { Id = Guid.NewGuid(), Name = "Développé Couché", Category = "Musculation", Tags = new List<string> { "Pectoraux", "Force" } },
-            new() { Id = Guid.NewGuid(), Name = "Soulevé de Terre", Category = "Musculation", Tags = new List<string> { "Dos", "Force" } },
-            new() { Id = Guid.NewGuid(), Name = "Shoulder Press", Category = "Musculation", Tags = new List<string> { "Épaules", "Force" } },
-            new() { Id = Guid.NewGuid(), Name = "Rowing Barre", Category = "Musculation", Tags = new List<string> { "Dos", "Force" } }
-        }) { IsExpanded = true });
-
-        LibraryCategories.Add(new LibraryCategoryViewModel("Cardio", new List<ExerciseLibraryItem>
-        {
-            new() { Id = Guid.NewGuid(), Name = "Bike Erg", Category = "Cardio", Tags = new List<string> { "Endurance" } },
-            new() { Id = Guid.NewGuid(), Name = "Course 400m", Category = "Cardio", Tags = new List<string> { "Sprint" } }
-        }));
-
-        LibraryCategories.Add(new LibraryCategoryViewModel("Récupération", new List<ExerciseLibraryItem>
-        {
-            new() { Id = Guid.NewGuid(), Name = "Étirements statiques", Category = "Récupération", Tags = new List<string> { "Flexibilité" } },
-            new() { Id = Guid.NewGuid(), Name = "Foam Rolling", Category = "Récupération", Tags = new List<string> { "Myofascial" } }
-        }));
-    }
-
-    partial void OnProgramNameChanged(string value)
-    {
-        if (Model != null)
-            Model.Name = value;
-    }
-
-    partial void OnProgramDescriptionChanged(string value)
-    {
-        if (Model != null)
-            Model.Description = value;
-    }
+    // ── Initialisation ───────────────────────────────────────────
 
     [RelayCommand]
-    private async Task LoadProgramAsync()
+    public async Task LoadAsync()
     {
-        if (IsBusy)
-            return;
-
+        if (IsBusy) return;
         try
         {
             IsBusy = true;
+            await _libraryService.InitializeAsync();
+            await RefreshLibraryAsync();
 
-            var program = await _programBuilderService.GetSampleProgramAsync();
-            LoadProgram(program);
+            if (CurrentSession is null)
+                InitNewSeance();
         }
         finally
         {
@@ -116,75 +78,112 @@ public partial class ProgramBuilderViewModel : BaseViewModel
         }
     }
 
-    [RelayCommand]
-    private void AddSession()
-    {
-        var session = CreateSession();
-        Sessions.Add(session);
-    }
-
-    public void LoadProgram(ProgramModel program)
-    {
-        Model = program;
-        ProgramName = program.Name;
-        ProgramDescription = program.Description;
-
-        Sessions.Clear();
-        foreach (var session in program.Sessions)
-        {
-            Sessions.Add(new SessionViewModel(session, RemoveSession));
-        }
-    }
-
-    private SessionViewModel CreateSession()
+    private void InitNewSeance()
     {
         var model = new SessionModel
         {
             Id = Guid.NewGuid(),
-            Name = "Nouvelle Session",
-            Order = Sessions.Count + 1
+            Name = string.Empty,
+            Order = 1
         };
-
-        Model?.Sessions.Add(model);
-        return new SessionViewModel(model, RemoveSession);
+        CurrentSession = new SessionViewModel(model, removeAction: null);
+        SeanceName = string.Empty;
+        SeanceDescription = string.Empty;
     }
 
-    private void RemoveSession(SessionViewModel session)
+    // ── Synchronisation nom ──────────────────────────────────────
+
+    partial void OnSeanceNameChanged(string value)
     {
-        Sessions.Remove(session);
-        Model?.Sessions.Remove(session.Model);
-        RecalculateOrders();
+        if (CurrentSession is not null)
+            CurrentSession.Name = value;
+    }
+
+    // ── Bibliothèque ─────────────────────────────────────────────
+
+    private async Task RefreshLibraryAsync()
+    {
+        var entries = await _libraryService.GetAllAsync();
+        var grouped = entries
+            .GroupBy(e => e.CategoryName)
+            .Select(g => new LibraryCategoryViewModel(g.Key, g.Select(ToItem).ToList()))
+            .ToList();
+
+        LibraryCategories.Clear();
+        foreach (var cat in grouped)
+        {
+            cat.IsExpanded = true;
+            LibraryCategories.Add(cat);
+        }
+
+        var categories = await _libraryService.GetCategoriesAsync();
+        KnownCategories.Clear();
+        foreach (var c in categories) KnownCategories.Add(c);
+        foreach (var c in new[] { "Échauffement", "Musculation", "Cardio", "Récupération" })
+            if (!KnownCategories.Contains(c)) KnownCategories.Add(c);
+    }
+
+    partial void OnLibrarySearchTextChanged(string value) => ApplyLibraryFilter(value);
+
+    private void ApplyLibraryFilter(string search)
+    {
+        var lower = search.Trim().ToLower();
+        foreach (var cat in LibraryCategories)
+            cat.ApplyFilter(lower);
+    }
+
+    // ── Nouvelle séance ──────────────────────────────────────────
+
+    [RelayCommand]
+    private void NewSeance()
+    {
+        InitNewSeance();
+    }
+
+    // ── Popup ajout exercice à la bibliothèque ────────────────────
+
+    [RelayCommand]
+    private void OpenAddExercise()
+    {
+        NewExerciseName = string.Empty;
+        NewExerciseCategory = KnownCategories.FirstOrDefault() ?? "Musculation";
+        NewExerciseMuscleGroup = string.Empty;
+        IsAddExerciseOpen = true;
     }
 
     [RelayCommand]
-    private void AddLibraryExercise(ExerciseLibraryItem item)
+    private void CancelAddExercise() => IsAddExerciseOpen = false;
+
+    [RelayCommand]
+    private async Task ConfirmAddExerciseAsync()
     {
-        // Find the first session that has at least one category with a subcategory
-        foreach (var session in Sessions)
+        if (string.IsNullOrWhiteSpace(NewExerciseName))
         {
-            foreach (var category in session.Categories)
-            {
-                foreach (var subCategory in category.SubCategories)
-                {
-                    subCategory.AddExerciseFromLibrary(item);
-                    return;
-                }
-            }
+            await _alertService.AlertAsync("Attention", "Le nom de l'exercice est obligatoire.");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(NewExerciseCategory))
+        {
+            await _alertService.AlertAsync("Attention", "Veuillez choisir une catégorie.");
+            return;
         }
 
-        // No session/category/subcategory exists yet — create one automatically
-        AddSession();
-        var newSession = Sessions.Last();
-        newSession.AddCategoryCommand.Execute(null);
-        var newCategory = newSession.Categories.Last();
-        newCategory.AddSubCategoryCommand.Execute(null);
-        var newSubCategory = newCategory.SubCategories.Last();
-        newSubCategory.AddExerciseFromLibrary(item);
+        await _libraryService.AddAsync(NewExerciseName.Trim(), NewExerciseCategory.Trim(), NewExerciseMuscleGroup.Trim());
+        IsAddExerciseOpen = false;
+        await RefreshLibraryAsync();
     }
+
+    // ── Assignation client ────────────────────────────────────────
 
     [RelayCommand]
     private async Task OpenAssignPanelAsync()
     {
+        if (CurrentSession is null || !CurrentSession.Categories.Any())
+        {
+            await _alertService.AlertAsync("Séance vide", "Ajoutez au moins une catégorie avant d'assigner.");
+            return;
+        }
+
         try
         {
             var clients = await _clientService.GetClientsAsync();
@@ -204,10 +203,7 @@ public partial class ProgramBuilderViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private void CancelAssign()
-    {
-        IsAssignPanelOpen = false;
-    }
+    private void CancelAssign() => IsAssignPanelOpen = false;
 
     [RelayCommand]
     private async Task ConfirmAssignAsync()
@@ -217,65 +213,81 @@ public partial class ProgramBuilderViewModel : BaseViewModel
             await _alertService.AlertAsync("Attention", "Veuillez sélectionner un client.");
             return;
         }
-
-        if (string.IsNullOrWhiteSpace(ProgramName))
+        if (string.IsNullOrWhiteSpace(SeanceName))
         {
-            await _alertService.AlertAsync("Attention", "Veuillez donner un nom au programme avant de l'assigner.");
+            await _alertService.AlertAsync("Attention", "Donnez un nom à la séance avant de l'assigner.");
             return;
         }
 
         var assignment = new ClientProgramAssignment
         {
             ClientId = SelectedClient.Id,
-            ProgramName = ProgramName,
+            ProgramName = SeanceName,
             AssignedAt = AssignStartDate,
-            Sessions = Sessions.Select(s => new AssignedSession
+            Sessions = new List<AssignedSession>
             {
-                Name = s.Name,
-                Order = s.Order,
-                Categories = s.Categories.Select(c => new AssignedCategory
+                new AssignedSession
                 {
-                    Name = c.Name,
-                    Exercises = c.SubCategories
-                        .SelectMany(sc => sc.Exercises)
-                        .Select(e => new AssignedExercise
-                        {
-                            Name = e.Name,
-                            Sets = e.Sets,
-                            Reps = e.Reps,
-                            Weight = e.Weight,
-                            Rpe = e.Rpe
-                        }).ToList()
-                }).ToList()
-            }).ToList()
+                    Name = SeanceName,
+                    Order = 1,
+                    Categories = CurrentSession!.Categories.Select(c => new AssignedCategory
+                    {
+                        Name = c.Name,
+                        Exercises = c.SubCategories
+                            .SelectMany(sc => sc.Exercises)
+                            .Select(e => new AssignedExercise
+                            {
+                                Name = e.Name,
+                                Sets = e.Sets,
+                                Reps = e.Reps,
+                                Weight = e.Weight,
+                                Rpe = e.Rpe
+                            }).ToList()
+                    }).ToList()
+                }
+            }
         };
 
         await _assignmentService.AssignProgramAsync(assignment);
-
         IsAssignPanelOpen = false;
-
-        await _alertService.AlertAsync(
-            "Programme assigné",
-            $"Le programme \"{ProgramName}\" a été assigné à {SelectedClient.FirstName} {SelectedClient.LastName}.");
+        await _alertService.AlertAsync("Séance assignée",
+            $"La séance \"{SeanceName}\" a été assignée à {SelectedClient.FullName}.");
     }
 
     [RelayCommand]
-    private async Task SaveToLibraryAsync()
+    private async Task SaveSeanceAsync()
     {
-        if (string.IsNullOrWhiteSpace(ProgramName))
+        if (string.IsNullOrWhiteSpace(SeanceName))
         {
-            await _alertService.AlertAsync("Attention", "Veuillez donner un nom au modèle avant de sauvegarder.");
+            await _alertService.AlertAsync("Attention", "Donnez un nom à la séance avant de sauvegarder.");
+            return;
+        }
+        if (CurrentSession is null || !CurrentSession.Categories.Any())
+        {
+            await _alertService.AlertAsync("Attention", "Ajoutez au moins une catégorie avant de sauvegarder.");
             return;
         }
 
-        await _alertService.AlertAsync("Sauvegardé", $"Le modèle \"{ProgramName}\" a été sauvegardé dans la bibliothèque.");
+        await _sessionLibraryService.InitializeAsync();
+        await _sessionLibraryService.SaveSessionAsync(
+            SeanceName.Trim(),
+            SeanceDescription.Trim(),
+            CurrentSession.Model);
+
+        await _alertService.AlertAsync("Séance sauvegardée",
+            $"La séance \"{SeanceName}\" est disponible dans la bibliothèque des Programmes.");
+
+        InitNewSeance(); // Réinitialise pour une nouvelle séance
     }
 
-    private void RecalculateOrders()
+    // ── Helpers ──────────────────────────────────────────────────
+
+    private static ExerciseLibraryItem ToItem(ExerciseLibraryEntry e) => new()
     {
-        for (var i = 0; i < Sessions.Count; i++)
-        {
-            Sessions[i].Order = i + 1;
-        }
-    }
+        DbId = e.Id,
+        Id = Guid.NewGuid(),
+        Name = e.Name,
+        Category = e.CategoryName,
+        MuscleGroup = e.MuscleGroup
+    };
 }

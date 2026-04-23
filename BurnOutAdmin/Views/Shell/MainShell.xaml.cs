@@ -48,7 +48,7 @@ public partial class MainShell : ContentPage
         {
             DashboardViewModel vm => new DashboardView { BindingContext = vm },
             ClientsViewModel vm => new ClientsView { BindingContext = vm },
-            ProgrammesViewModel vm => new ProgrammesView { BindingContext = vm },
+            ProgrammesViewModel vm => CreateProgrammesView(vm),
             ProgramBuilderViewModel vm => new ProgramBuilderView { BindingContext = vm },
             ChallengesViewModel vm => new ChallengesView { BindingContext = vm },
             NfcLogsViewModel vm => new NfcLogsView { BindingContext = vm },
@@ -57,5 +57,12 @@ public partial class MainShell : ContentPage
         };
 
         ContentArea.Content = newView ?? new Label { Text = "Page non trouvée", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
+    }
+
+    private static ProgrammesView CreateProgrammesView(ProgrammesViewModel vm)
+    {
+        var view = new ProgrammesView { BindingContext = vm };
+        _ = vm.LoadCommand.ExecuteAsync(null);
+        return view;
     }
 }

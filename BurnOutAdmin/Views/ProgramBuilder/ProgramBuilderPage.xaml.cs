@@ -22,7 +22,7 @@ public partial class ProgramBuilderPage : ContentPage
 
         if (BindingContext is ProgramBuilderViewModel vm)
         {
-            await vm.LoadProgramCommand.ExecuteAsync(null);
+            await vm.LoadCommand.ExecuteAsync(null);
         }
     }
 }
