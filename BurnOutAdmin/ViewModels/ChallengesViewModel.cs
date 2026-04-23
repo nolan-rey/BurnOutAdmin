@@ -15,13 +15,13 @@ public partial class ChallengesViewModel : BaseViewModel
 
     // ── Collections ───────────────────────────────────────────────
     private readonly List<ChallengeCardViewModel> _allCards = new();
-    public ObservableCollection<ChallengeCardViewModel>         FilteredChallenges { get; } = new();
-    public ObservableCollection<ChallengeParticipantRowViewModel> Participants      { get; } = new();
+    public ObservableCollection<ChallengeCardViewModel>           FilteredChallenges { get; } = new();
+    public ObservableCollection<ChallengeParticipantRowViewModel> Participants        { get; } = new();
 
     // ── Selected challenge ────────────────────────────────────────
     [ObservableProperty] private ChallengeCardViewModel? _selectedCard;
 
-    // ── Filters ───────────────────────────────────────────────────
+    // ── Filtres ───────────────────────────────────────────────────
     [ObservableProperty] private string _activeFilter = "Tous";
     [ObservableProperty] private string _searchText   = string.Empty;
 
@@ -30,22 +30,30 @@ public partial class ChallengesViewModel : BaseViewModel
     public bool IsFilterUpcoming  => ActiveFilter == "À venir";
     public bool IsFilterCompleted => ActiveFilter == "Terminés";
 
-    // ── Empty states ─────────────────────────────────────────────
+    // ── États vides ───────────────────────────────────────────────
     public bool IsListEmpty   => FilteredChallenges.Count == 0 && !IsBusy;
     public bool IsDetailEmpty => SelectedCard == null;
 
-    // ── Create / Edit modal ───────────────────────────────────────
-    [ObservableProperty] private bool   _isEditModalOpen;
-    [ObservableProperty] private bool   _isEditMode;
-    [ObservableProperty] private string _modalName        = string.Empty;
-    [ObservableProperty] private string _modalDescription = string.Empty;
-    [ObservableProperty] private int    _modalTypeIndex;
-    [ObservableProperty] private int    _modalStatusIndex;
-    [ObservableProperty] private DateTime _modalStartDate = DateTime.Today;
-    [ObservableProperty] private DateTime _modalEndDate   = DateTime.Today.AddDays(30);
-    [ObservableProperty] private string _modalTargetGoal  = "30";
-    [ObservableProperty] private string _modalGoalUnit    = string.Empty;
-    [ObservableProperty] private string _modalReward      = string.Empty;
+    // ── Statistiques classement (panel droit) ────────────────────
+    public int    ParticipantCount  => Participants.Count;
+    public string LeaderName        => Participants.Count > 0 ? Participants[0].ClientName : "—";
+    public int    CompletedCount    => Participants.Count(p => p.ProgressRatio >= 1.0);
+    public double AveragePercent    =>
+        Participants.Count > 0 ? Participants.Average(p => p.ProgressRatio) * 100 : 0;
+    public string AveragePercentText => $"{(int)AveragePercent} %";
+
+    // ── Créer / Modifier challenge ────────────────────────────────
+    [ObservableProperty] private bool     _isEditModalOpen;
+    [ObservableProperty] private bool     _isEditMode;
+    [ObservableProperty] private string   _modalName        = string.Empty;
+    [ObservableProperty] private string   _modalDescription = string.Empty;
+    [ObservableProperty] private int      _modalTypeIndex;
+    [ObservableProperty] private int      _modalStatusIndex;
+    [ObservableProperty] private DateTime _modalStartDate   = DateTime.Today;
+    [ObservableProperty] private DateTime _modalEndDate     = DateTime.Today.AddDays(30);
+    [ObservableProperty] private string   _modalTargetGoal  = "30";
+    [ObservableProperty] private string   _modalGoalUnit    = string.Empty;
+    [ObservableProperty] private string   _modalReward      = string.Empty;
 
     public string EditModalTitle => IsEditMode ? "Modifier le challenge" : "Nouveau challenge";
 
@@ -57,22 +65,21 @@ public partial class ChallengesViewModel : BaseViewModel
 
     private Challenge? _editingChallenge;
 
-    // ── Assign participants modal ─────────────────────────────────
-    [ObservableProperty] private bool _isAssignModalOpen;
-    public ObservableCollection<ClientSelectionViewModel> SelectableClients { get; } = new();
-    public bool HasSelectableClients => SelectableClients.Any(c => c.IsSelected);
+    // ── Modal : Enregistrer une performance ───────────────────────
+    [ObservableProperty] private bool   _isRecordModalOpen;
+    [ObservableProperty] private int    _recordClientIndex = -1;
+    [ObservableProperty] private string _recordNewValue    = string.Empty;
+    [ObservableProperty] private string _recordCurrentHint = string.Empty;
+    [ObservableProperty] private bool   _recordIsUpdate;
 
-    // ── Progress update modal ─────────────────────────────────────
-    [ObservableProperty] private bool   _isProgressModalOpen;
-    [ObservableProperty] private string _newProgressValue = string.Empty;
+    public string RecordGoalUnit   => SelectedCard?.Challenge.GoalUnit ?? string.Empty;
+    public string RecordButtonText => RecordIsUpdate ? "Mettre à jour" : "Enregistrer";
 
-    private ChallengeParticipantRowViewModel? _participantToUpdate;
-    public string ProgressModalTitle  => _participantToUpdate != null
-        ? $"Progression — {_participantToUpdate.ClientName}"
-        : string.Empty;
-    public string ProgressModalSubtitle => _participantToUpdate != null
-        ? $"Objectif : {_participantToUpdate.ProgressText}"
-        : string.Empty;
+    public List<string> RecordClientNames { get; private set; } = new();
+
+    // Références internes pour la modale
+    private List<Client>             _recordAllClients   = new();
+    private List<ChallengeParticipant> _recordExisting   = new();
 
     // ─────────────────────────────────────────────────────────────
 
@@ -89,7 +96,7 @@ public partial class ChallengesViewModel : BaseViewModel
 
     public override Task OnActivatedAsync() => LoadAsync();
 
-    // ── Load ──────────────────────────────────────────────────────
+    // ── Chargement ────────────────────────────────────────────────
 
     [RelayCommand]
     public async Task LoadAsync()
@@ -114,16 +121,15 @@ public partial class ChallengesViewModel : BaseViewModel
 
         foreach (var c in challenges)
         {
-            var participants = await _challengeService.GetParticipantsAsync(c.Id);
+            var pts = await _challengeService.GetParticipantsAsync(c.Id);
             _allCards.Add(new ChallengeCardViewModel(
-                c, participants.Count,
-                OnSelectCard, OnEditCard, OnDeleteCard));
+                c, pts.Count, OnSelectCard, OnEditCard, OnDeleteCard));
         }
 
         ApplyFilter();
     }
 
-    // ── Filters ───────────────────────────────────────────────────
+    // ── Filtres ───────────────────────────────────────────────────
 
     partial void OnActiveFilterChanged(string value)
     {
@@ -142,10 +148,10 @@ public partial class ChallengesViewModel : BaseViewModel
 
         filtered = ActiveFilter switch
         {
-            "Actifs"    => filtered.Where(c => c.Challenge.Status == ChallengeStatus.Active),
-            "À venir"   => filtered.Where(c => c.Challenge.Status == ChallengeStatus.Upcoming),
-            "Terminés"  => filtered.Where(c => c.Challenge.Status == ChallengeStatus.Completed),
-            _           => filtered
+            "Actifs"   => filtered.Where(c => c.Challenge.Status == ChallengeStatus.Active),
+            "À venir"  => filtered.Where(c => c.Challenge.Status == ChallengeStatus.Upcoming),
+            "Terminés" => filtered.Where(c => c.Challenge.Status == ChallengeStatus.Completed),
+            _          => filtered
         };
 
         if (!string.IsNullOrWhiteSpace(SearchText))
@@ -165,50 +171,61 @@ public partial class ChallengesViewModel : BaseViewModel
     [RelayCommand] private void SetFilterUpcoming()  => ActiveFilter = "À venir";
     [RelayCommand] private void SetFilterCompleted() => ActiveFilter = "Terminés";
 
-    // ── Selection ─────────────────────────────────────────────────
+    // ── Sélection ─────────────────────────────────────────────────
 
     private async void OnSelectCard(ChallengeCardViewModel card)
     {
-        // Toggle : deselect si déjà sélectionné
         if (SelectedCard == card)
         {
             card.IsSelected = false;
             SelectedCard = null;
             Participants.Clear();
+            RefreshLeaderboardStats();
             OnPropertyChanged(nameof(IsDetailEmpty));
             return;
         }
 
-        // Deselect previous
-        if (SelectedCard != null)
-            SelectedCard.IsSelected = false;
-
+        if (SelectedCard != null) SelectedCard.IsSelected = false;
         card.IsSelected = true;
         SelectedCard = card;
         OnPropertyChanged(nameof(IsDetailEmpty));
-
-        await LoadParticipantsAsync(card.Challenge.Id);
+        await LoadLeaderboardAsync(card.Challenge.Id);
     }
 
-    private async Task LoadParticipantsAsync(int challengeId)
+    private async Task LoadLeaderboardAsync(int challengeId)
     {
         var card = _allCards.FirstOrDefault(c => c.Challenge.Id == challengeId);
         if (card == null) return;
 
         var list = await _challengeService.GetParticipantsAsync(challengeId);
+
+        // Trier par score décroissant → classement
+        var sorted = list.OrderByDescending(p => p.CurrentValue).ToList();
+
         Participants.Clear();
-        foreach (var p in list)
+        for (var i = 0; i < sorted.Count; i++)
         {
             Participants.Add(new ChallengeParticipantRowViewModel(
-                p,
+                sorted[i],
+                i + 1,                       // rang
                 card.Challenge.TargetGoal,
                 card.Challenge.GoalUnit,
-                OnUpdateProgress,
                 OnRemoveParticipant));
         }
+
+        RefreshLeaderboardStats();
     }
 
-    // ── Create / Edit ─────────────────────────────────────────────
+    private void RefreshLeaderboardStats()
+    {
+        OnPropertyChanged(nameof(ParticipantCount));
+        OnPropertyChanged(nameof(LeaderName));
+        OnPropertyChanged(nameof(CompletedCount));
+        OnPropertyChanged(nameof(AveragePercent));
+        OnPropertyChanged(nameof(AveragePercentText));
+    }
+
+    // ── Créer / Modifier challenge ────────────────────────────────
 
     [RelayCommand]
     private void OpenCreate()
@@ -319,11 +336,12 @@ public partial class ChallengesViewModel : BaseViewModel
         IsEditModalOpen = false;
         SelectedCard    = null;
         Participants.Clear();
+        RefreshLeaderboardStats();
         OnPropertyChanged(nameof(IsDetailEmpty));
         await RefreshChallengesAsync();
     }
 
-    // ── Delete ────────────────────────────────────────────────────
+    // ── Supprimer challenge ───────────────────────────────────────
 
     private async void OnDeleteCard(ChallengeCardViewModel card)
     {
@@ -334,38 +352,42 @@ public partial class ChallengesViewModel : BaseViewModel
         {
             SelectedCard = null;
             Participants.Clear();
+            RefreshLeaderboardStats();
             OnPropertyChanged(nameof(IsDetailEmpty));
         }
 
         ApplyFilter();
     }
 
-    // ── Assign participants ────────────────────────────────────────
+    // ── Enregistrer une performance ───────────────────────────────
 
     [RelayCommand]
-    private async Task OpenAssignAsync()
+    private async Task OpenRecordAsync()
     {
         if (SelectedCard == null) return;
         try
         {
-            var clients  = await _clientService.GetClientsAsync();
-            var existing = await _challengeService.GetParticipantsAsync(SelectedCard.Challenge.Id);
-            var existingIds = existing.Select(p => p.ClientId).ToHashSet();
+            var clients = await _clientService.GetClientsAsync();
+            _recordAllClients = clients.Where(c => c.Status == "Actif")
+                                       .OrderBy(c => c.LastName)
+                                       .ThenBy(c => c.FirstName)
+                                       .ToList();
 
-            SelectableClients.Clear();
-            foreach (var client in clients.Where(c => c.Status == "Actif" && !existingIds.Contains(c.Id)))
-            {
-                var vm = new ClientSelectionViewModel(client);
-                vm.PropertyChanged += (_, e) =>
-                {
-                    if (e.PropertyName == nameof(ClientSelectionViewModel.IsSelected))
-                        OnPropertyChanged(nameof(HasSelectableClients));
-                };
-                SelectableClients.Add(vm);
-            }
+            _recordExisting = await _challengeService.GetParticipantsAsync(SelectedCard.Challenge.Id);
 
-            OnPropertyChanged(nameof(HasSelectableClients));
-            IsAssignModalOpen = true;
+            RecordClientNames = _recordAllClients
+                .Select(c => $"{c.FirstName} {c.LastName}")
+                .ToList();
+
+            OnPropertyChanged(nameof(RecordClientNames));
+            OnPropertyChanged(nameof(RecordGoalUnit));
+            OnPropertyChanged(nameof(RecordButtonText));
+
+            RecordClientIndex  = -1;
+            RecordNewValue     = string.Empty;
+            RecordCurrentHint  = string.Empty;
+            RecordIsUpdate     = false;
+            IsRecordModalOpen  = true;
         }
         catch
         {
@@ -373,52 +395,50 @@ public partial class ChallengesViewModel : BaseViewModel
         }
     }
 
-    [RelayCommand]
-    private void CancelAssign() => IsAssignModalOpen = false;
-
-    [RelayCommand]
-    private async Task ConfirmAssignAsync()
+    partial void OnRecordClientIndexChanged(int value)
     {
-        if (SelectedCard == null) return;
-
-        var selected = SelectableClients.Where(c => c.IsSelected).ToList();
-        if (selected.Count == 0)
+        if (value < 0 || value >= _recordAllClients.Count)
         {
-            await _alertService.AlertAsync("Attention", "Sélectionnez au moins un client.");
+            RecordCurrentHint = string.Empty;
+            RecordNewValue    = string.Empty;
+            RecordIsUpdate    = false;
+            OnPropertyChanged(nameof(RecordButtonText));
             return;
         }
 
-        foreach (var clientVm in selected)
-            await _challengeService.AddParticipantAsync(
-                SelectedCard.Challenge.Id,
-                clientVm.Client.Id,
-                clientVm.FullName);
+        var client   = _recordAllClients[value];
+        var existing = _recordExisting.FirstOrDefault(p => p.ClientId == client.Id);
 
-        IsAssignModalOpen = false;
-        await LoadParticipantsAsync(SelectedCard.Challenge.Id);
-        SelectedCard.ParticipantCount = Participants.Count;
-    }
+        RecordIsUpdate = existing != null;
+        OnPropertyChanged(nameof(RecordButtonText));
 
-    // ── Update progress ────────────────────────────────────────────
-
-    private void OnUpdateProgress(ChallengeParticipantRowViewModel row)
-    {
-        _participantToUpdate = row;
-        NewProgressValue     = row.CurrentValue.ToString("G");
-        OnPropertyChanged(nameof(ProgressModalTitle));
-        OnPropertyChanged(nameof(ProgressModalSubtitle));
-        IsProgressModalOpen = true;
+        if (existing != null)
+        {
+            RecordCurrentHint = $"Valeur actuelle : {existing.CurrentValue} {RecordGoalUnit}";
+            RecordNewValue    = existing.CurrentValue.ToString("G");
+        }
+        else
+        {
+            RecordCurrentHint = string.Empty;
+            RecordNewValue    = string.Empty;
+        }
     }
 
     [RelayCommand]
-    private void CancelProgress() => IsProgressModalOpen = false;
+    private void CancelRecord() => IsRecordModalOpen = false;
 
     [RelayCommand]
-    private async Task ConfirmProgressAsync()
+    private async Task ConfirmRecordAsync()
     {
-        if (_participantToUpdate == null) return;
+        if (SelectedCard == null) return;
 
-        if (!double.TryParse(NewProgressValue.Replace(',', '.'),
+        if (RecordClientIndex < 0 || RecordClientIndex >= _recordAllClients.Count)
+        {
+            await _alertService.AlertAsync("Attention", "Sélectionnez un athlète.");
+            return;
+        }
+
+        if (!double.TryParse(RecordNewValue.Replace(',', '.'),
                 System.Globalization.NumberStyles.Any,
                 System.Globalization.CultureInfo.InvariantCulture,
                 out double val) || val < 0)
@@ -427,21 +447,32 @@ public partial class ChallengesViewModel : BaseViewModel
             return;
         }
 
-        await _challengeService.UpdateProgressAsync(_participantToUpdate.Id, val);
-        IsProgressModalOpen = false;
+        var client    = _recordAllClients[RecordClientIndex];
+        var challengeId = SelectedCard.Challenge.Id;
+        var fullName  = $"{client.FirstName} {client.LastName}";
 
-        if (SelectedCard != null)
-            await LoadParticipantsAsync(SelectedCard.Challenge.Id);
+        // Ajouter si nouveau, puis mettre à jour la valeur
+        await _challengeService.AddParticipantAsync(challengeId, client.Id, fullName);
+
+        // Récupérer l'entrée (nouvelle ou existante) et mettre à jour
+        var participants = await _challengeService.GetParticipantsAsync(challengeId);
+        var entry = participants.FirstOrDefault(p => p.ClientId == client.Id);
+        if (entry != null)
+            await _challengeService.UpdateProgressAsync(entry.Id, val);
+
+        IsRecordModalOpen = false;
+        await LoadLeaderboardAsync(challengeId);
+
+        // Mettre à jour le compteur sur la carte
+        SelectedCard.ParticipantCount = Participants.Count;
     }
 
-    // ── Remove participant ─────────────────────────────────────────
+    // ── Retirer un participant ────────────────────────────────────
 
     private async void OnRemoveParticipant(ChallengeParticipantRowViewModel row)
     {
         await _challengeService.RemoveParticipantAsync(row.Id);
-        Participants.Remove(row);
-
-        if (SelectedCard != null)
-            SelectedCard.ParticipantCount = Participants.Count;
+        await LoadLeaderboardAsync(SelectedCard!.Challenge.Id);
+        SelectedCard.ParticipantCount = Participants.Count;
     }
 }
