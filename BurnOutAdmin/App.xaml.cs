@@ -1,4 +1,6 @@
+using BurnOutAdmin.Services.Api;
 using BurnOutAdmin.Services.Nfc;
+using BurnOutAdmin.Views.Auth;
 using BurnOutAdmin.Views.Shell;
 
 namespace BurnOutAdmin;
@@ -6,7 +8,7 @@ namespace BurnOutAdmin;
 public partial class App : Application
 {
     private readonly IServiceProvider _serviceProvider;
-    
+
     public App(IServiceProvider serviceProvider)
     {
         InitializeComponent();
@@ -15,13 +17,34 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        var mainShell = _serviceProvider.GetRequiredService<MainShell>();
-
-        // Démarrer l'orchestrateur NFC automatiquement (lecteur RFID + MQTT)
-        // Fire-and-forget : le reader écoute en continu dès le lancement de l'app
         Console.WriteLine("[App] ========== DÉMARRAGE APPLICATION ==========");
         Console.WriteLine($"[App] Plateforme: {DeviceInfo.Platform}");
         Console.WriteLine($"[App] OS: {DeviceInfo.VersionString}");
+
+        // ── Vérification du token d'authentification ──────────────
+        var auth = _serviceProvider.GetRequiredService<IApiAuthService>();
+        Page startPage;
+
+        if (auth.IsAuthenticated)
+        {
+            Console.WriteLine($"[App] Token valide trouvé pour {auth.CurrentUserEmail} — accès direct au shell.");
+            startPage = _serviceProvider.GetRequiredService<MainShell>();
+            StartNfcOrchestrator();
+        }
+        else
+        {
+            Console.WriteLine("[App] Aucun token valide — affichage de la page de connexion.");
+            startPage = _serviceProvider.GetRequiredService<LoginView>();
+        }
+
+        return new Window(startPage);
+    }
+
+    /// <summary>
+    /// Appelé depuis LoginViewModel après connexion réussie pour démarrer l'orchestrateur NFC.
+    /// </summary>
+    public void StartNfcOrchestrator()
+    {
         _ = Task.Run(async () =>
         {
             try
@@ -29,19 +52,15 @@ public partial class App : Application
                 Console.WriteLine("[App] Résolution INfcOrchestrator depuis le DI...");
                 var orchestrator = _serviceProvider.GetRequiredService<INfcOrchestrator>();
                 Console.WriteLine($"[App] Orchestrateur résolu: {orchestrator.GetType().Name}");
-                Console.WriteLine("[App] Appel orchestrator.StartAsync()...");
                 await orchestrator.StartAsync();
                 Console.WriteLine($"[App] Orchestrateur démarré. Reader={orchestrator.IsReaderConnected}, MQTT={orchestrator.IsMqttConnected}");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[App] ERREUR démarrage orchestrateur: {ex.GetType().Name}: {ex.Message}");
-                Console.WriteLine($"[App] Stack: {ex.StackTrace}");
                 if (ex.InnerException != null)
                     Console.WriteLine($"[App] Inner: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
             }
         });
-
-        return new Window(mainShell);
     }
 }

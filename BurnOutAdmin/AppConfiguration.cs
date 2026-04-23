@@ -6,6 +6,10 @@ namespace BurnOutAdmin;
 /// </summary>
 public static class AppConfiguration
 {
+    // ── API REST ─────────────────────────────────────────────────
+    /// <summary>URL de base de l'API CallOfPhoenix.</summary>
+    public const string ApiBaseUrl = "http://98.66.235.57";
+
     // ── MQTT ────────────────────────────────────────────────────
     /// <summary>Adresse IP du broker MQTT (Raspberry Pi sur le réseau local).</summary>
     public const string MqttBrokerHost = "172.31.254.200";

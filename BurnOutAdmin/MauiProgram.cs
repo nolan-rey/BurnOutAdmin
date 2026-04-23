@@ -1,4 +1,5 @@
 using BurnOutAdmin.Services;
+using BurnOutAdmin.Services.Api;
 using BurnOutAdmin.Services.Challenges;
 using BurnOutAdmin.Services.ExerciseLibrary;
 using BurnOutAdmin.Services.SessionLibrary;
@@ -6,7 +7,9 @@ using BurnOutAdmin.Services.Mqtt;
 using BurnOutAdmin.Services.Nfc;
 using BurnOutAdmin.Services.Rfid;
 using BurnOutAdmin.ViewModels;
+using BurnOutAdmin.ViewModels.Auth;
 using BurnOutAdmin.ViewModels.ProgramBuilder;
+using BurnOutAdmin.Views.Auth;
 using BurnOutAdmin.Views.ProgramBuilder;
 using BurnOutAdmin.Views.Shell;
 using Microsoft.Extensions.Logging;
@@ -26,6 +29,10 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 fonts.AddFont("MaterialIcons-Regular.ttf", "MaterialIcons");
             });
+
+        // ── Infrastructure API REST ──────────────────────────────────
+        builder.Services.AddSingleton<IApiAuthService, ApiAuthService>();
+        builder.Services.AddSingleton<ApiHttpClient>();
 
         // ── Infrastructure NFC ──────────────────────────────────────
 
@@ -50,19 +57,19 @@ public static class MauiProgram
         // ── Services métier ─────────────────────────────────────────
 
         builder.Services.AddSingleton<IUserService, UserService>();
-        builder.Services.AddSingleton<IClientService, MockClientService>();
-        builder.Services.AddSingleton<INfcService, MockNfcService>();
-        builder.Services.AddSingleton<IProgrammeService, MockProgrammeService>();
-        builder.Services.AddSingleton<IChallengeService, SqliteChallengeService>();
-        builder.Services.AddSingleton<IDashboardService, MockDashboardService>();
+        builder.Services.AddSingleton<IClientService, MockClientService>();        // TODO: ApiClientService
+        builder.Services.AddSingleton<INfcService, MockNfcService>();              // TODO: ApiNfcService
+        builder.Services.AddSingleton<IProgrammeService, ApiProgrammeService>();   // ✅ Connecté à l'API
+        builder.Services.AddSingleton<IChallengeService, SqliteChallengeService>(); // TODO: ApiChallengeService
+        builder.Services.AddSingleton<IDashboardService, MockDashboardService>();   // TODO: ApiDashboardService
         builder.Services.AddSingleton<IAlertService, MauiAlertService>();
-        builder.Services.AddSingleton<IProgramAssignmentService, MockProgramAssignmentService>();
-        builder.Services.AddSingleton<IExerciseLibraryService, SqliteExerciseLibraryService>();
-        builder.Services.AddSingleton<ISessionLibraryService, SqliteSessionLibraryService>();
-        
+        builder.Services.AddSingleton<IProgramAssignmentService, MockProgramAssignmentService>(); // TODO: ApiProgramAssignmentService
+        builder.Services.AddSingleton<IExerciseLibraryService, SqliteExerciseLibraryService>();   // TODO: ApiExerciseService
+        builder.Services.AddSingleton<ISessionLibraryService, SqliteSessionLibraryService>();     // TODO: ApiSessionService
+
         // Navigation Service - Singleton for app-wide navigation
         builder.Services.AddSingleton<INavigationService, NavigationService>();
-        
+
         // ── ViewModels ──────────────────────────────────────────────
 
         builder.Services.AddSingleton<MainShellViewModel>();
@@ -73,10 +80,13 @@ public static class MauiProgram
         builder.Services.AddTransient<ChallengesViewModel>();
         builder.Services.AddTransient<NfcLogsViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
-        
-        // Views
+        builder.Services.AddTransient<LoginViewModel>();
+
+        // ── Views ───────────────────────────────────────────────────
+
         builder.Services.AddSingleton<MainShell>();
         builder.Services.AddTransient<ProgramBuilderPage>();
+        builder.Services.AddTransient<LoginView>();
 
 #if DEBUG
         builder.Logging.AddDebug();
