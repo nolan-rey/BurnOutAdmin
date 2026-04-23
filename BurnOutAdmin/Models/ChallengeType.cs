@@ -24,11 +24,11 @@ public static class ChallengeTypeExtensions
 
     public static string ToIcon(this ChallengeType type) => type switch
     {
-        ChallengeType.Cardio      => "🏃",
-        ChallengeType.Force       => "💪",
-        ChallengeType.Endurance   => "🚴",
-        ChallengeType.Poids       => "⚖️",
-        ChallengeType.Flexibilite => "🧘",
-        _                         => "🏆"
+        ChallengeType.Cardio      => "\uE566", // directions_run
+        ChallengeType.Force       => "\uE3A9", // fitness_center (dumbbell)
+        ChallengeType.Endurance   => "\uE52F", // directions_bike
+        ChallengeType.Poids       => "\uEA26", // balance / scale
+        ChallengeType.Flexibilite => "\uEA78", // self_improvement
+        _                         => "\uEBD2"  // emoji_events (trophy)
     };
 }
