@@ -1,4 +1,5 @@
 using BurnOutAdmin.Services;
+using BurnOutAdmin.Services.Challenges;
 using BurnOutAdmin.Services.ExerciseLibrary;
 using BurnOutAdmin.Services.SessionLibrary;
 using BurnOutAdmin.Services.Mqtt;
@@ -52,7 +53,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IClientService, MockClientService>();
         builder.Services.AddSingleton<INfcService, MockNfcService>();
         builder.Services.AddSingleton<IProgrammeService, MockProgrammeService>();
-        builder.Services.AddSingleton<IChallengeService, MockChallengeService>();
+        builder.Services.AddSingleton<IChallengeService, SqliteChallengeService>();
         builder.Services.AddSingleton<IDashboardService, MockDashboardService>();
         builder.Services.AddSingleton<IAlertService, MauiAlertService>();
         builder.Services.AddSingleton<IProgramAssignmentService, MockProgramAssignmentService>();
