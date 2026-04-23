@@ -1,97 +1,814 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:viewmodels="clr-namespace:BurnOutAdmin.ViewModels"
-             xmlns:models="clr-namespace:BurnOutAdmin.Models"
+             xmlns:vm="clr-namespace:BurnOutAdmin.ViewModels"
+             xmlns:cards="clr-namespace:BurnOutAdmin.ViewModels.Challenges"
              x:Class="BurnOutAdmin.Views.Challenges.ChallengesView"
-             x:DataType="viewmodels:ChallengesViewModel"
-             BackgroundColor="#F5F5F5">
+             x:DataType="vm:ChallengesViewModel">
 
-    <Grid Padding="24" RowDefinitions="Auto,*">
-        
-        <!-- Header -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,24">
-            <VerticalStackLayout Grid.Column="0" Spacing="4">
-                <Label Text="🏆 Challenges"
-                       FontSize="28"
-                       FontAttributes="Bold"
-                       TextColor="#1E1E2E"/>
-                <Label Text="Gestion des défis et challenges pour vos membres"
-                       FontSize="14"
-                       TextColor="#666666"/>
-            </VerticalStackLayout>
-            
-            <Button Grid.Column="1"
-                    Text="+ Nouveau Challenge"
-                    Command="{Binding AddChallengeCommand}"
-                    BackgroundColor="#512BD4"
-                    TextColor="White"
-                    FontAttributes="Bold"
-                    Padding="20,12"
-                    CornerRadius="8"/>
-        </Grid>
-        
-        <!-- Challenges List -->
-        <CollectionView Grid.Row="1"
-                        ItemsSource="{Binding Challenges}"
-                        SelectionMode="Single"
-                        SelectedItem="{Binding SelectedChallenge}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:Challenge">
-                    <Border BackgroundColor="White"
-                            StrokeThickness="0"
-                            Padding="20"
-                            Margin="0,0,0,12">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="12"/>
-                        </Border.StrokeShape>
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
-                            
-                            <!-- Icon -->
-                            <Label Grid.Column="0" Text="🎯" FontSize="32" VerticalOptions="Center"/>
-                            
-                            <!-- Challenge Info -->
-                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
-                                <Label Text="{Binding Name}"
-                                       FontSize="16"
-                                       FontAttributes="Bold"
-                                       TextColor="#1E1E2E"/>
-                                <Label Text="{Binding Description}"
-                                       FontSize="13"
-                                       TextColor="#666666"
-                                       LineBreakMode="TailTruncation"
-                                       MaxLines="1"/>
-                                <Label Text="{Binding ParticipantsCount, StringFormat='{0} participants'}"
-                                       FontSize="12"
-                                       TextColor="#888888"/>
-                            </VerticalStackLayout>
-                            
-                            <!-- Status -->
-                            <Border Grid.Column="2"
-                                    BackgroundColor="#4CAF50"
-                                    StrokeThickness="0"
-                                    Padding="12,6"
-                                    VerticalOptions="Center">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="12"/>
-                                </Border.StrokeShape>
-                                <Label Text="{Binding StatusText}"
-                                       FontSize="12"
-                                       FontAttributes="Bold"
-                                       TextColor="White"/>
+    <Grid BackgroundColor="#F1F5F9">
+
+        <!-- ═══════════ CONTENU PRINCIPAL ═══════════ -->
+        <Grid Padding="28,24" RowDefinitions="Auto,*">
+
+            <!-- ─── En-tête ─── -->
+            <Grid Grid.Row="0" Margin="0,0,0,20" ColumnDefinitions="*,Auto">
+                <HorizontalStackLayout Grid.Column="0" Spacing="16" VerticalOptions="Center">
+                    <Border BackgroundColor="#512BD4" StrokeThickness="0"
+                            WidthRequest="48" HeightRequest="48" StrokeShape="RoundRectangle 12">
+                        <Label Text="&#xEBD2;" FontFamily="MaterialIcons" FontSize="24"
+                               TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
+                    <VerticalStackLayout Spacing="3" VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="6">
+                            <Label Text="Challenges" TextColor="#94A3B8" FontSize="12"/>
+                            <Label Text="›" TextColor="#CBD5E1" FontSize="12"/>
+                            <Label Text="Classements &amp; défis" TextColor="#475569" FontSize="12" FontAttributes="Bold"/>
+                        </HorizontalStackLayout>
+                        <Label Text="Challenges" FontSize="24" FontAttributes="Bold" TextColor="#0F172A"/>
+                        <Label Text="Créez des défis ouverts à tous vos membres et suivez leur classement."
+                               FontSize="13" TextColor="#94A3B8"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <Button Grid.Column="1"
+                        Text="+ Nouveau challenge"
+                        Command="{Binding OpenCreateCommand}"
+                        BackgroundColor="#512BD4" TextColor="White"
+                        FontAttributes="Bold" FontSize="13"
+                        Padding="18,10" CornerRadius="8"
+                        VerticalOptions="Center"/>
+            </Grid>
+
+            <!-- ─── Deux colonnes ─── -->
+            <Grid Grid.Row="1" ColumnDefinitions="400,*" ColumnSpacing="20">
+
+                <!-- ══ GAUCHE : Liste des challenges ══ -->
+                <Border Grid.Column="0"
+                        BackgroundColor="White" Stroke="#E2E8F0"
+                        StrokeThickness="1" StrokeShape="RoundRectangle 16"
+                        Padding="20">
+                    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+                            <Label Grid.Column="0" Text="Challenges"
+                                   FontSize="15" FontAttributes="Bold"
+                                   TextColor="#1E293B" VerticalOptions="Center"/>
+                            <Border Grid.Column="1"
+                                    BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                    Padding="10,4" StrokeShape="RoundRectangle 12">
+                                <Label Text="{Binding FilteredChallenges.Count}"
+                                       FontSize="12" TextColor="#512BD4" FontAttributes="Bold"/>
                             </Border>
                         </Grid>
+
+                        <!-- Filtres -->
+                        <HorizontalStackLayout Grid.Row="1" Spacing="6" Margin="0,0,0,12">
+                            <Button Text="Tous" Command="{Binding SetFilterAllCommand}"
+                                    FontSize="12" FontAttributes="Bold" Padding="12,6" CornerRadius="20">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsFilterAll}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="#512BD4"/>
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsFilterAll}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="#F1F5F9"/>
+                                        <Setter Property="TextColor" Value="#64748B"/>
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                            <Button Text="Actifs" Command="{Binding SetFilterActiveCommand}"
+                                    FontSize="12" FontAttributes="Bold" Padding="12,6" CornerRadius="20">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsFilterActive}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="#22C55E"/>
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsFilterActive}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="#F1F5F9"/>
+                                        <Setter Property="TextColor" Value="#64748B"/>
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                            <Button Text="À venir" Command="{Binding SetFilterUpcomingCommand}"
+                                    FontSize="12" FontAttributes="Bold" Padding="12,6" CornerRadius="20">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsFilterUpcoming}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="#F59E0B"/>
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsFilterUpcoming}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="#F1F5F9"/>
+                                        <Setter Property="TextColor" Value="#64748B"/>
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                            <Button Text="Terminés" Command="{Binding SetFilterCompletedCommand}"
+                                    FontSize="12" FontAttributes="Bold" Padding="12,6" CornerRadius="20">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsFilterCompleted}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="#6366F1"/>
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsFilterCompleted}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="#F1F5F9"/>
+                                        <Setter Property="TextColor" Value="#64748B"/>
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                        </HorizontalStackLayout>
+
+                        <!-- Recherche -->
+                        <Border Grid.Row="2" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8" BackgroundColor="White"
+                                Margin="0,0,0,12">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Padding="12,0">
+                                <Label Grid.Column="0" Text="&#xE8B6;" FontFamily="MaterialIcons"
+                                       FontSize="18" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                <Entry Grid.Column="1" Text="{Binding SearchText}"
+                                       Placeholder="Rechercher…" PlaceholderColor="#CBD5E1"
+                                       FontSize="13" TextColor="#1E293B"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Liste -->
+                        <Grid Grid.Row="3">
+                            <VerticalStackLayout IsVisible="{Binding IsListEmpty}"
+                                                 VerticalOptions="Center" Padding="16,40" Spacing="12">
+                                <Border BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                        WidthRequest="64" HeightRequest="64"
+                                        StrokeShape="RoundRectangle 16" HorizontalOptions="Center">
+                                    <Label Text="&#xEBD2;" FontFamily="MaterialIcons"
+                                           FontSize="32" TextColor="#512BD4"
+                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
+                                <Label Text="Aucun challenge trouvé"
+                                       FontSize="14" FontAttributes="Bold"
+                                       TextColor="#64748B" HorizontalTextAlignment="Center"/>
+                                <Label Text="Créez votre premier challenge pour commencer."
+                                       FontSize="12" TextColor="#94A3B8"
+                                       HorizontalTextAlignment="Center" LineBreakMode="WordWrap"/>
+                            </VerticalStackLayout>
+
+                            <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}"
+                                               Color="#512BD4" HeightRequest="36" VerticalOptions="Center"/>
+
+                            <ScrollView IsVisible="{Binding IsListEmpty, Converter={StaticResource InvertedBoolConverter}}"
+                                        VerticalScrollBarVisibility="Default">
+                                <CollectionView ItemsSource="{Binding FilteredChallenges}"
+                                                VerticalScrollBarVisibility="Never">
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="cards:ChallengeCardViewModel">
+                                            <Border Margin="0,0,0,10"
+                                                    BackgroundColor="{Binding CardBackground}"
+                                                    Stroke="{Binding CardBorderColor}"
+                                                    StrokeThickness="2" StrokeShape="RoundRectangle 10"
+                                                    Padding="14,12">
+                                                <Border.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding SelectCommand}"/>
+                                                </Border.GestureRecognizers>
+                                                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+
+                                                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                                        <Border Grid.Column="0"
+                                                                BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                                                WidthRequest="32" HeightRequest="32"
+                                                                StrokeShape="RoundRectangle 8" VerticalOptions="Center">
+                                                            <Label Text="{Binding TypeIcon}" FontFamily="MaterialIcons"
+                                                                   FontSize="16" TextColor="#512BD4"
+                                                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                        </Border>
+                                                        <Label Grid.Column="1" Text="{Binding Name}"
+                                                               FontSize="14" FontAttributes="Bold"
+                                                               TextColor="{Binding CardNameColor}"
+                                                               VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                                                        <Border Grid.Column="2"
+                                                                BackgroundColor="{Binding StatusColor}"
+                                                                StrokeThickness="0" Padding="8,3"
+                                                                StrokeShape="RoundRectangle 10" VerticalOptions="Center">
+                                                            <Label Text="{Binding StatusText}"
+                                                                   FontSize="10" FontAttributes="Bold" TextColor="White"/>
+                                                        </Border>
+                                                    </Grid>
+
+                                                    <Label Grid.Row="1" Text="{Binding Description}"
+                                                           FontSize="12" TextColor="#64748B"
+                                                           LineBreakMode="TailTruncation" MaxLines="1"/>
+
+                                                    <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                                                        <HorizontalStackLayout Grid.Column="0" Spacing="12">
+                                                            <HorizontalStackLayout Spacing="4">
+                                                                <Label Text="&#xE878;" FontFamily="MaterialIcons"
+                                                                       FontSize="11" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                                                <Label Text="{Binding DateRange}"
+                                                                       FontSize="11" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                                            </HorizontalStackLayout>
+                                                            <HorizontalStackLayout Spacing="4">
+                                                                <Label Text="&#xE7EF;" FontFamily="MaterialIcons"
+                                                                       FontSize="11" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                                                <Label Text="{Binding ParticipantLabel}"
+                                                                       FontSize="11" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                                            </HorizontalStackLayout>
+                                                        </HorizontalStackLayout>
+
+                                                        <Border Grid.Column="1"
+                                                                BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                                                WidthRequest="28" HeightRequest="28"
+                                                                StrokeShape="RoundRectangle 7" VerticalOptions="Center">
+                                                            <Border.GestureRecognizers>
+                                                                <TapGestureRecognizer Command="{Binding EditCommand}"/>
+                                                            </Border.GestureRecognizers>
+                                                            <Label Text="&#xE3C9;" FontFamily="MaterialIcons"
+                                                                   FontSize="14" TextColor="#512BD4"
+                                                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                        </Border>
+
+                                                        <Border Grid.Column="2"
+                                                                BackgroundColor="#FEF2F2" StrokeThickness="0"
+                                                                WidthRequest="28" HeightRequest="28"
+                                                                StrokeShape="RoundRectangle 7" VerticalOptions="Center">
+                                                            <Border.GestureRecognizers>
+                                                                <TapGestureRecognizer Command="{Binding DeleteCommand}"/>
+                                                            </Border.GestureRecognizers>
+                                                            <Label Text="&#xE872;" FontFamily="MaterialIcons"
+                                                                   FontSize="14" TextColor="#EF4444"
+                                                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                        </Border>
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </ScrollView>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- ══ DROITE : Détail + Classement ══ -->
+                <Grid Grid.Column="1">
+
+                    <!-- État vide -->
+                    <Border IsVisible="{Binding IsDetailEmpty}"
+                            BackgroundColor="White" Stroke="#E2E8F0"
+                            StrokeThickness="1" StrokeShape="RoundRectangle 16">
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="14">
+                            <Border BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                    WidthRequest="72" HeightRequest="72"
+                                    StrokeShape="RoundRectangle 20" HorizontalOptions="Center">
+                                <Label Text="&#xEBD2;" FontFamily="MaterialIcons"
+                                       FontSize="36" TextColor="#512BD4"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                            <Label Text="Sélectionnez un challenge"
+                                   FontSize="18" FontAttributes="Bold"
+                                   TextColor="#64748B" HorizontalTextAlignment="Center"/>
+                            <Label Text="Cliquez sur un challenge pour&#x0a;afficher son classement en direct."
+                                   FontSize="13" TextColor="#94A3B8"
+                                   HorizontalTextAlignment="Center" LineBreakMode="WordWrap"/>
+                        </VerticalStackLayout>
                     </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        
-        <!-- Loading -->
-        <ActivityIndicator Grid.Row="1"
-                           IsRunning="{Binding IsBusy}"
-                           IsVisible="{Binding IsBusy}"
-                           Color="#512BD4"
-                           HeightRequest="40"
-                           VerticalOptions="Center"/>
+
+                    <!-- Détail + Classement -->
+                    <Border IsVisible="{Binding IsDetailEmpty, Converter={StaticResource InvertedBoolConverter}}"
+                            BackgroundColor="White" Stroke="#E2E8F0"
+                            StrokeThickness="1" StrokeShape="RoundRectangle 16"
+                            Padding="24">
+
+                        <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="0">
+
+                            <!-- ─ Header challenge ─ -->
+                            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16" Margin="0,0,0,16">
+
+                                <Border Grid.Column="0"
+                                        BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                        WidthRequest="52" HeightRequest="52"
+                                        StrokeShape="RoundRectangle 14" VerticalOptions="Start">
+                                    <Label Text="{Binding SelectedCard.TypeIcon}"
+                                           FontFamily="MaterialIcons" FontSize="26" TextColor="#512BD4"
+                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
+
+                                <VerticalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
+                                    <Label Text="{Binding SelectedCard.Name}"
+                                           FontSize="17" FontAttributes="Bold" TextColor="#0F172A"
+                                           LineBreakMode="WordWrap"/>
+                                    <HorizontalStackLayout Spacing="6">
+                                        <Border BackgroundColor="{Binding SelectedCard.StatusColor}"
+                                                StrokeThickness="0" Padding="7,2" StrokeShape="RoundRectangle 8">
+                                            <Label Text="{Binding SelectedCard.StatusText}"
+                                                   FontSize="10" FontAttributes="Bold" TextColor="White"/>
+                                        </Border>
+                                        <Border BackgroundColor="#F1F5F9" StrokeThickness="0"
+                                                Padding="7,2" StrokeShape="RoundRectangle 8">
+                                            <Label Text="{Binding SelectedCard.TypeText}"
+                                                   FontSize="10" TextColor="#64748B"/>
+                                        </Border>
+                                        <Border BackgroundColor="#F1F5F9" StrokeThickness="0"
+                                                Padding="7,2" StrokeShape="RoundRectangle 8">
+                                            <HorizontalStackLayout Spacing="4">
+                                                <Label Text="&#xE153;" FontFamily="MaterialIcons"
+                                                       FontSize="10" TextColor="#64748B" VerticalOptions="Center"/>
+                                                <Label Text="{Binding SelectedCard.GoalText}"
+                                                       FontSize="10" TextColor="#64748B" VerticalOptions="Center"/>
+                                            </HorizontalStackLayout>
+                                        </Border>
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Spacing="14">
+                                        <HorizontalStackLayout Spacing="4">
+                                            <Label Text="&#xE878;" FontFamily="MaterialIcons"
+                                                   FontSize="11" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                            <Label Text="{Binding SelectedCard.DateRange}"
+                                                   FontSize="11" TextColor="#94A3B8"/>
+                                        </HorizontalStackLayout>
+                                        <HorizontalStackLayout Spacing="4">
+                                            <Label Text="&#xE8F6;" FontFamily="MaterialIcons"
+                                                   FontSize="11" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                            <Label Text="{Binding SelectedCard.RewardDescription}"
+                                                   FontSize="11" TextColor="#94A3B8"
+                                                   LineBreakMode="TailTruncation"/>
+                                        </HorizontalStackLayout>
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+
+                                <!-- Actions -->
+                                <VerticalStackLayout Grid.Column="2" Spacing="6" VerticalOptions="Start">
+                                    <Border BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8" Padding="0">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SelectedCard.EditCommand}"/>
+                                        </Border.GestureRecognizers>
+                                        <HorizontalStackLayout Spacing="5" Padding="10,6">
+                                            <Label Text="&#xE3C9;" FontFamily="MaterialIcons"
+                                                   FontSize="13" TextColor="#512BD4" VerticalOptions="Center"/>
+                                            <Label Text="Modifier" FontSize="11" FontAttributes="Bold"
+                                                   TextColor="#512BD4" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                    <Border BackgroundColor="#FEF2F2" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8" Padding="0">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SelectedCard.DeleteCommand}"/>
+                                        </Border.GestureRecognizers>
+                                        <HorizontalStackLayout Spacing="5" Padding="10,6">
+                                            <Label Text="&#xE872;" FontFamily="MaterialIcons"
+                                                   FontSize="13" TextColor="#EF4444" VerticalOptions="Center"/>
+                                            <Label Text="Supprimer" FontSize="11" FontAttributes="Bold"
+                                                   TextColor="#EF4444" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <!-- ─ Statistiques rapides ─ -->
+                            <Grid Grid.Row="1"
+                                  ColumnDefinitions="*,*,*,*" ColumnSpacing="10"
+                                  Margin="0,0,0,18">
+
+                                <!-- Participants -->
+                                <Border Grid.Column="0" BackgroundColor="#F8FAFC" StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 10" Padding="12,10">
+                                    <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                        <Label Text="&#xE7EF;" FontFamily="MaterialIcons"
+                                               FontSize="18" TextColor="#512BD4" HorizontalTextAlignment="Center"/>
+                                        <Label Text="{Binding ParticipantCount}"
+                                               FontSize="18" FontAttributes="Bold"
+                                               TextColor="#1E293B" HorizontalTextAlignment="Center"/>
+                                        <Label Text="Participants" FontSize="10" TextColor="#94A3B8"
+                                               HorizontalTextAlignment="Center"/>
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <!-- Leader -->
+                                <Border Grid.Column="1" BackgroundColor="#FFFBEB" StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 10" Padding="12,10">
+                                    <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                        <Label Text="&#xEBD2;" FontFamily="MaterialIcons"
+                                               FontSize="18" TextColor="#F59E0B" HorizontalTextAlignment="Center"/>
+                                        <Label Text="{Binding LeaderName}"
+                                               FontSize="12" FontAttributes="Bold"
+                                               TextColor="#1E293B" HorizontalTextAlignment="Center"
+                                               LineBreakMode="TailTruncation" MaxLines="1"/>
+                                        <Label Text="Leader" FontSize="10" TextColor="#94A3B8"
+                                               HorizontalTextAlignment="Center"/>
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <!-- Objectif atteint -->
+                                <Border Grid.Column="2" BackgroundColor="#F0FDF4" StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 10" Padding="12,10">
+                                    <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                        <Label Text="&#xE86C;" FontFamily="MaterialIcons"
+                                               FontSize="18" TextColor="#22C55E" HorizontalTextAlignment="Center"/>
+                                        <Label Text="{Binding CompletedCount}"
+                                               FontSize="18" FontAttributes="Bold"
+                                               TextColor="#1E293B" HorizontalTextAlignment="Center"/>
+                                        <Label Text="Objectif atteint" FontSize="10" TextColor="#94A3B8"
+                                               HorizontalTextAlignment="Center"/>
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <!-- Moyenne -->
+                                <Border Grid.Column="3" BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 10" Padding="12,10">
+                                    <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                        <Label Text="&#xE8E5;" FontFamily="MaterialIcons"
+                                               FontSize="18" TextColor="#6366F1" HorizontalTextAlignment="Center"/>
+                                        <Label Text="{Binding AveragePercentText}"
+                                               FontSize="18" FontAttributes="Bold"
+                                               TextColor="#1E293B" HorizontalTextAlignment="Center"/>
+                                        <Label Text="Progression moy." FontSize="10" TextColor="#94A3B8"
+                                               HorizontalTextAlignment="Center"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </Grid>
+
+                            <!-- ─ En-tête classement ─ -->
+                            <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+                                <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
+                                    <Label Text="Classement" FontSize="15" FontAttributes="Bold" TextColor="#1E293B"/>
+                                    <Label Text="Trié par performance décroissante"
+                                           FontSize="11" TextColor="#94A3B8"/>
+                                </VerticalStackLayout>
+                                <Border Grid.Column="1"
+                                        BackgroundColor="#512BD4" StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 8" Padding="0"
+                                        VerticalOptions="Center">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding OpenRecordCommand}"/>
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="6" Padding="14,8">
+                                        <Label Text="&#xE8E5;" FontFamily="MaterialIcons"
+                                               FontSize="15" TextColor="White" VerticalOptions="Center"/>
+                                        <Label Text="Enregistrer une performance"
+                                               FontSize="12" FontAttributes="Bold"
+                                               TextColor="White" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </Grid>
+
+                            <!-- ─ Liste classement ─ -->
+                            <Grid Grid.Row="3">
+
+                                <!-- Vide -->
+                                <VerticalStackLayout IsVisible="{Binding Participants.Count, Converter={StaticResource IsZeroConverter}}"
+                                                     VerticalOptions="Center" Spacing="10">
+                                    <Border BackgroundColor="#F1F5F9" StrokeThickness="0"
+                                            WidthRequest="56" HeightRequest="56"
+                                            StrokeShape="RoundRectangle 14" HorizontalOptions="Center">
+                                        <Label Text="&#xEBD2;" FontFamily="MaterialIcons"
+                                               FontSize="28" TextColor="#94A3B8"
+                                               HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Border>
+                                    <Label Text="Aucune performance enregistrée"
+                                           FontSize="14" FontAttributes="Bold"
+                                           TextColor="#94A3B8" HorizontalTextAlignment="Center"/>
+                                    <Label Text="Cliquez sur « Enregistrer une performance »&#x0a;pour ajouter le résultat d'un athlète."
+                                           FontSize="12" TextColor="#CBD5E1"
+                                           HorizontalTextAlignment="Center" LineBreakMode="WordWrap"/>
+                                </VerticalStackLayout>
+
+                                <!-- Classement -->
+                                <ScrollView VerticalScrollBarVisibility="Default">
+                                    <CollectionView ItemsSource="{Binding Participants}"
+                                                    VerticalScrollBarVisibility="Never">
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate x:DataType="cards:ChallengeParticipantRowViewModel">
+
+                                                <!-- Carte rang -->
+                                                <Border Margin="0,0,0,8"
+                                                        BackgroundColor="{Binding RowBackground}"
+                                                        Stroke="#E2E8F0" StrokeThickness="1"
+                                                        StrokeShape="RoundRectangle 10"
+                                                        Padding="0">
+                                                    <Grid ColumnDefinitions="5,*">
+
+                                                        <!-- Bande accent couleur -->
+                                                        <BoxView Grid.Column="0"
+                                                                 Color="{Binding RankAccentColor}"
+                                                                 VerticalOptions="Fill"/>
+
+                                                        <!-- Contenu principal -->
+                                                        <Grid Grid.Column="1"
+                                                              ColumnDefinitions="Auto,Auto,*,Auto"
+                                                              ColumnSpacing="12" Padding="12,12,12,10">
+
+                                                            <!-- Badge rang -->
+                                                            <Border Grid.Column="0"
+                                                                    BackgroundColor="{Binding RankBadgeBackground}"
+                                                                    StrokeThickness="0"
+                                                                    WidthRequest="36" HeightRequest="36"
+                                                                    StrokeShape="RoundRectangle 18"
+                                                                    VerticalOptions="Center">
+                                                                <Label Text="{Binding RankDisplay}"
+                                                                       FontSize="13" FontAttributes="Bold"
+                                                                       TextColor="{Binding RankBadgeTextColor}"
+                                                                       HorizontalOptions="Center"
+                                                                       VerticalOptions="Center"/>
+                                                            </Border>
+
+                                                            <!-- Avatar initiales -->
+                                                            <Border Grid.Column="1"
+                                                                    BackgroundColor="#512BD4" StrokeThickness="0"
+                                                                    WidthRequest="36" HeightRequest="36"
+                                                                    StrokeShape="RoundRectangle 18"
+                                                                    VerticalOptions="Center">
+                                                                <Label Text="{Binding Initials}"
+                                                                       FontSize="12" FontAttributes="Bold"
+                                                                       TextColor="White"
+                                                                       HorizontalOptions="Center"
+                                                                       VerticalOptions="Center"/>
+                                                            </Border>
+
+                                                            <!-- Nom + barre de progression -->
+                                                            <VerticalStackLayout Grid.Column="2" Spacing="5" VerticalOptions="Center">
+                                                                <Grid ColumnDefinitions="*,Auto">
+                                                                    <Label Grid.Column="0"
+                                                                           Text="{Binding ClientName}"
+                                                                           FontSize="13" FontAttributes="Bold"
+                                                                           TextColor="#1E293B"
+                                                                           LineBreakMode="TailTruncation"/>
+                                                                    <Label Grid.Column="1"
+                                                                           Text="{Binding ProgressText}"
+                                                                           FontSize="11" TextColor="#64748B"
+                                                                           VerticalOptions="Center"/>
+                                                                </Grid>
+                                                                <ProgressBar Progress="{Binding ProgressRatio}"
+                                                                             ProgressColor="{Binding ProgressBarColor}"
+                                                                             HeightRequest="5"/>
+                                                            </VerticalStackLayout>
+
+                                                            <!-- % + bouton retirer -->
+                                                            <Grid Grid.Column="3"
+                                                                  ColumnDefinitions="Auto,Auto"
+                                                                  ColumnSpacing="6"
+                                                                  VerticalOptions="Center">
+                                                                <Border Grid.Column="0"
+                                                                        BackgroundColor="{Binding RankBadgeBackground}"
+                                                                        StrokeThickness="0"
+                                                                        Padding="7,3"
+                                                                        StrokeShape="RoundRectangle 6">
+                                                                    <Label Text="{Binding PercentText}"
+                                                                           FontSize="11" FontAttributes="Bold"
+                                                                           TextColor="{Binding RankBadgeTextColor}"/>
+                                                                </Border>
+                                                                <Border Grid.Column="1"
+                                                                        BackgroundColor="#FEF2F2" StrokeThickness="0"
+                                                                        WidthRequest="28" HeightRequest="28"
+                                                                        StrokeShape="RoundRectangle 7">
+                                                                    <Border.GestureRecognizers>
+                                                                        <TapGestureRecognizer Command="{Binding RemoveCommand}"/>
+                                                                    </Border.GestureRecognizers>
+                                                                    <Label Text="&#xE5CD;" FontFamily="MaterialIcons"
+                                                                           FontSize="13" TextColor="#EF4444"
+                                                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                                </Border>
+                                                            </Grid>
+
+                                                        </Grid>
+                                                    </Grid>
+                                                </Border>
+
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+                                </ScrollView>
+
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <!-- ═══════════ OVERLAY 1 : Créer / Modifier challenge ═══════════ -->
+        <Grid IsVisible="{Binding IsEditModalOpen}" BackgroundColor="#AA000000">
+            <Border BackgroundColor="White" WidthRequest="560"
+                    VerticalOptions="Center" HorizontalOptions="Center"
+                    StrokeShape="RoundRectangle 20" Stroke="#E2E8F0" StrokeThickness="1"
+                    Padding="28">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="14">
+
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" Margin="0,0,0,4">
+                        <Border Grid.Column="0" BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                WidthRequest="36" HeightRequest="36" StrokeShape="RoundRectangle 10">
+                            <Label Text="&#xEBD2;" FontFamily="MaterialIcons" FontSize="18" TextColor="#512BD4"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <Label Grid.Column="1" Text="{Binding EditModalTitle}"
+                               FontSize="18" FontAttributes="Bold" TextColor="#1E293B" VerticalOptions="Center"/>
+                        <Border Grid.Column="2" BackgroundColor="#F1F5F9" StrokeThickness="0"
+                                WidthRequest="32" HeightRequest="32" StrokeShape="RoundRectangle 8">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CancelEditCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="&#xE5CD;" FontFamily="MaterialIcons" FontSize="16" TextColor="#64748B"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+
+                    <Border Grid.Row="1" Stroke="#E2E8F0" StrokeThickness="1"
+                            StrokeShape="RoundRectangle 8" BackgroundColor="White">
+                        <Entry Text="{Binding ModalName}" Placeholder="Nom du challenge *"
+                               PlaceholderColor="#94A3B8" FontSize="14" TextColor="#1E293B" Margin="14,0"/>
+                    </Border>
+
+                    <Border Grid.Row="2" Stroke="#E2E8F0" StrokeThickness="1"
+                            StrokeShape="RoundRectangle 8" BackgroundColor="White" MinimumHeightRequest="76">
+                        <Editor Text="{Binding ModalDescription}" Placeholder="Description (optionnel)"
+                                PlaceholderColor="#94A3B8" FontSize="13" TextColor="#1E293B"
+                                Margin="14,8" AutoSize="TextChanges"/>
+                    </Border>
+
+                    <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Border Grid.Column="0" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8" BackgroundColor="White">
+                            <Picker Title="Type" ItemsSource="{Binding ChallengeTypeItems}"
+                                    SelectedIndex="{Binding ModalTypeIndex}"
+                                    FontSize="13" TextColor="#1E293B" TitleColor="#94A3B8" Margin="14,0"/>
+                        </Border>
+                        <Border Grid.Column="1" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8" BackgroundColor="White">
+                            <Picker Title="Statut" ItemsSource="{Binding ChallengeStatusItems}"
+                                    SelectedIndex="{Binding ModalStatusIndex}"
+                                    FontSize="13" TextColor="#1E293B" TitleColor="#94A3B8" Margin="14,0"/>
+                        </Border>
+                    </Grid>
+
+                    <Grid Grid.Row="4" ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Border Grid.Column="0" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8" BackgroundColor="White">
+                            <Grid ColumnDefinitions="Auto,*" Padding="14,0" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="&#xE878;" FontFamily="MaterialIcons"
+                                       FontSize="14" TextColor="#64748B" VerticalOptions="Center"/>
+                                <DatePicker Grid.Column="1" Date="{Binding ModalStartDate}"
+                                            FontSize="12" TextColor="#1E293B"/>
+                            </Grid>
+                        </Border>
+                        <Border Grid.Column="1" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8" BackgroundColor="White">
+                            <Grid ColumnDefinitions="Auto,*" Padding="14,0" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="&#xE878;" FontFamily="MaterialIcons"
+                                       FontSize="14" TextColor="#64748B" VerticalOptions="Center"/>
+                                <DatePicker Grid.Column="1" Date="{Binding ModalEndDate}"
+                                            FontSize="12" TextColor="#1E293B"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <Grid Grid.Row="5" ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Border Grid.Column="0" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8" BackgroundColor="White">
+                            <Entry Text="{Binding ModalTargetGoal}" Placeholder="Objectif (nombre) *"
+                                   PlaceholderColor="#94A3B8" Keyboard="Numeric"
+                                   FontSize="14" TextColor="#1E293B" Margin="14,0"/>
+                        </Border>
+                        <Border Grid.Column="1" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8" BackgroundColor="White">
+                            <Entry Text="{Binding ModalGoalUnit}" Placeholder="Unité (ex : km, séances…)"
+                                   PlaceholderColor="#94A3B8" FontSize="14" TextColor="#1E293B" Margin="14,0"/>
+                        </Border>
+                    </Grid>
+
+                    <Border Grid.Row="6" Stroke="#E2E8F0" StrokeThickness="1"
+                            StrokeShape="RoundRectangle 8" BackgroundColor="White">
+                        <Grid ColumnDefinitions="Auto,*" Padding="14,0" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="&#xE8F6;" FontFamily="MaterialIcons"
+                                   FontSize="14" TextColor="#CA8A04" VerticalOptions="Center"/>
+                            <Entry Grid.Column="1" Text="{Binding ModalReward}"
+                                   Placeholder="Récompense (optionnel)"
+                                   PlaceholderColor="#94A3B8" FontSize="14" TextColor="#1E293B"/>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Row="7" ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,4,0,0">
+                        <Button Grid.Column="0" Text="Annuler" Command="{Binding CancelEditCommand}"
+                                BackgroundColor="#F1F5F9" TextColor="#374151"
+                                FontAttributes="Bold" FontSize="14" Padding="0,14" CornerRadius="8"/>
+                        <Button Grid.Column="1" Text="Enregistrer" Command="{Binding ConfirmEditCommand}"
+                                BackgroundColor="#512BD4" TextColor="White"
+                                FontAttributes="Bold" FontSize="14" Padding="0,14" CornerRadius="8"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ═══════════ OVERLAY 2 : Enregistrer une performance ═══════════ -->
+        <Grid IsVisible="{Binding IsRecordModalOpen}" BackgroundColor="#AA000000">
+            <Border BackgroundColor="White" WidthRequest="460"
+                    VerticalOptions="Center" HorizontalOptions="Center"
+                    StrokeShape="RoundRectangle 20" Stroke="#E2E8F0" StrokeThickness="1"
+                    Padding="28">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="16">
+
+                    <!-- Titre -->
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                        <Border Grid.Column="0" BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                WidthRequest="38" HeightRequest="38" StrokeShape="RoundRectangle 10">
+                            <Label Text="&#xE8E5;" FontFamily="MaterialIcons" FontSize="20" TextColor="#512BD4"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="Enregistrer une performance"
+                                   FontSize="16" FontAttributes="Bold" TextColor="#1E293B"/>
+                            <Label Text="{Binding SelectedCard.Name}"
+                                   FontSize="12" TextColor="#512BD4" FontAttributes="Bold"
+                                   LineBreakMode="TailTruncation"/>
+                        </VerticalStackLayout>
+                        <Border Grid.Column="2" BackgroundColor="#F1F5F9" StrokeThickness="0"
+                                WidthRequest="32" HeightRequest="32" StrokeShape="RoundRectangle 8">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CancelRecordCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="&#xE5CD;" FontFamily="MaterialIcons" FontSize="16" TextColor="#64748B"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+
+                    <!-- Sélection athlète -->
+                    <VerticalStackLayout Grid.Row="1" Spacing="6">
+                        <Label Text="Athlète" FontSize="12" FontAttributes="Bold" TextColor="#374151"/>
+                        <Border Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8" BackgroundColor="White">
+                            <Grid ColumnDefinitions="Auto,*" Padding="14,0" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="&#xE8DF;" FontFamily="MaterialIcons"
+                                       FontSize="16" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                <Picker Grid.Column="1"
+                                        ItemsSource="{Binding RecordClientNames}"
+                                        SelectedIndex="{Binding RecordClientIndex}"
+                                        Title="Sélectionnez un athlète…"
+                                        TitleColor="#94A3B8"
+                                        FontSize="13" TextColor="#1E293B"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Hint valeur actuelle (si mise à jour) -->
+                        <Border IsVisible="{Binding RecordIsUpdate}"
+                                BackgroundColor="#EFF6FF" Stroke="#BFDBFE"
+                                StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                                Padding="12,8">
+                            <HorizontalStackLayout Spacing="6">
+                                <Label Text="&#xE88E;" FontFamily="MaterialIcons"
+                                       FontSize="14" TextColor="#2563EB" VerticalOptions="Center"/>
+                                <Label Text="{Binding RecordCurrentHint}"
+                                       FontSize="12" TextColor="#1D4ED8" VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Valeur de performance -->
+                    <VerticalStackLayout Grid.Row="2" Spacing="6">
+                        <Label Text="Performance" FontSize="12" FontAttributes="Bold" TextColor="#374151"/>
+                        <Border Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8" BackgroundColor="White">
+                            <Grid ColumnDefinitions="*,Auto" Padding="14,0" ColumnSpacing="0">
+                                <Entry Grid.Column="0"
+                                       Text="{Binding RecordNewValue}"
+                                       Placeholder="0"
+                                       PlaceholderColor="#CBD5E1"
+                                       Keyboard="Numeric"
+                                       FontSize="20" FontAttributes="Bold"
+                                       TextColor="#1E293B"
+                                       HorizontalTextAlignment="Center"/>
+                                <Border Grid.Column="1"
+                                        BackgroundColor="#F1F5F9" StrokeThickness="0"
+                                        Padding="10,0" Margin="0,6,8,6"
+                                        StrokeShape="RoundRectangle 6">
+                                    <Label Text="{Binding RecordGoalUnit}"
+                                           FontSize="13" FontAttributes="Bold"
+                                           TextColor="#64748B" VerticalOptions="Center"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Info performance ouverte à tous -->
+                    <Border Grid.Row="3"
+                            BackgroundColor="#F0FDF4" Stroke="#86EFAC"
+                            StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                            Padding="12,8">
+                        <HorizontalStackLayout Spacing="6">
+                            <Label Text="&#xE7EF;" FontFamily="MaterialIcons"
+                                   FontSize="14" TextColor="#16A34A" VerticalOptions="Center"/>
+                            <Label Text="Ce challenge est ouvert à tous les membres. Chaque athlète peut y participer."
+                                   FontSize="11" TextColor="#15803D" VerticalOptions="Center"
+                                   LineBreakMode="WordWrap"/>
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <!-- Boutons -->
+                    <Grid Grid.Row="4" ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Button Grid.Column="0" Text="Annuler" Command="{Binding CancelRecordCommand}"
+                                BackgroundColor="#F1F5F9" TextColor="#374151"
+                                FontAttributes="Bold" FontSize="14" Padding="0,14" CornerRadius="8"/>
+                        <Button Grid.Column="1" Text="{Binding RecordButtonText}"
+                                Command="{Binding ConfirmRecordCommand}"
+                                BackgroundColor="#512BD4" TextColor="White"
+                                FontAttributes="Bold" FontSize="14" Padding="0,14" CornerRadius="8"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
     </Grid>
 </ContentView>
