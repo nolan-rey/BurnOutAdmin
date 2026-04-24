@@ -36,29 +36,56 @@ public partial class LoginViewModel : ObservableObject
         HasError     = false;
         ErrorMessage = string.Empty;
 
-        var error = await _authService.LoginAsync(Email.Trim(), Password);
-
-        IsLoading = false;
-
-        if (error is not null) { SetError(error); return; }
-
-        var app = _serviceProvider.GetRequiredService<App>();
-        app.StartNfcOrchestrator();
-
-        await MainThread.InvokeOnMainThreadAsync(() =>
+        try
         {
-            var mainShell = _serviceProvider.GetRequiredService<MainShell>();
-            if (Application.Current?.Windows.Count > 0)
-                Application.Current.Windows[0].Page = mainShell;
-        });
+            // ── Appel API ──────────────────────────────────────────
+            var error = await _authService.LoginAsync(Email.Trim(), Password);
+
+            if (error is not null)
+            {
+                SetError(error);
+                return;
+            }
+
+            // ── Succès : navigation vers MainShell ─────────────────
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                // Démarrer l'orchestrateur NFC
+                try
+                {
+                    var app = _serviceProvider.GetRequiredService<App>();
+                    app.StartNfcOrchestrator();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Login] NFC orchestrator start error: {ex.Message}");
+                    // Non bloquant — on continue vers le shell
+                }
+
+                // Remplacer la page courante par MainShell
+                var mainShell = _serviceProvider.GetRequiredService<MainShell>();
+                if (Application.Current?.Windows is { Count: > 0 } windows)
+                    windows[0].Page = mainShell;
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Login] Unexpected error: {ex.GetType().Name}: {ex.Message}");
+            SetError($"Erreur inattendue : {ex.Message}");
+        }
+        finally
+        {
+            // Garantit que le spinner s'arrête toujours
+            IsLoading = false;
+        }
     }
 
     [RelayCommand]
     private void GoToRegister()
     {
         var register = _serviceProvider.GetRequiredService<RegisterView>();
-        if (Application.Current?.Windows.Count > 0)
-            Application.Current.Windows[0].Page = register;
+        if (Application.Current?.Windows is { Count: > 0 } windows)
+            windows[0].Page = register;
     }
 
     private void SetError(string message) { ErrorMessage = message; HasError = true; }
