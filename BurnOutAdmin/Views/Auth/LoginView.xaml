@@ -11,7 +11,7 @@
         <!-- ══════════════════════════════════════════════════════════ -->
         <!-- PANNEAU GAUCHE — Branding                                  -->
         <!-- ══════════════════════════════════════════════════════════ -->
-        <Grid Column="0">
+        <Grid Grid.Column="0">
             <Grid.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                     <GradientStop Color="#1A0B5E" Offset="0"/>
@@ -92,7 +92,7 @@
         <!-- ══════════════════════════════════════════════════════════ -->
         <!-- PANNEAU DROIT — Formulaire                                 -->
         <!-- ══════════════════════════════════════════════════════════ -->
-        <ScrollView Column="1" BackgroundColor="White">
+        <ScrollView Grid.Column="1" BackgroundColor="White">
             <VerticalStackLayout VerticalOptions="Center" Padding="56,48" Spacing="0"
                                   MaximumWidthRequest="480">
 

@@ -11,7 +11,7 @@
         <!-- ══════════════════════════════════════════════════════════ -->
         <!-- PANNEAU GAUCHE — Branding (identique au login)             -->
         <!-- ══════════════════════════════════════════════════════════ -->
-        <Grid Column="0">
+        <Grid Grid.Column="0">
             <Grid.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                     <GradientStop Color="#1A0B5E" Offset="0"/>
@@ -80,7 +80,7 @@
         <!-- ══════════════════════════════════════════════════════════ -->
         <!-- PANNEAU DROIT — Formulaire                                  -->
         <!-- ══════════════════════════════════════════════════════════ -->
-        <ScrollView Column="1" BackgroundColor="White">
+        <ScrollView Grid.Column="1" BackgroundColor="White">
             <VerticalStackLayout Padding="56,48" Spacing="0" MaximumWidthRequest="520">
 
                 <!-- En-tête avec badge étape -->
