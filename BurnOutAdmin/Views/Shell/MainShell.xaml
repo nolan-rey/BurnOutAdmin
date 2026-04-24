@@ -31,16 +31,15 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Logo Section + Toggle Button -->
-                <Grid Grid.Row="0" Margin="12,16,12,24">
+                <!-- ── Header ÉTENDU : logo + nom | bouton toggle ── -->
+                <Grid Grid.Row="0" Margin="12,16,12,24"
+                      IsVisible="{Binding IsSidebarExpanded}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Sidebar étendue : mascotte + nom -->
-                    <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center"
-                                           IsVisible="{Binding IsSidebarExpanded}">
+                    <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
                         <Image Source="cop_logo.png" WidthRequest="40" HeightRequest="40"
                                VerticalOptions="Center" Aspect="AspectFit"/>
                         <VerticalStackLayout VerticalOptions="Center" Spacing="1">
@@ -50,14 +49,6 @@
                         </VerticalStackLayout>
                     </HorizontalStackLayout>
 
-                    <!-- Sidebar réduite : mascotte seul centré -->
-                    <Image Grid.Column="0" Source="cop_logo.png"
-                           WidthRequest="38" HeightRequest="38"
-                           VerticalOptions="Center" HorizontalOptions="Center"
-                           Aspect="AspectFit"
-                           IsVisible="{Binding IsSidebarExpanded, Converter={StaticResource InvertedBoolConverter}}"/>
-
-                    <!-- Bouton toggle -->
                     <Border Grid.Column="1" StrokeThickness="0" WidthRequest="32" HeightRequest="32"
                             VerticalOptions="Center" HorizontalOptions="End">
                         <Border.GestureRecognizers>
@@ -67,6 +58,22 @@
                                TextColor="#94A3B8" HorizontalOptions="Center" VerticalOptions="Center"/>
                     </Border>
                 </Grid>
+
+                <!-- ── Header RÉDUIT : logo au-dessus du bouton toggle ── -->
+                <VerticalStackLayout Grid.Row="0" Margin="0,16,0,24" Spacing="8"
+                                     HorizontalOptions="Center"
+                                     IsVisible="{Binding IsSidebarExpanded, Converter={StaticResource InvertedBoolConverter}}">
+                    <Image Source="cop_logo.png" WidthRequest="38" HeightRequest="38"
+                           HorizontalOptions="Center" Aspect="AspectFit"/>
+                    <Border StrokeThickness="0" WidthRequest="32" HeightRequest="32"
+                            HorizontalOptions="Center">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleSidebarCommand}"/>
+                        </Border.GestureRecognizers>
+                        <Label Text="&#xE5D2;" FontFamily="MaterialIcons" FontSize="20"
+                               TextColor="#94A3B8" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
+                </VerticalStackLayout>
 
                 <!-- Navigation Items -->
                 <VerticalStackLayout Grid.Row="1" Margin="12,0" Spacing="2">
