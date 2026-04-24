@@ -182,37 +182,64 @@
 
                 </VerticalStackLayout>
 
-                <!-- User info + Logout -->
-                <VerticalStackLayout Grid.Row="2" Margin="12,0,12,20" Spacing="4">
+                <!-- Profil utilisateur + Déconnexion -->
+                <Grid Grid.Row="2" Margin="12,0,12,20">
 
-                    <!-- Email de l'utilisateur (sidebar étendue seulement) -->
-                    <Border StrokeThickness="0" BackgroundColor="#F8FAFC" Padding="14,10"
-                            IsVisible="{Binding IsSidebarExpanded}">
-                        <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                        <HorizontalStackLayout Spacing="10">
-                            <Label Text="&#xE853;" FontFamily="MaterialIcons" FontSize="18"
-                                   TextColor="#94A3B8" VerticalOptions="Center"/>
-                            <Label Text="{Binding CurrentUserEmail}" FontSize="12"
-                                   TextColor="#64748B" VerticalOptions="Center"
-                                   LineBreakMode="TailTruncation" MaximumWidthRequest="160"/>
-                        </HorizontalStackLayout>
+                    <!-- Sidebar étendue : carte complète -->
+                    <Border StrokeThickness="1" Stroke="#EEF2FF" BackgroundColor="#F8FAFF"
+                            Padding="14,12" IsVisible="{Binding IsSidebarExpanded}">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                        <Grid RowDefinitions="Auto,1,Auto" RowSpacing="10">
+
+                            <!-- Avatar + email -->
+                            <HorizontalStackLayout Grid.Row="0" Spacing="12">
+                                <!-- Avatar initiales -->
+                                <Grid WidthRequest="36" HeightRequest="36">
+                                    <Ellipse Fill="#512BD4" WidthRequest="36" HeightRequest="36"/>
+                                    <Label Text="{Binding CurrentUserInitials}"
+                                           FontSize="15" FontAttributes="Bold" TextColor="White"
+                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Grid>
+                                <VerticalStackLayout VerticalOptions="Center" Spacing="1">
+                                    <Label Text="Connecté" FontSize="10" TextColor="#94A3B8"/>
+                                    <Label Text="{Binding CurrentUserEmail}" FontSize="12"
+                                           FontAttributes="Bold" TextColor="#1E293B"
+                                           LineBreakMode="TailTruncation" MaximumWidthRequest="130"/>
+                                </VerticalStackLayout>
+                            </HorizontalStackLayout>
+
+                            <!-- Séparateur -->
+                            <BoxView Grid.Row="1" HeightRequest="1" BackgroundColor="#E2E8F0"/>
+
+                            <!-- Bouton déconnexion -->
+                            <Grid Grid.Row="2">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding LogoutCommand}"/>
+                                </Grid.GestureRecognizers>
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="&#xE9BA;" FontFamily="MaterialIcons" FontSize="16"
+                                           TextColor="#E11D48" VerticalOptions="Center"/>
+                                    <Label Text="Déconnexion" FontSize="13" FontAttributes="Bold"
+                                           TextColor="#E11D48" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Grid>
+
+                        </Grid>
                     </Border>
 
-                    <!-- Bouton Déconnexion -->
-                    <Border StrokeThickness="0">
-                        <Border.GestureRecognizers>
+                    <!-- Sidebar réduite : juste l'avatar -->
+                    <Grid IsVisible="{Binding IsSidebarExpanded, Converter={StaticResource InvertedBoolConverter}}"
+                          HorizontalOptions="Center" Margin="0,4">
+                        <Grid.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding LogoutCommand}"/>
-                        </Border.GestureRecognizers>
-                        <HorizontalStackLayout Padding="14,11" Spacing="14">
-                            <Label Text="&#xE9BA;" FontFamily="MaterialIcons" FontSize="20"
-                                   TextColor="#E11D48" VerticalOptions="Center"/>
-                            <Label Text="Déconnexion" FontSize="14"
-                                   IsVisible="{Binding IsSidebarExpanded}"
-                                   TextColor="#E11D48" VerticalOptions="Center"/>
-                        </HorizontalStackLayout>
-                    </Border>
+                        </Grid.GestureRecognizers>
+                        <Ellipse Fill="#512BD4" WidthRequest="36" HeightRequest="36"/>
+                        <Label Text="{Binding CurrentUserInitials}"
+                               FontSize="15" FontAttributes="Bold" TextColor="White"
+                               HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Grid>
 
-                </VerticalStackLayout>
+                </Grid>
 
             </Grid>
         </Grid>

@@ -29,7 +29,18 @@ public partial class MainShellViewModel : BaseViewModel
 
     /// <summary>Email de l'utilisateur connecté (affiché dans la sidebar et les paramètres).</summary>
     public string CurrentUserEmail =>
-        _authService.CurrentUserEmail ?? "Utilisateur";
+        _authService.CurrentUserEmail ?? "utilisateur@app.fr";
+
+    /// <summary>Initiales extraites de l'email (ex. "test@test.com" → "T").</summary>
+    public string CurrentUserInitials
+    {
+        get
+        {
+            var email = _authService.CurrentUserEmail ?? string.Empty;
+            var local = email.Contains('@') ? email[..email.IndexOf('@')] : email;
+            return local.Length > 0 ? local[0].ToString().ToUpperInvariant() : "?";
+        }
+    }
 
     public MainShellViewModel(
         INavigationService navigationService,

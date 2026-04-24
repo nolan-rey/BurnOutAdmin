@@ -57,14 +57,6 @@
                         </HorizontalStackLayout>
                     </Border>
 
-                    <!-- Admin info -->
-                    <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
-                        <VerticalStackLayout VerticalOptions="Center">
-                            <Label Text="Admin Principal" FontAttributes="Bold" FontSize="14" TextColor="#1E293B" HorizontalOptions="End"/>
-                            <Label Text="Superviseur" FontSize="12" TextColor="#64748B" HorizontalOptions="End"/>
-                        </VerticalStackLayout>
-                        <Ellipse WidthRequest="45" HeightRequest="45" Fill="#E2E8F0" VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
                 </HorizontalStackLayout>
             </Grid>
 
