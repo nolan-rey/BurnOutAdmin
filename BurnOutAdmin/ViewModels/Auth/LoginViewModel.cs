@@ -1,4 +1,5 @@
 using BurnOutAdmin.Services.Api;
+using BurnOutAdmin.Views.Auth;
 using BurnOutAdmin.Views.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -7,7 +8,7 @@ namespace BurnOutAdmin.ViewModels.Auth;
 
 public partial class LoginViewModel : ObservableObject
 {
-    private readonly IApiAuthService _authService;
+    private readonly IApiAuthService  _authService;
     private readonly IServiceProvider _serviceProvider;
 
     [ObservableProperty] private string _email        = string.Empty;
@@ -18,8 +19,8 @@ public partial class LoginViewModel : ObservableObject
 
     public LoginViewModel(IApiAuthService authService, IServiceProvider serviceProvider)
     {
-        _authService      = authService;
-        _serviceProvider  = serviceProvider;
+        _authService     = authService;
+        _serviceProvider = serviceProvider;
     }
 
     [RelayCommand]
@@ -39,13 +40,8 @@ public partial class LoginViewModel : ObservableObject
 
         IsLoading = false;
 
-        if (error is not null)
-        {
-            SetError(error);
-            return;
-        }
+        if (error is not null) { SetError(error); return; }
 
-        // Connexion réussie → démarrer l'orchestrateur NFC et naviguer vers le shell
         var app = _serviceProvider.GetRequiredService<App>();
         app.StartNfcOrchestrator();
 
@@ -57,12 +53,15 @@ public partial class LoginViewModel : ObservableObject
         });
     }
 
-    private void SetError(string message)
+    [RelayCommand]
+    private void GoToRegister()
     {
-        ErrorMessage = message;
-        HasError     = true;
+        var register = _serviceProvider.GetRequiredService<RegisterView>();
+        if (Application.Current?.Windows.Count > 0)
+            Application.Current.Windows[0].Page = register;
     }
 
+    private void SetError(string message) { ErrorMessage = message; HasError = true; }
     partial void OnEmailChanged(string value)    => HasError = false;
     partial void OnPasswordChanged(string value) => HasError = false;
 }

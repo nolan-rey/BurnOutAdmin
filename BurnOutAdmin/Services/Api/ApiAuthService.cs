@@ -3,14 +3,6 @@ using BurnOutAdmin.Services.Api.Dto;
 
 namespace BurnOutAdmin.Services.Api;
 
-/// <summary>
-/// Implémentation de l'authentification Firebase JWT via l'API CallOfPhoenix.
-///
-/// Stratégie de stockage du token :
-///   - Preferences (sync) pour le token brut et la date d'expiration
-///   - Le token Firebase expire après 1 heure (documenté dans l'API)
-///   - À l'expiration, l'utilisateur est redirigé vers la page de connexion
-/// </summary>
 public class ApiAuthService : IApiAuthService
 {
     private const string PrefKeyToken  = "api_jwt_token";
@@ -28,21 +20,15 @@ public class ApiAuthService : IApiAuthService
         };
     }
 
-    // ── IApiAuthService ──────────────────────────────────────────
-
     public bool IsAuthenticated
     {
         get
         {
-            var token  = Preferences.Default.Get(PrefKeyToken, string.Empty);
+            var token  = Preferences.Default.Get(PrefKeyToken,  string.Empty);
             var expiry = Preferences.Default.Get(PrefKeyExpiry, string.Empty);
-            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(expiry))
-                return false;
-
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(expiry)) return false;
             if (!DateTime.TryParse(expiry, null,
-                    System.Globalization.DateTimeStyles.RoundtripKind, out var exp))
-                return false;
-
+                    System.Globalization.DateTimeStyles.RoundtripKind, out var exp)) return false;
             return DateTime.UtcNow < exp;
         }
     }
@@ -56,46 +42,71 @@ public class ApiAuthService : IApiAuthService
         return Preferences.Default.Get(PrefKeyToken, string.Empty) is { Length: > 0 } t ? t : null;
     }
 
+    // ── Login ─────────────────────────────────────────────────────
+
     public async Task<string?> LoginAsync(string email, string password)
     {
         try
         {
-            var body = new LoginRequestDto { Email = email, Password = password };
-            var response = await _http.PostAsJsonAsync("/users/login", body);
+            var response = await _http.PostAsJsonAsync("/users/login",
+                new LoginRequestDto { Email = email, Password = password });
 
             var dto = await response.Content.ReadFromJsonAsync<LoginResponseDto>();
-            if (dto is null)
-                return "Réponse invalide du serveur.";
-
+            if (dto is null) return "Réponse invalide du serveur.";
             if (!dto.Success || string.IsNullOrEmpty(dto.Token))
                 return dto.Error ?? "Identifiants incorrects.";
 
-            // Stocker le token — expire dans 1 heure (Firebase standard)
-            var expiry = DateTime.UtcNow.AddHours(1).ToString("O");
-            Preferences.Default.Set(PrefKeyToken,  dto.Token);
-            Preferences.Default.Set(PrefKeyExpiry, expiry);
-            Preferences.Default.Set(PrefKeyEmail,  email);
-
-            return null; // succès
+            StoreToken(dto.Token, email);
+            return null;
         }
-        catch (HttpRequestException ex)
-        {
-            return $"Erreur réseau : {ex.Message}";
-        }
-        catch (TaskCanceledException)
-        {
-            return "Le serveur ne répond pas (timeout).";
-        }
-        catch (Exception ex)
-        {
-            return $"Erreur inattendue : {ex.Message}";
-        }
+        catch (HttpRequestException ex) { return $"Erreur réseau : {ex.Message}"; }
+        catch (TaskCanceledException)   { return "Le serveur ne répond pas (timeout)."; }
+        catch (Exception ex)            { return $"Erreur inattendue : {ex.Message}"; }
     }
+
+    // ── Register ──────────────────────────────────────────────────
+
+    public async Task<string?> RegisterAsync(RegisterRequestDto request)
+    {
+        try
+        {
+            var response = await _http.PostAsJsonAsync("/users/register", request);
+
+            // 404 = endpoint pas encore déployé
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return "L'inscription en ligne n'est pas encore disponible.\nContactez votre administrateur pour créer votre compte.";
+
+            if (response.StatusCode == System.Net.HttpStatusCode.MethodNotAllowed)
+                return "L'inscription n'est pas encore disponible sur ce serveur.";
+
+            var dto = await response.Content.ReadFromJsonAsync<RegisterResponseDto>();
+            if (dto is null) return "Réponse invalide du serveur.";
+            if (!dto.Success) return dto.Error ?? "Erreur lors de la création du compte.";
+
+            // Auto-login après inscription réussie
+            var loginError = await LoginAsync(request.Email, request.Password);
+            return loginError; // null = succès total
+        }
+        catch (HttpRequestException ex) { return $"Erreur réseau : {ex.Message}"; }
+        catch (TaskCanceledException)   { return "Le serveur ne répond pas (timeout)."; }
+        catch (Exception ex)            { return $"Erreur inattendue : {ex.Message}"; }
+    }
+
+    // ── Logout ────────────────────────────────────────────────────
 
     public void Logout()
     {
         Preferences.Default.Remove(PrefKeyToken);
         Preferences.Default.Remove(PrefKeyExpiry);
         Preferences.Default.Remove(PrefKeyEmail);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────
+
+    private void StoreToken(string token, string email)
+    {
+        Preferences.Default.Set(PrefKeyToken,  token);
+        Preferences.Default.Set(PrefKeyExpiry, DateTime.UtcNow.AddHours(1).ToString("O"));
+        Preferences.Default.Set(PrefKeyEmail,  email);
     }
 }

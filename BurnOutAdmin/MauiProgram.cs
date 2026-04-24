@@ -10,6 +10,7 @@ using BurnOutAdmin.ViewModels;
 using BurnOutAdmin.ViewModels.Auth;
 using BurnOutAdmin.ViewModels.ProgramBuilder;
 using BurnOutAdmin.Views.Auth;
+using BurnOutAdmin.ViewModels.Auth;
 using BurnOutAdmin.Views.ProgramBuilder;
 using BurnOutAdmin.Views.Shell;
 using Microsoft.Extensions.Logging;
@@ -81,12 +82,14 @@ public static class MauiProgram
         builder.Services.AddTransient<NfcLogsViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
         builder.Services.AddTransient<LoginViewModel>();
+        builder.Services.AddTransient<RegisterViewModel>();
 
         // ── Views ───────────────────────────────────────────────────
 
         builder.Services.AddSingleton<MainShell>();
         builder.Services.AddTransient<ProgramBuilderPage>();
         builder.Services.AddTransient<LoginView>();
+        builder.Services.AddTransient<RegisterView>();
 
 #if DEBUG
         builder.Logging.AddDebug();
