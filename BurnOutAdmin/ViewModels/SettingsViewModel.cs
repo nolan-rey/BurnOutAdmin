@@ -1,4 +1,6 @@
 using BurnOutAdmin.Services;
+using BurnOutAdmin.Services.Api;
+using BurnOutAdmin.Views.Auth;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -6,7 +8,9 @@ namespace BurnOutAdmin.ViewModels;
 
 public partial class SettingsViewModel : BaseViewModel
 {
-    private readonly IAlertService _alertService;
+    private readonly IAlertService    _alertService;
+    private readonly IApiAuthService  _authService;
+    private readonly IServiceProvider _serviceProvider;
 
     [ObservableProperty]
     private bool _notificationsEnabled = true;
@@ -23,9 +27,17 @@ public partial class SettingsViewModel : BaseViewModel
     [ObservableProperty]
     private string _appVersion = "1.0.0 MVP";
 
-    public SettingsViewModel(IAlertService alertService)
+    public string CurrentUserEmail =>
+        _authService.CurrentUserEmail ?? "Utilisateur";
+
+    public SettingsViewModel(
+        IAlertService    alertService,
+        IApiAuthService  authService,
+        IServiceProvider serviceProvider)
     {
-        _alertService = alertService;
+        _alertService    = alertService;
+        _authService     = authService;
+        _serviceProvider = serviceProvider;
         Title = "Paramètres";
     }
 
@@ -64,5 +76,26 @@ public partial class SettingsViewModel : BaseViewModel
         await _alertService.AlertAsync(
             "À propos",
             $"BurnOut Admin\nVersion: {AppVersion}\n\nApplication d'administration pour salle de sport.\nDéveloppé avec .NET MAUI.");
+    }
+
+    [RelayCommand]
+    private async Task LogoutAsync()
+    {
+        var confirmed = await _alertService.ConfirmAsync(
+            "Déconnexion",
+            "Voulez-vous vraiment vous déconnecter ?",
+            "Se déconnecter",
+            "Annuler");
+
+        if (!confirmed) return;
+
+        _authService.Logout();
+
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            var loginView = _serviceProvider.GetRequiredService<LoginView>();
+            if (Application.Current?.Windows is { Count: > 0 } windows)
+                windows[0].Page = loginView;
+        });
     }
 }

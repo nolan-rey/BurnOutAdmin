@@ -182,19 +182,37 @@
 
                 </VerticalStackLayout>
 
-                <!-- Logout -->
-                <Border Grid.Row="2" StrokeThickness="0" Margin="12,0,12,20">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding LogoutCommand}"/>
-                    </Border.GestureRecognizers>
-                    <HorizontalStackLayout Padding="14,11" Spacing="14">
-                        <Label Text="&#xE9BA;" FontFamily="MaterialIcons" FontSize="20"
-                               TextColor="#E11D48" VerticalOptions="Center"/>
-                        <Label Text="Déconnexion" FontSize="14"
-                               IsVisible="{Binding IsSidebarExpanded}"
-                               TextColor="#E11D48" VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
-                </Border>
+                <!-- User info + Logout -->
+                <VerticalStackLayout Grid.Row="2" Margin="12,0,12,20" Spacing="4">
+
+                    <!-- Email de l'utilisateur (sidebar étendue seulement) -->
+                    <Border StrokeThickness="0" BackgroundColor="#F8FAFC" Padding="14,10"
+                            IsVisible="{Binding IsSidebarExpanded}">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="&#xE853;" FontFamily="MaterialIcons" FontSize="18"
+                                   TextColor="#94A3B8" VerticalOptions="Center"/>
+                            <Label Text="{Binding CurrentUserEmail}" FontSize="12"
+                                   TextColor="#64748B" VerticalOptions="Center"
+                                   LineBreakMode="TailTruncation" MaximumWidthRequest="160"/>
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <!-- Bouton Déconnexion -->
+                    <Border StrokeThickness="0">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding LogoutCommand}"/>
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Padding="14,11" Spacing="14">
+                            <Label Text="&#xE9BA;" FontFamily="MaterialIcons" FontSize="20"
+                                   TextColor="#E11D48" VerticalOptions="Center"/>
+                            <Label Text="Déconnexion" FontSize="14"
+                                   IsVisible="{Binding IsSidebarExpanded}"
+                                   TextColor="#E11D48" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </Border>
+
+                </VerticalStackLayout>
 
             </Grid>
         </Grid>
