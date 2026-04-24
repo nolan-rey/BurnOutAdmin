@@ -38,21 +38,23 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Sidebar étendue : logo + nom -->
+                    <!-- Sidebar étendue : badge + nom -->
                     <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center"
                                            IsVisible="{Binding IsSidebarExpanded}">
-                        <Image Source="cop_logo.png" WidthRequest="40" HeightRequest="40"
+                        <Image Source="cop_logo.png" WidthRequest="38" HeightRequest="38"
                                VerticalOptions="Center" Aspect="AspectFit"/>
-                        <VerticalStackLayout VerticalOptions="Center" Spacing="0">
-                            <Label Text="Call of Phoenix" FontSize="15" FontAttributes="Bold"
+                        <VerticalStackLayout VerticalOptions="Center" Spacing="1">
+                            <Label Text="Call of Phoenix" FontSize="14" FontAttributes="Bold"
                                    TextColor="#1E293B"/>
-                            <Label Text="Admin v1.2" FontSize="10" TextColor="#64748B"/>
+                            <Label Text="Admin · v1.2" FontSize="10" TextColor="#64748B"/>
                         </VerticalStackLayout>
                     </HorizontalStackLayout>
 
-                    <!-- Sidebar réduite : logo seul -->
-                    <Image Grid.Column="0" Source="cop_logo.png" WidthRequest="36" HeightRequest="36"
-                           VerticalOptions="Center" HorizontalOptions="Center" Aspect="AspectFit"
+                    <!-- Sidebar réduite : badge seul centré -->
+                    <Image Grid.Column="0" Source="cop_logo.png"
+                           WidthRequest="36" HeightRequest="36"
+                           VerticalOptions="Center" HorizontalOptions="Center"
+                           Aspect="AspectFit"
                            IsVisible="{Binding IsSidebarExpanded, Converter={StaticResource InvertedBoolConverter}}"/>
 
                     <!-- Bouton toggle -->

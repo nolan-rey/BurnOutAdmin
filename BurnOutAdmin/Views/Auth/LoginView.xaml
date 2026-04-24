@@ -13,85 +13,91 @@
         <!-- ══════════════════════════════════════════════════════════ -->
         <Grid Grid.Column="0" BackgroundColor="#000000">
 
-            <!-- Image phoenix en fond plein -->
-            <Image Source="cop_phoenix_blue.png"
+            <!-- Poster phoenix plein écran (fond noir solide garanti) -->
+            <Image Source="cop_login_panel.png"
                    Aspect="AspectFill"
                    HorizontalOptions="Fill"
-                   VerticalOptions="Fill"
-                   Opacity="0.85"/>
+                   VerticalOptions="Fill"/>
 
-            <!-- Overlay dégradé bas→haut pour lisibilité du texte -->
-            <BoxView VerticalOptions="Fill" HorizontalOptions="Fill">
+            <!-- Overlay léger uniquement en haut et en bas pour la lisibilité -->
+            <BoxView HorizontalOptions="Fill" VerticalOptions="Start" HeightRequest="120">
                 <BoxView.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                        <GradientStop Color="#CC000000" Offset="0"/>
-                        <GradientStop Color="#88000000" Offset="0.4"/>
-                        <GradientStop Color="#EE000000" Offset="1"/>
+                        <GradientStop Color="#E5000000" Offset="0"/>
+                        <GradientStop Color="#00000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </BoxView.Background>
+            </BoxView>
+            <BoxView HorizontalOptions="Fill" VerticalOptions="End" HeightRequest="260">
+                <BoxView.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#00000000" Offset="0"/>
+                        <GradientStop Color="#F0000000" Offset="1"/>
                     </LinearGradientBrush>
                 </BoxView.Background>
             </BoxView>
 
-            <!-- Contenu par-dessus -->
-            <Grid RowDefinitions="Auto,*,Auto" Margin="0">
+            <!-- Contenu flottant sur l'image -->
+            <Grid RowDefinitions="Auto,*,Auto">
 
-                <!-- En-tête : nom de la salle -->
-                <VerticalStackLayout Grid.Row="0" Padding="40,40,40,0" Spacing="2">
-                    <Label Text="CALL OF PHOENIX" FontSize="22" FontAttributes="Bold"
-                           TextColor="White" CharacterSpacing="3"/>
-                    <Label Text="Espace Administration" FontSize="13"
-                           TextColor="#93C5FD" CharacterSpacing="1"/>
-                </VerticalStackLayout>
+                <!-- En-tête -->
+                <HorizontalStackLayout Grid.Row="0" Padding="32,32,32,0" Spacing="12" VerticalOptions="Start">
+                    <Image Source="cop_logo.png" WidthRequest="36" HeightRequest="36"
+                           VerticalOptions="Center" Aspect="AspectFit"/>
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="1">
+                        <Label Text="CALL OF PHOENIX" FontSize="16" FontAttributes="Bold"
+                               TextColor="White" CharacterSpacing="2"/>
+                        <Label Text="Espace Administration" FontSize="11"
+                               TextColor="#93C5FD"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
 
-                <!-- Centre vide (laisse le phoenix visible) -->
+                <!-- Zone centrale libre — le phoenix est visible ici -->
                 <BoxView Grid.Row="1" Color="Transparent"/>
 
-                <!-- Bas : slogan + features -->
-                <VerticalStackLayout Grid.Row="2" Padding="40,0,40,40" Spacing="20">
+                <!-- Pied : slogan + 3 features -->
+                <VerticalStackLayout Grid.Row="2" Padding="32,0,32,36" Spacing="16">
 
-                    <Label Text="«&#x202F;La renaissance de votre corps et de votre esprit&#x202F;»"
-                           FontSize="14" TextColor="#E0E7FF" FontAttributes="Italic"
-                           LineBreakMode="WordWrap" HorizontalOptions="Start"/>
+                    <Label Text="« La renaissance de votre corps et de votre esprit »"
+                           FontSize="13" TextColor="#CBD5E1" FontAttributes="Italic"
+                           LineBreakMode="WordWrap"/>
 
-                    <BoxView HeightRequest="1" BackgroundColor="#FFFFFF30"/>
+                    <BoxView HeightRequest="1" BackgroundColor="#FFFFFF25"/>
 
-                    <!-- Features -->
-                    <VerticalStackLayout Spacing="14">
+                    <VerticalStackLayout Spacing="12">
 
-                        <HorizontalStackLayout Spacing="12">
-                            <Border BackgroundColor="#FFFFFF18" WidthRequest="34" HeightRequest="34"
-                                    VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="10">
+                            <Border BackgroundColor="#FFFFFF15" WidthRequest="32" HeightRequest="32" VerticalOptions="Center">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                                <Label Text="&#xE7EF;" FontFamily="MaterialIcons" FontSize="18"
+                                <Label Text="&#xE7EF;" FontFamily="MaterialIcons" FontSize="16"
                                        TextColor="#93C5FD" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout VerticalOptions="Center" Spacing="1">
-                                <Label Text="Gestion des membres" FontSize="13" FontAttributes="Bold" TextColor="White"/>
+                                <Label Text="Gestion des membres" FontSize="12" FontAttributes="Bold" TextColor="White"/>
                                 <Label Text="Clients, abonnements et accès NFC" FontSize="11" TextColor="#93C5FD"/>
                             </VerticalStackLayout>
                         </HorizontalStackLayout>
 
-                        <HorizontalStackLayout Spacing="12">
-                            <Border BackgroundColor="#FFFFFF18" WidthRequest="34" HeightRequest="34"
-                                    VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="10">
+                            <Border BackgroundColor="#FFFFFF15" WidthRequest="32" HeightRequest="32" VerticalOptions="Center">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                                <Label Text="&#xEBD2;" FontFamily="MaterialIcons" FontSize="18"
+                                <Label Text="&#xEBD2;" FontFamily="MaterialIcons" FontSize="16"
                                        TextColor="#93C5FD" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout VerticalOptions="Center" Spacing="1">
-                                <Label Text="Challenges &amp; Classements" FontSize="13" FontAttributes="Bold" TextColor="White"/>
+                                <Label Text="Challenges &amp; Classements" FontSize="12" FontAttributes="Bold" TextColor="White"/>
                                 <Label Text="Podium, progression et récompenses" FontSize="11" TextColor="#93C5FD"/>
                             </VerticalStackLayout>
                         </HorizontalStackLayout>
 
-                        <HorizontalStackLayout Spacing="12">
-                            <Border BackgroundColor="#FFFFFF18" WidthRequest="34" HeightRequest="34"
-                                    VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="10">
+                            <Border BackgroundColor="#FFFFFF15" WidthRequest="32" HeightRequest="32" VerticalOptions="Center">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                                <Label Text="&#xE3C9;" FontFamily="MaterialIcons" FontSize="18"
+                                <Label Text="&#xE3C9;" FontFamily="MaterialIcons" FontSize="16"
                                        TextColor="#93C5FD" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout VerticalOptions="Center" Spacing="1">
-                                <Label Text="Programmes d'entraînement" FontSize="13" FontAttributes="Bold" TextColor="White"/>
+                                <Label Text="Programmes d'entraînement" FontSize="12" FontAttributes="Bold" TextColor="White"/>
                                 <Label Text="Création, assignation et suivi" FontSize="11" TextColor="#93C5FD"/>
                             </VerticalStackLayout>
                         </HorizontalStackLayout>
