@@ -247,17 +247,33 @@
                         </Grid>
                     </Border>
 
-                    <!-- Sidebar réduite : juste l'avatar -->
-                    <Grid IsVisible="{Binding IsSidebarExpanded, Converter={StaticResource InvertedBoolConverter}}"
-                          HorizontalOptions="Center" Margin="0,4">
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding LogoutCommand}"/>
-                        </Grid.GestureRecognizers>
-                        <Ellipse Fill="#512BD4" WidthRequest="36" HeightRequest="36"/>
-                        <Label Text="{Binding CurrentUserInitials}"
-                               FontSize="15" FontAttributes="Bold" TextColor="White"
-                               HorizontalOptions="Center" VerticalOptions="Center"/>
-                    </Grid>
+                    <!-- Sidebar réduite : avatar + bouton logout empilés -->
+                    <VerticalStackLayout
+                        IsVisible="{Binding IsSidebarExpanded, Converter={StaticResource InvertedBoolConverter}}"
+                        HorizontalOptions="Center" Spacing="6" Margin="0,4">
+
+                        <!-- Avatar initiales -->
+                        <Grid WidthRequest="36" HeightRequest="36" HorizontalOptions="Center">
+                            <Ellipse Fill="#512BD4" WidthRequest="36" HeightRequest="36"/>
+                            <Label Text="{Binding CurrentUserInitials}"
+                                   FontSize="15" FontAttributes="Bold" TextColor="White"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Grid>
+
+                        <!-- Bouton déconnexion (icône seule) -->
+                        <Border StrokeThickness="0" BackgroundColor="#FEF2F2"
+                                WidthRequest="36" HeightRequest="36"
+                                HorizontalOptions="Center">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding LogoutCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="&#xE9BA;" FontFamily="MaterialIcons" FontSize="18"
+                                   TextColor="#E11D48"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+
+                    </VerticalStackLayout>
 
                 </Grid>
 
