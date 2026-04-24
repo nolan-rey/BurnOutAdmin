@@ -52,6 +52,7 @@
         <MauiImage Update="Resources\Images\cop_phoenix_dark.png" Resize="False" />
         <MauiImage Update="Resources\Images\cop_login_panel.png" Resize="False" />
         <MauiImage Update="Resources\Images\cop_logo.png" Resize="False" />
+        <MauiImage Update="Resources\Images\cop_mascot_panel.png" Resize="False" />
 
         <!-- Custom Fonts -->
         <MauiFont Include="Resources\Fonts\*" />

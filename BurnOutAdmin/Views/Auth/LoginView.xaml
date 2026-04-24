@@ -28,24 +28,26 @@
                      HorizontalOptions="Center" VerticalOptions="Center" Margin="60,100,0,0"/>
 
             <!-- Contenu -->
-            <VerticalStackLayout VerticalOptions="Center" Padding="48,0,40,0" Spacing="0">
+            <Grid RowDefinitions="Auto,*,Auto" Margin="0" VerticalOptions="Fill">
 
-                <!-- Badge logo + Titre -->
-                <HorizontalStackLayout Spacing="14" Margin="0,0,0,24">
-                    <Image Source="cop_logo.png" WidthRequest="52" HeightRequest="52"
-                           VerticalOptions="Center" Aspect="AspectFit"/>
-                    <VerticalStackLayout VerticalOptions="Center" Spacing="2">
-                        <Label Text="BurnOut" FontSize="36" FontAttributes="Bold" TextColor="White"/>
-                        <Label Text="Admin" FontSize="36" FontAttributes="Bold" TextColor="#A78BFA"/>
-                    </VerticalStackLayout>
-                </HorizontalStackLayout>
+                <!-- En-tête -->
+                <VerticalStackLayout Grid.Row="0" Padding="48,44,40,0" Spacing="4">
+                    <Label Text="BurnOut" FontSize="38" FontAttributes="Bold" TextColor="White"/>
+                    <Label Text="Admin" FontSize="38" FontAttributes="Bold" TextColor="#A78BFA" Margin="0,0,0,10"/>
+                    <Label Text="La plateforme de gestion complète pour votre salle de sport."
+                           FontSize="14" TextColor="#C4B5FD" LineBreakMode="WordWrap"
+                           Margin="0,0,24,0"/>
+                </VerticalStackLayout>
 
-                <Label Text="La plateforme de gestion complète pour votre salle de sport."
-                       FontSize="15" TextColor="#C4B5FD" LineBreakMode="WordWrap"
-                       Margin="0,0,24,52"/>
+                <!-- Mascotte phoenix centré — taille maîtrisée pour éviter le bug MAUI -->
+                <Image Grid.Row="1" Source="cop_mascot_panel.png"
+                       WidthRequest="260" HeightRequest="260"
+                       HorizontalOptions="Center" VerticalOptions="Center"
+                       Aspect="AspectFit" Margin="0,24,0,24"/>
 
-                <!-- Feature highlights -->
-                <VerticalStackLayout Spacing="22">
+                <!-- Features -->
+
+                <VerticalStackLayout Grid.Row="2" Padding="48,0,40,44" Spacing="22">
 
                     <Grid ColumnDefinitions="40,*" ColumnSpacing="14">
                         <Border BackgroundColor="#FFFFFF18" WidthRequest="40" HeightRequest="40"
@@ -87,7 +89,8 @@
                     </Grid>
 
                 </VerticalStackLayout>
-            </VerticalStackLayout>
+
+            </Grid>
         </Grid>
 
         <!-- ══════════════════════════════════════════════════════════ -->
