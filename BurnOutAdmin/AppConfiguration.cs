@@ -8,7 +8,7 @@ public static class AppConfiguration
 {
     // ── API REST ─────────────────────────────────────────────────
     /// <summary>URL de base de l'API CallOfPhoenix.</summary>
-    public const string ApiBaseUrl = "http://98.66.235.57";
+    public const string ApiBaseUrl = "http://apiburnout.duckdns.org/";
 
     // ── MQTT ────────────────────────────────────────────────────
     /// <summary>Adresse IP du broker MQTT (Raspberry Pi sur le réseau local).</summary>

@@ -29,12 +29,20 @@
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
 
-	<!-- Autoriser les connexions HTTP vers l'API CallOfPhoenix (IP brute — ATS ne supporte pas NSExceptionDomains sur une IP) -->
-	<!-- TODO: migrer l'API vers HTTPS + nom de domaine pour supprimer cette exception en production -->
+	<!-- Autoriser les connexions HTTP vers l'API CallOfPhoenix (apiburnout.duckdns.org) -->
+	<!-- TODO: migrer vers HTTPS pour supprimer cette exception en production -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>apiburnout.duckdns.org</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+			</dict>
+		</dict>
 	</dict>
 </dict>
 </plist>
