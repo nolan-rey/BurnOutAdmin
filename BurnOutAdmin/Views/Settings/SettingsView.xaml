@@ -278,11 +278,6 @@
 
                     <!-- Vider le cache -->
                     <Grid Padding="24,16" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
-                        <Border Grid.Column="0" GestureRecognizers.IsEnabled="False">
-                            <Grid.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding ClearCacheCommand}"/>
-                            </Grid.GestureRecognizers>
-                        </Border>
                         <Label Grid.Column="0" Text="&#xE872;" FontFamily="MaterialIcons" FontSize="18"
                                TextColor="#94A3B8" VerticalOptions="Center"/>
                         <VerticalStackLayout Grid.Column="1" Spacing="2">
