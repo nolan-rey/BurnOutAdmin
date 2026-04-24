@@ -30,34 +30,17 @@
                            VerticalOptions="Center"/>
                 </HorizontalStackLayout>
 
-                <!-- Status badges + avatar -->
-                <HorizontalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
-
-                    <!-- DB Status -->
-                    <Border BackgroundColor="#F0FDF4" Padding="12,6">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="20"/>
-                        </Border.StrokeShape>
-                        <Border.Stroke>Transparent</Border.Stroke>
-                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                            <Ellipse WidthRequest="8" HeightRequest="8" Fill="#22C55E" VerticalOptions="Center"/>
-                            <Label Text="DB: ACTIF" FontSize="12" FontAttributes="Bold" TextColor="#166534" VerticalOptions="Center"/>
-                        </HorizontalStackLayout>
-                    </Border>
-
-                    <!-- API Status -->
-                    <Border BackgroundColor="#EFF6FF" Padding="12,6">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="20"/>
-                        </Border.StrokeShape>
-                        <Border.Stroke>Transparent</Border.Stroke>
-                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                            <Ellipse WidthRequest="8" HeightRequest="8" Fill="#3B82F6" VerticalOptions="Center"/>
-                            <Label Text="API: CONNECTÉ" FontSize="12" FontAttributes="Bold" TextColor="#1E40AF" VerticalOptions="Center"/>
-                        </HorizontalStackLayout>
-                    </Border>
-
-                </HorizontalStackLayout>
+                <!-- Lien vers les paramètres de connexion -->
+                <Border Grid.Column="1" BackgroundColor="White" Padding="12,7"
+                        StrokeThickness="1" Stroke="#E2E8F0" VerticalOptions="Center">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                    <HorizontalStackLayout Spacing="6">
+                        <Label Text="&#xE8B8;" FontFamily="MaterialIcons" FontSize="14"
+                               TextColor="#94A3B8" VerticalOptions="Center"/>
+                        <Label Text="Connexions · Paramètres" FontSize="11"
+                               TextColor="#64748B" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Border>
             </Grid>
 
             <!-- ═══════════════════════════════════════════════════ -->
