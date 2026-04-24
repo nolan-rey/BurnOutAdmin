@@ -32,26 +32,37 @@
                 </Grid.RowDefinitions>
 
                 <!-- Logo Section + Toggle Button -->
-                <Grid Grid.Row="0" Margin="12,20,12,28">
+                <Grid Grid.Row="0" Margin="12,16,12,24">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <HorizontalStackLayout Grid.Column="0" Spacing="12" VerticalOptions="Center"
+
+                    <!-- Sidebar étendue : logo + nom -->
+                    <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center"
                                            IsVisible="{Binding IsSidebarExpanded}">
-                        <Ellipse WidthRequest="36" HeightRequest="36" Fill="#0F172A" VerticalOptions="Center"/>
-                        <VerticalStackLayout VerticalOptions="Center" Spacing="1">
-                            <Label Text="Burnout" FontSize="18" FontAttributes="Bold" TextColor="#1E293B"/>
-                            <Label Text="Supervision v1.2" FontSize="11" TextColor="#64748B"/>
+                        <Image Source="cop_logo.png" WidthRequest="40" HeightRequest="40"
+                               VerticalOptions="Center" Aspect="AspectFit"/>
+                        <VerticalStackLayout VerticalOptions="Center" Spacing="0">
+                            <Label Text="Call of Phoenix" FontSize="15" FontAttributes="Bold"
+                                   TextColor="#1E293B"/>
+                            <Label Text="Admin v1.2" FontSize="10" TextColor="#64748B"/>
                         </VerticalStackLayout>
                     </HorizontalStackLayout>
-                    <Border Grid.Column="1" StrokeThickness="0" WidthRequest="36" HeightRequest="36"
+
+                    <!-- Sidebar réduite : logo seul -->
+                    <Image Grid.Column="0" Source="cop_logo.png" WidthRequest="36" HeightRequest="36"
+                           VerticalOptions="Center" HorizontalOptions="Center" Aspect="AspectFit"
+                           IsVisible="{Binding IsSidebarExpanded, Converter={StaticResource InvertedBoolConverter}}"/>
+
+                    <!-- Bouton toggle -->
+                    <Border Grid.Column="1" StrokeThickness="0" WidthRequest="32" HeightRequest="32"
                             VerticalOptions="Center" HorizontalOptions="End">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding ToggleSidebarCommand}"/>
                         </Border.GestureRecognizers>
-                        <Label Text="&#xE5D2;" FontFamily="MaterialIcons" FontSize="22"
-                               TextColor="#64748B" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        <Label Text="&#xE5D2;" FontFamily="MaterialIcons" FontSize="20"
+                               TextColor="#94A3B8" HorizontalOptions="Center" VerticalOptions="Center"/>
                     </Border>
                 </Grid>
 
