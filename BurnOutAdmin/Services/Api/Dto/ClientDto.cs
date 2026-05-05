@@ -154,8 +154,17 @@ public class ClientResponseDto
 
 public class ClientDto
 {
+    /// <summary>Champ "id" retourné par GET /clients (spec v2).</summary>
+    [JsonPropertyName("id")]
+    public int? Id { get; set; }
+
+    /// <summary>Champ "id_client" — variante selon implémentation serveur.</summary>
     [JsonPropertyName("id_client")]
-    public int IdClient { get; set; }
+    public int? IdClient { get; set; }
+
+    /// <summary>Résolution : id ?? id_client ?? 0.</summary>
+    [JsonIgnore]
+    public int ResolvedId => Id ?? IdClient ?? 0;
 
     [JsonPropertyName("prenom")]
     public string Prenom { get; set; } = string.Empty;
@@ -264,8 +273,15 @@ public class CreateClientResponseDto
     [JsonPropertyName("success")]
     public bool Success { get; set; }
 
+    /// <summary>Spec v2 retourne "id". Variante "id_client" en fallback.</summary>
+    [JsonPropertyName("id")]
+    public int? Id { get; set; }
+
     [JsonPropertyName("id_client")]
     public int? IdClient { get; set; }
+
+    [JsonIgnore]
+    public int? ResolvedId => Id ?? IdClient;
 
     [JsonPropertyName("error")]
     public string? Error { get; set; }

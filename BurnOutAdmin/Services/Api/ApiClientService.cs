@@ -28,42 +28,37 @@ public class ApiClientService : IClientService
 
     public async Task<List<Client>> GetClientsAsync()
     {
-        // L'API retourne : {"success":true,"users":[{"uid":"...","email":"...","displayName":...}]}
-        // La clé de la liste est "users", pas "data".
+        // ── 1️⃣ Endpoint principal : GET /clients (retourne SQL id + données complètes) ──
+        try
+        {
+            var response = await _api.GetAsync<ClientListResponseDto>("/clients");
+            if (response?.Data is { Count: > 0 })
+            {
+                Console.WriteLine($"[ApiClientService] /clients OK — {response.Data.Count} client(s)");
+                return response.Data.Select(MapClientDtoToClient).ToList();
+            }
+        }
+        catch (UnauthorizedAccessException) { throw; }
+        catch (Exception ex1)
+        {
+            Console.WriteLine($"[ApiClientService] /clients échoué : {ex1.Message} — fallback /users");
+        }
 
-        // 1️⃣ Format enveloppé { success, users: [...] }
+        // ── 2️⃣ Fallback : GET /users (Firebase — sans ID SQL, sans statut) ──
         try
         {
             var response = await _api.GetAsync<UserListResponseDto>("/users");
             if (response is not null)
             {
                 var users = response.Users;
-                Console.WriteLine($"[ApiClientService] /users OK — {users.Count} utilisateur(s)");
-                if (users.Count > 0)
-                    Console.WriteLine($"[ApiClientService] Ex: uid={users[0].Uid}, email={users[0].Email}, displayName={users[0].DisplayName}, role={users[0].Role}");
+                Console.WriteLine($"[ApiClientService] /users fallback OK — {users.Count} utilisateur(s)");
                 return users.Select((u, i) => MapUserToClient(u, i + 1)).ToList();
             }
         }
         catch (UnauthorizedAccessException) { throw; }
-        catch (Exception ex1)
+        catch (Exception ex2)
         {
-            Console.WriteLine($"[ApiClientService] /users format enveloppé échoué : {ex1.Message} — essai tableau brut");
-        }
-
-        // 2️⃣ Format tableau brut [...]
-        try
-        {
-            var list = await _api.GetAsync<List<UserDto>>("/users");
-            if (list is not null)
-            {
-                Console.WriteLine($"[ApiClientService] /users tableau brut OK — {list.Count} utilisateur(s)");
-                return list.Select((u, i) => MapUserToClient(u, i + 1)).ToList();
-            }
-        }
-        catch (UnauthorizedAccessException) { throw; }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ApiClientService] GetClientsAsync error: {ex.Message}");
+            Console.WriteLine($"[ApiClientService] GetClientsAsync error: {ex2.Message}");
         }
 
         return [];
@@ -71,7 +66,17 @@ public class ApiClientService : IClientService
 
     public async Task<Client?> GetClientByIdAsync(int id)
     {
-        // 1️⃣ Format enveloppé { success, data: {...} }
+        // 1️⃣ GET /clients/{id} — données SQL complètes
+        try
+        {
+            var response = await _api.GetAsync<ClientResponseDto>($"/clients/{id}");
+            if (response?.Data is not null)
+                return MapClientDtoToClient(response.Data);
+        }
+        catch (UnauthorizedAccessException) { throw; }
+        catch { /* fallback /users */ }
+
+        // 2️⃣ Fallback GET /users/{id}
         try
         {
             var response = await _api.GetAsync<UserResponseDto>($"/users/{id}");
@@ -79,20 +84,12 @@ public class ApiClientService : IClientService
                 return MapUserToClient(response.Data, id);
         }
         catch (UnauthorizedAccessException) { throw; }
-        catch { /* essai format direct */ }
-
-        // 2️⃣ Format direct
-        try
-        {
-            var dto = await _api.GetAsync<UserDto>($"/users/{id}");
-            return dto is not null ? MapUserToClient(dto, id) : null;
-        }
-        catch (UnauthorizedAccessException) { throw; }
         catch (Exception ex)
         {
             Console.WriteLine($"[ApiClientService] GetClientByIdAsync({id}) error: {ex.Message}");
-            return null;
         }
+
+        return null;
     }
 
     // ── Écriture ──────────────────────────────────────────────────
@@ -119,11 +116,11 @@ public class ApiClientService : IClientService
                     : null
             };
 
-            var result = await _api.PostAsync<CreateClientResponseDto>("/users", dto);
+            var result = await _api.PostAsync<CreateClientResponseDto>("/clients", dto);
 
-            if (result?.Success == true && result.IdClient.HasValue)
+            if (result?.Success == true && result.ResolvedId.HasValue)
             {
-                client.Id = result.IdClient.Value;
+                client.Id = result.ResolvedId.Value;
                 return true;
             }
 
@@ -151,14 +148,14 @@ public class ApiClientService : IClientService
                 NfcUid = string.IsNullOrWhiteSpace(client.NfcUid) ? null : client.NfcUid
             };
 
-            var result = await _api.PutAsync<ApiSuccessDto>($"/users/{client.Id}", clientDto);
+            var result = await _api.PutAsync<ApiSuccessDto>($"/clients/{client.Id}", clientDto);
             if (result?.Success != true)
             {
                 Console.WriteLine($"[ApiClientService] UpdateClientAsync failed: {result?.Error}");
                 return false;
             }
 
-            // Mise à jour abonnement si présent (endpoint /clients/{id}/abonnement peut rester)
+            // Mise à jour abonnement si présent
             if (client.Subscription is not null)
             {
                 var abonnDto = new CreateAbonnementDto
@@ -171,7 +168,7 @@ public class ApiClientService : IClientService
 
                 try
                 {
-                    await _api.PutAsync<ApiSuccessDto>($"/users/{client.Id}/abonnement", abonnDto);
+                    await _api.PutAsync<ApiSuccessDto>($"/clients/{client.Id}/abonnement", abonnDto);
                 }
                 catch (Exception ex)
                 {
@@ -193,7 +190,7 @@ public class ApiClientService : IClientService
     {
         try
         {
-            await _api.DeleteAsync($"/users/{id}");
+            await _api.DeleteAsync($"/clients/{id}");
             return true;
         }
         catch (UnauthorizedAccessException) { throw; }
@@ -204,7 +201,22 @@ public class ApiClientService : IClientService
         }
     }
 
-    // ── Mapping UserDto → Client ──────────────────────────────────
+    // ── Mapping ClientDto → Client (source : GET /clients) ──────────
+
+    private static Client MapClientDtoToClient(ClientDto dto) => new()
+    {
+        Id           = dto.ResolvedId,
+        FirstName    = dto.Prenom,
+        LastName     = dto.Nom,
+        Email        = dto.Email,
+        Status       = MapStatutToLocal(dto.Statut),
+        NfcUid       = string.IsNullOrWhiteSpace(dto.NfcUid) ? null : dto.NfcUid,
+        Subscription = dto.Abonnement is not null
+            ? MapToSubscription(dto.Abonnement)
+            : null
+    };
+
+    // ── Mapping UserDto → Client (fallback : GET /users) ──────────
 
     /// <param name="index">Index 1-based dans la liste — utilisé comme Id quand aucun int n'est disponible.</param>
     private static Client MapUserToClient(UserDto dto, int index) => new()
