@@ -802,7 +802,6 @@
 
                     <!-- Header -->
                     <Grid Padding="20,16" ColumnDefinitions="*,Auto" BackgroundColor="{StaticResource BgGray50}">
-                        <Border.StrokeShape><RoundRectangle CornerRadius="16,16,0,0"/></Border.StrokeShape>
                         <VerticalStackLayout Grid.Column="0" Spacing="2">
                             <Label Text="Modifier le statut" FontSize="15" FontAttributes="Bold" TextColor="{StaticResource TextDark}"/>
                             <Label Text="{Binding QuickStatusClient.FullName}" FontSize="12" TextColor="{StaticResource TextMedium}"/>
