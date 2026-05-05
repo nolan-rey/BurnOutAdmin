@@ -135,7 +135,7 @@
                     <!-- Table Header -->
                     <Border Grid.Row="0" BackgroundColor="{StaticResource BgGray50}" StrokeThickness="0">
                         <Border.StrokeShape><RoundRectangle CornerRadius="10,10,0,0"/></Border.StrokeShape>
-                        <Grid ColumnDefinitions="70,*,100,150,120" Padding="20,12" BackgroundColor="{StaticResource BgGray50}">
+                        <Grid ColumnDefinitions="70,*,120,150,120" Padding="20,12" BackgroundColor="{StaticResource BgGray50}">
                             <Label Grid.Column="0" Text="ID" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8" VerticalOptions="Center"/>
                             <Label Grid.Column="1" Text="NOM &amp; PRÉNOM" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8" VerticalOptions="Center"/>
                             <Label Grid.Column="2" Text="STATUT" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8" VerticalOptions="Center" HorizontalTextAlignment="Center"/>
@@ -168,7 +168,7 @@
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
                                     <Grid RowDefinitions="*,Auto">
-                                        <Grid Grid.Row="0" ColumnDefinitions="70,*,100,150,120" Padding="20,14">
+                                        <Grid Grid.Row="0" ColumnDefinitions="70,*,120,150,120" Padding="20,14">
                                             <!-- ID -->
                                             <Label Grid.Column="0" Text="{Binding Id, StringFormat='#{0:D3}'}"
                                                    FontSize="13" FontAttributes="Bold" TextColor="{StaticResource TextDark}" VerticalOptions="Center"/>
@@ -177,8 +177,15 @@
                                                 <Label Text="{Binding FullName}" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource TextDark}" LineBreakMode="TailTruncation"/>
                                                 <Label Text="{Binding Email}" FontSize="11" TextColor="{StaticResource TextLight}" LineBreakMode="TailTruncation"/>
                                             </VerticalStackLayout>
-                                            <!-- Status Badge with dot -->
-                                            <HorizontalStackLayout Grid.Column="2" VerticalOptions="Center" HorizontalOptions="Center">
+                                            <!-- Status Badge — tappable → quick status popup -->
+                                            <Border Grid.Column="2" BackgroundColor="Transparent" StrokeThickness="0"
+                                                    VerticalOptions="Center" HorizontalOptions="Center">
+                                                <Border.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=OpenQuickStatusCommand}"
+                                                        CommandParameter="{Binding .}"/>
+                                                </Border.GestureRecognizers>
+                                                <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
                                                 <!-- Actif badge -->
                                                 <Border IsVisible="False" BackgroundColor="{StaticResource StatusGreenBg}" Stroke="{StaticResource StatusGreenBorder}" StrokeThickness="1" Padding="8,4" VerticalOptions="Center">
                                                     <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
@@ -284,7 +291,12 @@
                                                         <Label Text="Coach" FontSize="11" FontAttributes="Bold" TextColor="#2563EB" VerticalOptions="Center"/>
                                                     </HorizontalStackLayout>
                                                 </Border>
-                                            </HorizontalStackLayout>
+                                                <!-- Chevron indique que le statut est modifiable -->
+                                                <Label Text="&#xE5C5;" FontFamily="MaterialIcons"
+                                                       FontSize="14" TextColor="{StaticResource TextLight}"
+                                                       VerticalOptions="Center"/>
+                                                </HorizontalStackLayout>
+                                            </Border>
                                             <!-- NFC UID -->
                                             <HorizontalStackLayout Grid.Column="3" Spacing="6" VerticalOptions="Center">
                                                 <Border IsVisible="{Binding HasNfcCard}" BackgroundColor="{StaticResource BgGray100}" Stroke="{StaticResource BorderColor}" StrokeThickness="1" Padding="6,3">
@@ -769,6 +781,276 @@
                                 CornerRadius="8" HeightRequest="44" HorizontalOptions="End" WidthRequest="120"/>
                     </Border>
                 </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ==================== QUICK STATUS POPUP ==================== -->
+        <Grid IsVisible="{Binding IsQuickStatusOpen}" BackgroundColor="#60000000"
+              VerticalOptions="Fill" HorizontalOptions="Fill">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CloseQuickStatusCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Border BackgroundColor="White" WidthRequest="360"
+                    VerticalOptions="Center" HorizontalOptions="Center"
+                    Stroke="{StaticResource BorderColor}" StrokeThickness="1">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+                <Border.Shadow><Shadow Brush="#000" Offset="0,8" Radius="32" Opacity="0.18"/></Border.Shadow>
+                <Border.GestureRecognizers><TapGestureRecognizer/></Border.GestureRecognizers>
+
+                <VerticalStackLayout Spacing="0">
+
+                    <!-- Header -->
+                    <Grid Padding="20,16" ColumnDefinitions="*,Auto" BackgroundColor="{StaticResource BgGray50}">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="16,16,0,0"/></Border.StrokeShape>
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Modifier le statut" FontSize="15" FontAttributes="Bold" TextColor="{StaticResource TextDark}"/>
+                            <Label Text="{Binding QuickStatusClient.FullName}" FontSize="12" TextColor="{StaticResource TextMedium}"/>
+                        </VerticalStackLayout>
+                        <Label Grid.Column="1" Text="&#xE5CD;" FontFamily="MaterialIcons"
+                               FontSize="20" TextColor="{StaticResource TextLight}"
+                               WidthRequest="32" HeightRequest="32"
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               HorizontalTextAlignment="Center" VerticalTextAlignment="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CloseQuickStatusCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+                    <BoxView HeightRequest="1" Color="{StaticResource BorderColor}"/>
+
+                    <!-- Status chips -->
+                    <FlexLayout Padding="16" Wrap="Wrap" JustifyContent="Start" AlignItems="Center">
+
+                        <!-- Actif -->
+                        <Border BackgroundColor="{StaticResource StatusGreenBg}" Margin="4"
+                                StrokeThickness="1.5" Padding="12,8">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                            <Border.Stroke>
+                                <SolidColorBrush Color="{StaticResource StatusGreenBorder}"/>
+                            </Border.Stroke>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding QuickStatusClient.Status}" Value="Actif">
+                                    <Setter Property="StrokeThickness" Value="2.5"/>
+                                    <Setter Property="BackgroundColor" Value="#D1FAE5"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetQuickStatusCommand}" CommandParameter="Actif"/>
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                <Border BackgroundColor="{StaticResource StatusGreenDot}" StrokeThickness="0" HeightRequest="8" WidthRequest="8" VerticalOptions="Center">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                </Border>
+                                <Label Text="Actif" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource StatusGreen}" VerticalOptions="Center"/>
+                                <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="14"
+                                       TextColor="{StaticResource StatusGreen}" VerticalOptions="Center" IsVisible="False">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding QuickStatusClient.Status}" Value="Actif">
+                                            <Setter Property="IsVisible" Value="True"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </HorizontalStackLayout>
+                        </Border>
+
+                        <!-- Expiré -->
+                        <Border BackgroundColor="{StaticResource StatusRedBg}" Margin="4"
+                                StrokeThickness="1.5" Padding="12,8">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                            <Border.Stroke>
+                                <SolidColorBrush Color="{StaticResource StatusRedBorder}"/>
+                            </Border.Stroke>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding QuickStatusClient.Status}" Value="Expiré">
+                                    <Setter Property="StrokeThickness" Value="2.5"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetQuickStatusCommand}" CommandParameter="Expiré"/>
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                <Border BackgroundColor="{StaticResource StatusRedDot}" StrokeThickness="0" HeightRequest="8" WidthRequest="8" VerticalOptions="Center">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                </Border>
+                                <Label Text="Expiré" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource StatusRedText}" VerticalOptions="Center"/>
+                                <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="14"
+                                       TextColor="{StaticResource StatusRedText}" VerticalOptions="Center" IsVisible="False">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding QuickStatusClient.Status}" Value="Expiré">
+                                            <Setter Property="IsVisible" Value="True"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </HorizontalStackLayout>
+                        </Border>
+
+                        <!-- En attente -->
+                        <Border BackgroundColor="{StaticResource StatusYellowBg}" Margin="4"
+                                StrokeThickness="1.5" Padding="12,8">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                            <Border.Stroke>
+                                <SolidColorBrush Color="{StaticResource StatusYellowBorder}"/>
+                            </Border.Stroke>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding QuickStatusClient.Status}" Value="En attente">
+                                    <Setter Property="StrokeThickness" Value="2.5"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetQuickStatusCommand}" CommandParameter="En attente"/>
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                <Border BackgroundColor="{StaticResource StatusYellowDot}" StrokeThickness="0" HeightRequest="8" WidthRequest="8" VerticalOptions="Center">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                </Border>
+                                <Label Text="En attente" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource StatusYellowText}" VerticalOptions="Center"/>
+                                <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="14"
+                                       TextColor="{StaticResource StatusYellowText}" VerticalOptions="Center" IsVisible="False">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding QuickStatusClient.Status}" Value="En attente">
+                                            <Setter Property="IsVisible" Value="True"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </HorizontalStackLayout>
+                        </Border>
+
+                        <!-- Suspendu -->
+                        <Border BackgroundColor="{StaticResource BgGray100}" Margin="4"
+                                StrokeThickness="1.5" Padding="12,8">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                            <Border.Stroke>
+                                <SolidColorBrush Color="{StaticResource BorderColor}"/>
+                            </Border.Stroke>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding QuickStatusClient.Status}" Value="Suspendu">
+                                    <Setter Property="StrokeThickness" Value="2.5"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetQuickStatusCommand}" CommandParameter="Suspendu"/>
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                <Border BackgroundColor="{StaticResource TextLight}" StrokeThickness="0" HeightRequest="8" WidthRequest="8" VerticalOptions="Center">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                </Border>
+                                <Label Text="Suspendu" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" VerticalOptions="Center"/>
+                                <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="14"
+                                       TextColor="{StaticResource TextMedium}" VerticalOptions="Center" IsVisible="False">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding QuickStatusClient.Status}" Value="Suspendu">
+                                            <Setter Property="IsVisible" Value="True"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </HorizontalStackLayout>
+                        </Border>
+
+                        <!-- Inactif -->
+                        <Border BackgroundColor="{StaticResource BgGray100}" Margin="4"
+                                StrokeThickness="1.5" Padding="12,8">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                            <Border.Stroke>
+                                <SolidColorBrush Color="{StaticResource BorderColor}"/>
+                            </Border.Stroke>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding QuickStatusClient.Status}" Value="Inactif">
+                                    <Setter Property="StrokeThickness" Value="2.5"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetQuickStatusCommand}" CommandParameter="Inactif"/>
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                <Border BackgroundColor="{StaticResource TextLight}" StrokeThickness="0" HeightRequest="8" WidthRequest="8" VerticalOptions="Center">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                </Border>
+                                <Label Text="Inactif" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" VerticalOptions="Center"/>
+                                <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="14"
+                                       TextColor="{StaticResource TextMedium}" VerticalOptions="Center" IsVisible="False">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding QuickStatusClient.Status}" Value="Inactif">
+                                            <Setter Property="IsVisible" Value="True"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </HorizontalStackLayout>
+                        </Border>
+
+                        <!-- Admin -->
+                        <Border BackgroundColor="#EDE9FE" Margin="4"
+                                StrokeThickness="1.5" Padding="12,8">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                            <Border.Stroke>
+                                <SolidColorBrush Color="#C4B5FD"/>
+                            </Border.Stroke>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding QuickStatusClient.Status}" Value="Admin">
+                                    <Setter Property="StrokeThickness" Value="2.5"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetQuickStatusCommand}" CommandParameter="Admin"/>
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                <Border BackgroundColor="#7C3AED" StrokeThickness="0" HeightRequest="8" WidthRequest="8" VerticalOptions="Center">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                </Border>
+                                <Label Text="Admin" FontSize="13" FontAttributes="Bold" TextColor="#7C3AED" VerticalOptions="Center"/>
+                                <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="14"
+                                       TextColor="#7C3AED" VerticalOptions="Center" IsVisible="False">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding QuickStatusClient.Status}" Value="Admin">
+                                            <Setter Property="IsVisible" Value="True"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </HorizontalStackLayout>
+                        </Border>
+
+                        <!-- Coach -->
+                        <Border BackgroundColor="#DBEAFE" Margin="4"
+                                StrokeThickness="1.5" Padding="12,8">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                            <Border.Stroke>
+                                <SolidColorBrush Color="#BFDBFE"/>
+                            </Border.Stroke>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding QuickStatusClient.Status}" Value="Coach">
+                                    <Setter Property="StrokeThickness" Value="2.5"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetQuickStatusCommand}" CommandParameter="Coach"/>
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                <Border BackgroundColor="#2563EB" StrokeThickness="0" HeightRequest="8" WidthRequest="8" VerticalOptions="Center">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                </Border>
+                                <Label Text="Coach" FontSize="13" FontAttributes="Bold" TextColor="#2563EB" VerticalOptions="Center"/>
+                                <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="14"
+                                       TextColor="#2563EB" VerticalOptions="Center" IsVisible="False">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding QuickStatusClient.Status}" Value="Coach">
+                                            <Setter Property="IsVisible" Value="True"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </HorizontalStackLayout>
+                        </Border>
+
+                    </FlexLayout>
+
+                    <!-- Footer hint -->
+                    <Border BackgroundColor="{StaticResource BgGray50}" StrokeThickness="0" Padding="20,12">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="0,0,16,16"/></Border.StrokeShape>
+                        <Label Text="Cliquez sur un statut pour l'appliquer immédiatement."
+                               FontSize="11" TextColor="{StaticResource TextLight}"
+                               HorizontalTextAlignment="Center"/>
+                    </Border>
+
+                </VerticalStackLayout>
             </Border>
         </Grid>
 

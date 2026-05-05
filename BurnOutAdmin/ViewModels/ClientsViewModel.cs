@@ -103,6 +103,14 @@ public partial class ClientsViewModel : BaseViewModel
     public ObservableCollection<ClientProgramAssignment> ClientPrograms { get; } = new();
 
 
+    // --- Quick Status Inline ---
+
+    [ObservableProperty]
+    private bool _isQuickStatusOpen;
+
+    [ObservableProperty]
+    private Client? _quickStatusClient;
+
     // --- Bind NFC Mode ---
 
     [ObservableProperty]
@@ -260,6 +268,54 @@ public partial class ClientsViewModel : BaseViewModel
 
         IsFormOpen = false;
         ErrorMessage = null;
+    }
+
+    // --- Quick Status Commands ---
+
+    [RelayCommand]
+    private void OpenQuickStatus(Client? client)
+    {
+        if (client is null) return;
+        QuickStatusClient = client;
+        IsQuickStatusOpen = true;
+    }
+
+    [RelayCommand]
+    private void CloseQuickStatus()
+    {
+        IsQuickStatusOpen = false;
+        QuickStatusClient = null;
+    }
+
+    /// <summary>Met à jour le statut d'un client directement depuis la liste, sans ouvrir le formulaire complet.</summary>
+    [RelayCommand]
+    private async Task SetQuickStatusAsync(string? newStatus)
+    {
+        if (QuickStatusClient is null || string.IsNullOrEmpty(newStatus)) return;
+
+        var client   = QuickStatusClient;
+        var oldStatus = client.Status;
+
+        CloseQuickStatus();
+
+        if (oldStatus == newStatus) return;
+
+        try
+        {
+            // Mise à jour locale immédiate + rebuild de la liste filtrée
+            client.Status = newStatus;
+            ApplyFilters();
+
+            // Persistance via API
+            await _clientService.UpdateClientAsync(client);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ClientsVM] SetQuickStatus error: {ex.Message}");
+            // Revert sur échec
+            client.Status = oldStatus;
+            ApplyFilters();
+        }
     }
 
     [RelayCommand]
