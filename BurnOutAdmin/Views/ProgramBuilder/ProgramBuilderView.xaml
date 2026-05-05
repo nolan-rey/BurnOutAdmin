@@ -261,7 +261,7 @@
                 </Border>
 
                 <!-- ── Catégories de la séance ── -->
-                <CollectionView ItemsSource="{Binding CurrentSession.Categories}"
+                <CollectionView ItemsSource="{Binding SessionCategories}"
                                 ItemsLayout="VerticalList"
                                 VerticalScrollBarVisibility="Never">
                     <CollectionView.EmptyView>
@@ -348,7 +348,7 @@
                                                     <Border StrokeShape="RoundRectangle 8"
                                                             Stroke="#E2E8F0" StrokeThickness="1"
                                                             BackgroundColor="White"
-                                                            Margin="0,0,0,6"
+                                                            Margin="0,0,0,8"
                                                             Padding="0">
                                                         <Border.GestureRecognizers>
                                                             <DropGestureRecognizer AllowDrop="True"
@@ -359,52 +359,72 @@
 
                                                         <VerticalStackLayout>
 
-                                                            <!-- Header sous-cat -->
-                                                            <Grid Padding="12,9,12,9"
+                                                            <!-- ── Ligne 1 : header sous-cat ── -->
+                                                            <Grid Padding="10,8,10,8"
                                                                   ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto"
-                                                                  ColumnSpacing="6"
+                                                                  ColumnSpacing="5"
                                                                   BackgroundColor="#F8FAFC">
+
+                                                                <!-- Badge SC# -->
                                                                 <Border Grid.Column="0"
-                                                                        BackgroundColor="#F1F5F9"
+                                                                        BackgroundColor="#EEF2FF"
                                                                         StrokeShape="RoundRectangle 4"
                                                                         Stroke="Transparent"
                                                                         Padding="6,2" VerticalOptions="Center">
                                                                     <Label Text="{Binding Order, StringFormat='SC{0}'}"
                                                                            FontSize="9" FontAttributes="Bold"
-                                                                           TextColor="#64748B"/>
+                                                                           TextColor="#4F46E5"/>
                                                                 </Border>
+
+                                                                <!-- Nom sous-cat -->
                                                                 <Entry Grid.Column="1"
                                                                        Text="{Binding Name}"
                                                                        FontSize="13" FontAttributes="Bold"
                                                                        TextColor="#1E293B"
                                                                        VerticalOptions="Center"
                                                                        BackgroundColor="Transparent"/>
+
+                                                                <!-- Sets -->
                                                                 <HorizontalStackLayout Grid.Column="2" Spacing="3" VerticalOptions="Center">
-                                                                    <Label Text="Sets" FontSize="9" TextColor="#94A3B8" VerticalTextAlignment="Center"/>
-                                                                    <Entry Text="{Binding Sets}" FontSize="11" WidthRequest="32"
+                                                                    <Entry Text="{Binding Sets}" FontSize="12" WidthRequest="30"
                                                                            Keyboard="Numeric" TextColor="#0F172A"
                                                                            HorizontalTextAlignment="Center"/>
+                                                                    <Label Text="×" FontSize="10" TextColor="#94A3B8" VerticalTextAlignment="Center"/>
                                                                 </HorizontalStackLayout>
+
+                                                                <!-- Récup (secondes) -->
                                                                 <HorizontalStackLayout Grid.Column="3" Spacing="3" VerticalOptions="Center">
-                                                                    <Label Text="Repos" FontSize="9" TextColor="#94A3B8" VerticalTextAlignment="Center"/>
-                                                                    <Entry Text="{Binding RestTime}" FontSize="11" WidthRequest="32"
+                                                                    <Label Text="⏱" FontSize="11" VerticalTextAlignment="Center"/>
+                                                                    <Entry Text="{Binding RestTime}" FontSize="12" WidthRequest="36"
                                                                            Keyboard="Numeric" TextColor="#0F172A"
                                                                            HorizontalTextAlignment="Center"/>
                                                                     <Label Text="s" FontSize="9" TextColor="#94A3B8" VerticalTextAlignment="Center"/>
                                                                 </HorizontalStackLayout>
+
+                                                                <!-- Expand/Collapse -->
                                                                 <Button Grid.Column="4"
                                                                         Text="{Binding ExpandIcon}"
-                                                                        FontSize="9" BackgroundColor="Transparent"
-                                                                        TextColor="#94A3B8" Padding="3,2"
+                                                                        FontSize="10" BackgroundColor="Transparent"
+                                                                        TextColor="#94A3B8" Padding="4,2"
                                                                         Command="{Binding ToggleExpandedCommand}"/>
+
+                                                                <!-- Supprimer -->
                                                                 <Button Grid.Column="5"
                                                                         Text="✕" FontSize="10"
                                                                         BackgroundColor="Transparent"
-                                                                        TextColor="#EF4444" Padding="3,2"
+                                                                        TextColor="#EF4444" Padding="4,2"
                                                                         Command="{Binding DeleteSubCategoryCommand}"/>
                                                             </Grid>
 
-                                                            <!-- Contenu exercices -->
+                                                            <!-- ── Ligne note ── -->
+                                                            <Entry Text="{Binding Note}"
+                                                                   Placeholder="Note / consigne pour ce bloc…"
+                                                                   PlaceholderColor="#CBD5E1"
+                                                                   FontSize="11" TextColor="#475569"
+                                                                   BackgroundColor="#FAFAFA"
+                                                                   Margin="10,0,10,6"/>
+
+                                                            <!-- ── Contenu exercices (collapsible) ── -->
                                                             <VerticalStackLayout IsVisible="{Binding IsExpanded}" Padding="0">
 
                                                                 <!-- Zone de drop -->
@@ -412,7 +432,7 @@
                                                                         StrokeDashArray="5,4"
                                                                         StrokeShape="RoundRectangle 6"
                                                                         BackgroundColor="#F0F9FF"
-                                                                        Padding="0,8" Margin="12,8,12,4">
+                                                                        Padding="0,8" Margin="10,8,10,4">
                                                                     <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
                                                                         <Label Text="&#xE2C4;" FontFamily="MaterialIcons"
                                                                                FontSize="13" TextColor="#93C5FD"
@@ -423,33 +443,7 @@
                                                                     </HorizontalStackLayout>
                                                                 </Border>
 
-                                                                <!-- Header colonnes exercices (une seule fois) -->
-                                                                <Grid ColumnDefinitions="*,55,55,85,55,32"
-                                                                      Padding="12,5,12,4"
-                                                                      BackgroundColor="#F8FAFC">
-                                                                    <Label Grid.Column="0" Text="EXERCICE"
-                                                                           FontSize="9" FontAttributes="Bold"
-                                                                           TextColor="#94A3B8" CharacterSpacing="0.8"
-                                                                           VerticalTextAlignment="Center"/>
-                                                                    <Label Grid.Column="1" Text="SETS"
-                                                                           FontSize="9" FontAttributes="Bold"
-                                                                           TextColor="#94A3B8" CharacterSpacing="0.8"
-                                                                           HorizontalTextAlignment="Center"/>
-                                                                    <Label Grid.Column="2" Text="REPS"
-                                                                           FontSize="9" FontAttributes="Bold"
-                                                                           TextColor="#94A3B8" CharacterSpacing="0.8"
-                                                                           HorizontalTextAlignment="Center"/>
-                                                                    <Label Grid.Column="3" Text="CHARGE (KG)"
-                                                                           FontSize="9" FontAttributes="Bold"
-                                                                           TextColor="#94A3B8" CharacterSpacing="0.8"
-                                                                           HorizontalTextAlignment="Center"/>
-                                                                    <Label Grid.Column="4" Text="RPE"
-                                                                           FontSize="9" FontAttributes="Bold"
-                                                                           TextColor="#94A3B8" CharacterSpacing="0.8"
-                                                                           HorizontalTextAlignment="Center"/>
-                                                                </Grid>
-
-                                                                <BoxView HeightRequest="1" BackgroundColor="#F1F5F9" Margin="12,0"/>
+                                                                <BoxView HeightRequest="1" BackgroundColor="#F1F5F9" Margin="10,0"/>
 
                                                                 <!-- Lignes exercices -->
                                                                 <CollectionView ItemsSource="{Binding Exercises}"
@@ -460,44 +454,342 @@
                                                                                FontSize="11" FontAttributes="Italic"
                                                                                TextColor="#CBD5E1"
                                                                                HorizontalTextAlignment="Center"
-                                                                               Padding="12,8"/>
+                                                                               Padding="12,10"/>
                                                                     </CollectionView.EmptyView>
                                                                     <CollectionView.ItemTemplate>
                                                                         <DataTemplate x:DataType="vm:ExerciseViewModel">
-                                                                            <Grid ColumnDefinitions="*,55,55,85,55,32"
-                                                                                  Padding="12,5">
-                                                                                <Entry Grid.Column="0"
-                                                                                       Text="{Binding Name}"
-                                                                                       FontSize="13" TextColor="#1E293B"
-                                                                                       VerticalOptions="Center"
-                                                                                       BackgroundColor="Transparent"/>
-                                                                                <Border Grid.Column="1" Stroke="#E2E8F0" StrokeThickness="1"
-                                                                                        StrokeShape="RoundRectangle 5" Padding="0" Margin="2,0" VerticalOptions="Center">
-                                                                                    <Entry Text="{Binding Sets}" FontSize="12" Keyboard="Numeric"
-                                                                                           TextColor="#0F172A" HorizontalTextAlignment="Center" Margin="4,0"/>
-                                                                                </Border>
-                                                                                <Border Grid.Column="2" Stroke="#E2E8F0" StrokeThickness="1"
-                                                                                        StrokeShape="RoundRectangle 5" Padding="0" Margin="2,0" VerticalOptions="Center">
-                                                                                    <Entry Text="{Binding Reps}" FontSize="12" Keyboard="Numeric"
-                                                                                           TextColor="#0F172A" HorizontalTextAlignment="Center" Margin="4,0"/>
-                                                                                </Border>
-                                                                                <Border Grid.Column="3" Stroke="#E2E8F0" StrokeThickness="1"
-                                                                                        StrokeShape="RoundRectangle 5" Padding="0" Margin="2,0" VerticalOptions="Center">
-                                                                                    <Entry Text="{Binding Weight}" FontSize="12" Keyboard="Numeric"
-                                                                                           TextColor="#0F172A" HorizontalTextAlignment="Center"
-                                                                                           Placeholder="—" PlaceholderColor="#CBD5E1" Margin="4,0"/>
-                                                                                </Border>
-                                                                                <Border Grid.Column="4" Stroke="#E2E8F0" StrokeThickness="1"
-                                                                                        StrokeShape="RoundRectangle 5" Padding="0" Margin="2,0" VerticalOptions="Center">
-                                                                                    <Entry Text="{Binding Rpe}" FontSize="12" Keyboard="Numeric"
-                                                                                           TextColor="#0F172A" HorizontalTextAlignment="Center" Margin="4,0"/>
-                                                                                </Border>
-                                                                                <Button Grid.Column="5"
-                                                                                        Text="✕" FontSize="10"
-                                                                                        BackgroundColor="Transparent" TextColor="#CBD5E1"
-                                                                                        Padding="2,2" VerticalOptions="Center"
-                                                                                        Command="{Binding DeleteExerciseCommand}"/>
-                                                                            </Grid>
+                                                                            <VerticalStackLayout Padding="10,7,10,6" Spacing="0">
+
+                                                                                <!-- ══ Ligne principale ══
+                                                                                     [Nom (flex)] | [pill: 🔁 │ valeur] | [chips] | [✕] -->
+                                                                                <Grid ColumnDefinitions="*,Auto,Auto,24"
+                                                                                      ColumnSpacing="6"
+                                                                                      VerticalOptions="Center">
+
+                                                                                    <!-- Nom de l'exercice -->
+                                                                                    <Entry Grid.Column="0"
+                                                                                           Text="{Binding Name}"
+                                                                                           Placeholder="Nom de l'exercice"
+                                                                                           PlaceholderColor="#CBD5E1"
+                                                                                           FontSize="13" TextColor="#1E293B"
+                                                                                           VerticalOptions="Center"
+                                                                                           BackgroundColor="Transparent"/>
+
+                                                                                    <!-- ── Pill mode + valeur ─────────────────────
+                                                                                         [🔁│10]  ← clic gauche = toggle mode
+                                                                                                    clic droit = éditer valeur      -->
+                                                                                    <Border Grid.Column="1"
+                                                                                            StrokeShape="RoundRectangle 22"
+                                                                                            Stroke="#E2E8F0" StrokeThickness="1.5"
+                                                                                            BackgroundColor="#F8FAFC"
+                                                                                            Padding="0" VerticalOptions="Center"
+                                                                                            MinimumWidthRequest="90">
+                                                                                        <Grid ColumnDefinitions="36,1,56" ColumnSpacing="0">
+
+                                                                                            <!-- Icône mode (tappable) -->
+                                                                                            <Border Grid.Column="0"
+                                                                                                    BackgroundColor="Transparent"
+                                                                                                    StrokeShape="RoundRectangle 22"
+                                                                                                    Stroke="Transparent"
+                                                                                                    Padding="0">
+                                                                                                <Border.GestureRecognizers>
+                                                                                                    <TapGestureRecognizer Command="{Binding ToggleTimeModeCommand}"/>
+                                                                                                </Border.GestureRecognizers>
+                                                                                                <Label Text="{Binding RepsModeLabel}"
+                                                                                                       FontSize="16"
+                                                                                                       HorizontalTextAlignment="Center"
+                                                                                                       VerticalTextAlignment="Center"
+                                                                                                       Padding="0,6"/>
+                                                                                            </Border>
+
+                                                                                            <!-- Séparateur vertical -->
+                                                                                            <BoxView Grid.Column="1"
+                                                                                                     BackgroundColor="#E2E8F0"
+                                                                                                     WidthRequest="1"
+                                                                                                     VerticalOptions="Fill"/>
+
+                                                                                            <!-- Valeur éditable -->
+                                                                                            <Entry Grid.Column="2"
+                                                                                                   Text="{Binding RepsText}"
+                                                                                                   Placeholder="{Binding RepsPlaceholder}"
+                                                                                                   PlaceholderColor="#CBD5E1"
+                                                                                                   FontSize="13" FontAttributes="Bold"
+                                                                                                   TextColor="#1E293B"
+                                                                                                   HorizontalTextAlignment="Center"
+                                                                                                   BackgroundColor="Transparent"
+                                                                                                   Margin="0,0,2,0"/>
+                                                                                        </Grid>
+                                                                                    </Border>
+
+                                                                                    <!-- ── Chips inline ───────────────────────── -->
+                                                                                    <HorizontalStackLayout Grid.Column="2"
+                                                                                                           Spacing="3"
+                                                                                                           VerticalOptions="Center">
+
+                                                                                        <!-- kg -->
+                                                                                        <Border StrokeShape="RoundRectangle 8"
+                                                                                                StrokeThickness="1"
+                                                                                                Padding="7,4">
+                                                                                            <Border.GestureRecognizers>
+                                                                                                <TapGestureRecognizer Command="{Binding ToggleShowPoidsCommand}"/>
+                                                                                            </Border.GestureRecognizers>
+                                                                                            <Border.Triggers>
+                                                                                                <DataTrigger TargetType="Border" Binding="{Binding ShowPoids}" Value="True">
+                                                                                                    <Setter Property="BackgroundColor" Value="#4F46E5"/>
+                                                                                                    <Setter Property="Stroke" Value="#4F46E5"/>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger TargetType="Border" Binding="{Binding ShowPoids}" Value="False">
+                                                                                                    <Setter Property="BackgroundColor" Value="#F1F5F9"/>
+                                                                                                    <Setter Property="Stroke" Value="#E2E8F0"/>
+                                                                                                </DataTrigger>
+                                                                                            </Border.Triggers>
+                                                                                            <Label Text="kg" FontSize="9" FontAttributes="Bold">
+                                                                                                <Label.Triggers>
+                                                                                                    <DataTrigger TargetType="Label" Binding="{Binding ShowPoids}" Value="True">
+                                                                                                        <Setter Property="TextColor" Value="White"/>
+                                                                                                    </DataTrigger>
+                                                                                                    <DataTrigger TargetType="Label" Binding="{Binding ShowPoids}" Value="False">
+                                                                                                        <Setter Property="TextColor" Value="#94A3B8"/>
+                                                                                                    </DataTrigger>
+                                                                                                </Label.Triggers>
+                                                                                            </Label>
+                                                                                        </Border>
+
+                                                                                        <!-- récup -->
+                                                                                        <Border StrokeShape="RoundRectangle 8"
+                                                                                                StrokeThickness="1"
+                                                                                                Padding="7,4">
+                                                                                            <Border.GestureRecognizers>
+                                                                                                <TapGestureRecognizer Command="{Binding ToggleShowRecupInterCommand}"/>
+                                                                                            </Border.GestureRecognizers>
+                                                                                            <Border.Triggers>
+                                                                                                <DataTrigger TargetType="Border" Binding="{Binding ShowRecupInter}" Value="True">
+                                                                                                    <Setter Property="BackgroundColor" Value="#4F46E5"/>
+                                                                                                    <Setter Property="Stroke" Value="#4F46E5"/>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger TargetType="Border" Binding="{Binding ShowRecupInter}" Value="False">
+                                                                                                    <Setter Property="BackgroundColor" Value="#F1F5F9"/>
+                                                                                                    <Setter Property="Stroke" Value="#E2E8F0"/>
+                                                                                                </DataTrigger>
+                                                                                            </Border.Triggers>
+                                                                                            <Label Text="récup" FontSize="9" FontAttributes="Bold">
+                                                                                                <Label.Triggers>
+                                                                                                    <DataTrigger TargetType="Label" Binding="{Binding ShowRecupInter}" Value="True">
+                                                                                                        <Setter Property="TextColor" Value="White"/>
+                                                                                                    </DataTrigger>
+                                                                                                    <DataTrigger TargetType="Label" Binding="{Binding ShowRecupInter}" Value="False">
+                                                                                                        <Setter Property="TextColor" Value="#94A3B8"/>
+                                                                                                    </DataTrigger>
+                                                                                                </Label.Triggers>
+                                                                                            </Label>
+                                                                                        </Border>
+
+                                                                                        <!-- tempo -->
+                                                                                        <Border StrokeShape="RoundRectangle 8"
+                                                                                                StrokeThickness="1"
+                                                                                                Padding="7,4">
+                                                                                            <Border.GestureRecognizers>
+                                                                                                <TapGestureRecognizer Command="{Binding ToggleShowTempoCommand}"/>
+                                                                                            </Border.GestureRecognizers>
+                                                                                            <Border.Triggers>
+                                                                                                <DataTrigger TargetType="Border" Binding="{Binding ShowTempo}" Value="True">
+                                                                                                    <Setter Property="BackgroundColor" Value="#4F46E5"/>
+                                                                                                    <Setter Property="Stroke" Value="#4F46E5"/>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger TargetType="Border" Binding="{Binding ShowTempo}" Value="False">
+                                                                                                    <Setter Property="BackgroundColor" Value="#F1F5F9"/>
+                                                                                                    <Setter Property="Stroke" Value="#E2E8F0"/>
+                                                                                                </DataTrigger>
+                                                                                            </Border.Triggers>
+                                                                                            <Label Text="tempo" FontSize="9" FontAttributes="Bold">
+                                                                                                <Label.Triggers>
+                                                                                                    <DataTrigger TargetType="Label" Binding="{Binding ShowTempo}" Value="True">
+                                                                                                        <Setter Property="TextColor" Value="White"/>
+                                                                                                    </DataTrigger>
+                                                                                                    <DataTrigger TargetType="Label" Binding="{Binding ShowTempo}" Value="False">
+                                                                                                        <Setter Property="TextColor" Value="#94A3B8"/>
+                                                                                                    </DataTrigger>
+                                                                                                </Label.Triggers>
+                                                                                            </Label>
+                                                                                        </Border>
+
+                                                                                        <!-- ampli -->
+                                                                                        <Border StrokeShape="RoundRectangle 8"
+                                                                                                StrokeThickness="1"
+                                                                                                Padding="7,4">
+                                                                                            <Border.GestureRecognizers>
+                                                                                                <TapGestureRecognizer Command="{Binding ToggleShowAmplitudeCommand}"/>
+                                                                                            </Border.GestureRecognizers>
+                                                                                            <Border.Triggers>
+                                                                                                <DataTrigger TargetType="Border" Binding="{Binding ShowAmplitude}" Value="True">
+                                                                                                    <Setter Property="BackgroundColor" Value="#4F46E5"/>
+                                                                                                    <Setter Property="Stroke" Value="#4F46E5"/>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger TargetType="Border" Binding="{Binding ShowAmplitude}" Value="False">
+                                                                                                    <Setter Property="BackgroundColor" Value="#F1F5F9"/>
+                                                                                                    <Setter Property="Stroke" Value="#E2E8F0"/>
+                                                                                                </DataTrigger>
+                                                                                            </Border.Triggers>
+                                                                                            <Label Text="ampli" FontSize="9" FontAttributes="Bold">
+                                                                                                <Label.Triggers>
+                                                                                                    <DataTrigger TargetType="Label" Binding="{Binding ShowAmplitude}" Value="True">
+                                                                                                        <Setter Property="TextColor" Value="White"/>
+                                                                                                    </DataTrigger>
+                                                                                                    <DataTrigger TargetType="Label" Binding="{Binding ShowAmplitude}" Value="False">
+                                                                                                        <Setter Property="TextColor" Value="#94A3B8"/>
+                                                                                                    </DataTrigger>
+                                                                                                </Label.Triggers>
+                                                                                            </Label>
+                                                                                        </Border>
+
+                                                                                        <!-- RIR -->
+                                                                                        <Border StrokeShape="RoundRectangle 8"
+                                                                                                StrokeThickness="1"
+                                                                                                Padding="7,4">
+                                                                                            <Border.GestureRecognizers>
+                                                                                                <TapGestureRecognizer Command="{Binding ToggleShowRirCommand}"/>
+                                                                                            </Border.GestureRecognizers>
+                                                                                            <Border.Triggers>
+                                                                                                <DataTrigger TargetType="Border" Binding="{Binding ShowRir}" Value="True">
+                                                                                                    <Setter Property="BackgroundColor" Value="#4F46E5"/>
+                                                                                                    <Setter Property="Stroke" Value="#4F46E5"/>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger TargetType="Border" Binding="{Binding ShowRir}" Value="False">
+                                                                                                    <Setter Property="BackgroundColor" Value="#F1F5F9"/>
+                                                                                                    <Setter Property="Stroke" Value="#E2E8F0"/>
+                                                                                                </DataTrigger>
+                                                                                            </Border.Triggers>
+                                                                                            <Label Text="RIR" FontSize="9" FontAttributes="Bold">
+                                                                                                <Label.Triggers>
+                                                                                                    <DataTrigger TargetType="Label" Binding="{Binding ShowRir}" Value="True">
+                                                                                                        <Setter Property="TextColor" Value="White"/>
+                                                                                                    </DataTrigger>
+                                                                                                    <DataTrigger TargetType="Label" Binding="{Binding ShowRir}" Value="False">
+                                                                                                        <Setter Property="TextColor" Value="#94A3B8"/>
+                                                                                                    </DataTrigger>
+                                                                                                </Label.Triggers>
+                                                                                            </Label>
+                                                                                        </Border>
+
+                                                                                    </HorizontalStackLayout>
+
+                                                                                    <!-- Supprimer -->
+                                                                                    <Label Grid.Column="3"
+                                                                                           Text="✕" FontSize="11"
+                                                                                           TextColor="#CBD5E1"
+                                                                                           HorizontalTextAlignment="Center"
+                                                                                           VerticalTextAlignment="Center">
+                                                                                        <Label.GestureRecognizers>
+                                                                                            <TapGestureRecognizer Command="{Binding DeleteExerciseCommand}"/>
+                                                                                        </Label.GestureRecognizers>
+                                                                                    </Label>
+
+                                                                                </Grid>
+
+                                                                                <!-- ══ Ligne champs optionnels (si actifs) ══ -->
+                                                                                <HorizontalStackLayout IsVisible="{Binding HasOptionalFields}"
+                                                                                                       Spacing="5"
+                                                                                                       Margin="0,6,0,2">
+
+                                                                                    <!-- Poids -->
+                                                                                    <Border IsVisible="{Binding ShowPoids}"
+                                                                                            StrokeShape="RoundRectangle 8"
+                                                                                            Stroke="#C7D2FE" StrokeThickness="1"
+                                                                                            BackgroundColor="#EEF2FF"
+                                                                                            Padding="6,3" WidthRequest="95">
+                                                                                        <VerticalStackLayout Spacing="1">
+                                                                                            <Label Text="POIDS" FontSize="7" FontAttributes="Bold"
+                                                                                                   TextColor="#6366F1" CharacterSpacing="0.6"
+                                                                                                   HorizontalTextAlignment="Center"/>
+                                                                                            <Entry Text="{Binding WeightText}"
+                                                                                                   Placeholder="50 kg" PlaceholderColor="#A5B4FC"
+                                                                                                   FontSize="12" TextColor="#1E293B"
+                                                                                                   HorizontalTextAlignment="Center"
+                                                                                                   BackgroundColor="Transparent"
+                                                                                                   Margin="0,-6,0,-4"/>
+                                                                                        </VerticalStackLayout>
+                                                                                    </Border>
+
+                                                                                    <!-- Récup inter -->
+                                                                                    <Border IsVisible="{Binding ShowRecupInter}"
+                                                                                            StrokeShape="RoundRectangle 8"
+                                                                                            Stroke="#C7D2FE" StrokeThickness="1"
+                                                                                            BackgroundColor="#EEF2FF"
+                                                                                            Padding="6,3" WidthRequest="85">
+                                                                                        <VerticalStackLayout Spacing="1">
+                                                                                            <Label Text="RÉCUP" FontSize="7" FontAttributes="Bold"
+                                                                                                   TextColor="#6366F1" CharacterSpacing="0.6"
+                                                                                                   HorizontalTextAlignment="Center"/>
+                                                                                            <Entry Text="{Binding RecupInter}"
+                                                                                                   Placeholder="30''" PlaceholderColor="#A5B4FC"
+                                                                                                   FontSize="12" TextColor="#1E293B"
+                                                                                                   HorizontalTextAlignment="Center"
+                                                                                                   BackgroundColor="Transparent"
+                                                                                                   Margin="0,-6,0,-4"/>
+                                                                                        </VerticalStackLayout>
+                                                                                    </Border>
+
+                                                                                    <!-- Tempo -->
+                                                                                    <Border IsVisible="{Binding ShowTempo}"
+                                                                                            StrokeShape="RoundRectangle 8"
+                                                                                            Stroke="#C7D2FE" StrokeThickness="1"
+                                                                                            BackgroundColor="#EEF2FF"
+                                                                                            Padding="6,3" WidthRequest="85">
+                                                                                        <VerticalStackLayout Spacing="1">
+                                                                                            <Label Text="TEMPO" FontSize="7" FontAttributes="Bold"
+                                                                                                   TextColor="#6366F1" CharacterSpacing="0.6"
+                                                                                                   HorizontalTextAlignment="Center"/>
+                                                                                            <Entry Text="{Binding Tempo}"
+                                                                                                   Placeholder="2010" PlaceholderColor="#A5B4FC"
+                                                                                                   FontSize="12" TextColor="#1E293B"
+                                                                                                   HorizontalTextAlignment="Center"
+                                                                                                   BackgroundColor="Transparent"
+                                                                                                   Margin="0,-6,0,-4"/>
+                                                                                        </VerticalStackLayout>
+                                                                                    </Border>
+
+                                                                                    <!-- Amplitude -->
+                                                                                    <Border IsVisible="{Binding ShowAmplitude}"
+                                                                                            StrokeShape="RoundRectangle 8"
+                                                                                            Stroke="#C7D2FE" StrokeThickness="1"
+                                                                                            BackgroundColor="#EEF2FF"
+                                                                                            Padding="6,3" WidthRequest="100">
+                                                                                        <VerticalStackLayout Spacing="1">
+                                                                                            <Label Text="AMPLITUDE" FontSize="7" FontAttributes="Bold"
+                                                                                                   TextColor="#6366F1" CharacterSpacing="0.6"
+                                                                                                   HorizontalTextAlignment="Center"/>
+                                                                                            <Entry Text="{Binding Amplitude}"
+                                                                                                   Placeholder="Complète" PlaceholderColor="#A5B4FC"
+                                                                                                   FontSize="12" TextColor="#1E293B"
+                                                                                                   HorizontalTextAlignment="Center"
+                                                                                                   BackgroundColor="Transparent"
+                                                                                                   Margin="0,-6,0,-4"/>
+                                                                                        </VerticalStackLayout>
+                                                                                    </Border>
+
+                                                                                    <!-- RIR -->
+                                                                                    <Border IsVisible="{Binding ShowRir}"
+                                                                                            StrokeShape="RoundRectangle 8"
+                                                                                            Stroke="#C7D2FE" StrokeThickness="1"
+                                                                                            BackgroundColor="#EEF2FF"
+                                                                                            Padding="6,3" WidthRequest="65">
+                                                                                        <VerticalStackLayout Spacing="1">
+                                                                                            <Label Text="RIR" FontSize="7" FontAttributes="Bold"
+                                                                                                   TextColor="#6366F1" CharacterSpacing="0.6"
+                                                                                                   HorizontalTextAlignment="Center"/>
+                                                                                            <Entry Text="{Binding RirText}"
+                                                                                                   Placeholder="0" PlaceholderColor="#A5B4FC"
+                                                                                                   FontSize="12" TextColor="#1E293B"
+                                                                                                   HorizontalTextAlignment="Center"
+                                                                                                   BackgroundColor="Transparent"
+                                                                                                   Margin="0,-6,0,-4"/>
+                                                                                        </VerticalStackLayout>
+                                                                                    </Border>
+
+                                                                                </HorizontalStackLayout>
+
+                                                                                <BoxView HeightRequest="1" BackgroundColor="#F1F5F9" Margin="0,6,0,0"/>
+                                                                            </VerticalStackLayout>
                                                                         </DataTemplate>
                                                                     </CollectionView.ItemTemplate>
                                                                 </CollectionView>
@@ -507,7 +799,7 @@
                                                                         StrokeDashArray="4,3"
                                                                         StrokeShape="RoundRectangle 6"
                                                                         BackgroundColor="Transparent"
-                                                                        Margin="12,4,12,10" Padding="8,7">
+                                                                        Margin="10,4,10,10" Padding="8,7">
                                                                     <Border.GestureRecognizers>
                                                                         <TapGestureRecognizer Command="{Binding AddExerciseCommand}"/>
                                                                     </Border.GestureRecognizers>

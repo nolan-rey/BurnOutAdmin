@@ -116,8 +116,8 @@ public partial class ClientsViewModel : BaseViewModel
 
     // --- Listes statiques pour les Pickers ---
 
-    public List<string> StatusOptions { get; } = new() { "Tous", "Actif", "Expiré", "En attente", "Suspendu" };
-    public List<string> FormStatusOptions { get; } = new() { "Actif", "Expiré", "En attente", "Suspendu" };
+    public List<string> StatusOptions { get; } = new() { "Tous", "Actif", "Admin", "Coach", "Expiré", "En attente", "Suspendu", "Inactif" };
+    public List<string> FormStatusOptions { get; } = new() { "Actif", "Admin", "Coach", "Expiré", "En attente", "Suspendu", "Inactif" };
     public List<string> SubscriptionTypeOptions { get; } = new() { "Mensuel", "Trimestriel", "Annuel" };
 
     // --- Propriétés calculées ---

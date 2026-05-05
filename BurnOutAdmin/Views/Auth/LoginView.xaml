@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BurnOutAdmin.ViewModels.Auth"
+             x:Class="BurnOutAdmin.Views.Auth.LoginView"
+             x:DataType="vm:LoginViewModel"
+             Title="Connexion">
+
+    <Grid ColumnDefinitions="2*,3*">
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- PANNEAU GAUCHE — Branding                                  -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <Grid Grid.Column="0">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#1A0B5E" Offset="0"/>
+                    <GradientStop Color="#512BD4" Offset="1"/>
+                </LinearGradientBrush>
+            </Grid.Background>
+
+            <!-- Cercles décoratifs -->
+            <Ellipse Fill="White" Opacity="0.04" WidthRequest="420" HeightRequest="420"
+                     HorizontalOptions="End" VerticalOptions="Start" Margin="0,-140,-140,0"/>
+            <Ellipse Fill="White" Opacity="0.06" WidthRequest="260" HeightRequest="260"
+                     HorizontalOptions="Start" VerticalOptions="End" Margin="-80,0,0,-80"/>
+            <Ellipse Fill="White" Opacity="0.03" WidthRequest="160" HeightRequest="160"
+                     HorizontalOptions="Center" VerticalOptions="Center" Margin="60,100,0,0"/>
+
+            <!-- Contenu -->
+            <Grid RowDefinitions="Auto,*,Auto" Margin="0" VerticalOptions="Fill">
+
+                <!-- En-tête -->
+                <VerticalStackLayout Grid.Row="0" Padding="48,44,40,0" Spacing="4">
+                    <Label Text="BurnOut" FontSize="38" FontAttributes="Bold" TextColor="White"/>
+                    <Label Text="Admin" FontSize="38" FontAttributes="Bold" TextColor="#A78BFA" Margin="0,0,0,10"/>
+                    <Label Text="La plateforme de gestion complète pour votre salle de sport."
+                           FontSize="14" TextColor="#C4B5FD" LineBreakMode="WordWrap"
+                           Margin="0,0,24,0"/>
+                </VerticalStackLayout>
+
+                <!-- Mascotte phoenix centré — taille maîtrisée pour éviter le bug MAUI -->
+                <Image Grid.Row="1" Source="cop_mascot_panel.png"
+                       WidthRequest="260" HeightRequest="260"
+                       HorizontalOptions="Center" VerticalOptions="Center"
+                       Aspect="AspectFit" Margin="0,24,0,24"/>
+
+                <!-- Features -->
+
+                <VerticalStackLayout Grid.Row="2" Padding="48,0,40,44" Spacing="22">
+
+                    <Grid ColumnDefinitions="40,*" ColumnSpacing="14">
+                        <Border BackgroundColor="#FFFFFF18" WidthRequest="40" HeightRequest="40"
+                                VerticalOptions="Center" Grid.Column="0">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                            <Label Text="&#xE7EF;" FontFamily="MaterialIcons" FontSize="20"
+                                   TextColor="#A78BFA" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                            <Label Text="Gestion des membres" FontSize="14" FontAttributes="Bold" TextColor="White"/>
+                            <Label Text="Clients, abonnements et accès NFC" FontSize="12" TextColor="#A78BFA"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="40,*" ColumnSpacing="14">
+                        <Border BackgroundColor="#FFFFFF18" WidthRequest="40" HeightRequest="40"
+                                VerticalOptions="Center" Grid.Column="0">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                            <Label Text="&#xEBD2;" FontFamily="MaterialIcons" FontSize="20"
+                                   TextColor="#A78BFA" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                            <Label Text="Challenges &amp; Classements" FontSize="14" FontAttributes="Bold" TextColor="White"/>
+                            <Label Text="Podium, progression et récompenses" FontSize="12" TextColor="#A78BFA"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="40,*" ColumnSpacing="14">
+                        <Border BackgroundColor="#FFFFFF18" WidthRequest="40" HeightRequest="40"
+                                VerticalOptions="Center" Grid.Column="0">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                            <Label Text="&#xE3C9;" FontFamily="MaterialIcons" FontSize="20"
+                                   TextColor="#A78BFA" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                            <Label Text="Programmes d'entraînement" FontSize="14" FontAttributes="Bold" TextColor="White"/>
+                            <Label Text="Création, assignation et suivi" FontSize="12" TextColor="#A78BFA"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                </VerticalStackLayout>
+
+            </Grid>
+        </Grid>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- PANNEAU DROIT — Formulaire                                 -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <ScrollView Grid.Column="1" BackgroundColor="White">
+            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                  Padding="0,48" Spacing="0" WidthRequest="400">
+
+                <!-- En-tête -->
+                <Label Text="Connexion" FontSize="30" FontAttributes="Bold"
+                       TextColor="#1E293B" Margin="0,0,0,6"/>
+                <Label Text="Bienvenue ! Entrez vos identifiants pour continuer."
+                       FontSize="14" TextColor="#64748B" Margin="0,0,0,36"
+                       LineBreakMode="WordWrap"/>
+
+                <!-- Champ Email -->
+                <Label Text="Adresse e-mail" FontSize="13" FontAttributes="Bold"
+                       TextColor="#374151" Margin="0,0,0,6"/>
+                <Border BackgroundColor="#F8FAFC" Stroke="#E2E8F0" StrokeThickness="1"
+                        Padding="14,0" Margin="0,0,0,18">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Label Text="&#xE0BE;" FontFamily="MaterialIcons" FontSize="20"
+                               TextColor="#94A3B8" VerticalOptions="Center" Grid.Column="0"/>
+                        <Entry Text="{Binding Email}" Placeholder="votre@email.fr"
+                               PlaceholderColor="#CBD5E1" TextColor="#1E293B" FontSize="14"
+                               HeightRequest="48" Keyboard="Email" ReturnType="Next"
+                               BackgroundColor="Transparent" Grid.Column="1"/>
+                    </Grid>
+                </Border>
+
+                <!-- Champ Mot de passe -->
+                <Label Text="Mot de passe" FontSize="13" FontAttributes="Bold"
+                       TextColor="#374151" Margin="0,0,0,6"/>
+                <Border BackgroundColor="#F8FAFC" Stroke="#E2E8F0" StrokeThickness="1"
+                        Padding="14,0" Margin="0,0,0,8">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Label Text="&#xE897;" FontFamily="MaterialIcons" FontSize="20"
+                               TextColor="#94A3B8" VerticalOptions="Center" Grid.Column="0"/>
+                        <Entry Text="{Binding Password}" Placeholder="••••••••"
+                               PlaceholderColor="#CBD5E1" TextColor="#1E293B" FontSize="14"
+                               HeightRequest="48" IsPassword="True" ReturnType="Done"
+                               ReturnCommand="{Binding LoginCommand}"
+                               BackgroundColor="Transparent" Grid.Column="1"/>
+                    </Grid>
+                </Border>
+
+                <!-- Bannière erreur -->
+                <Border BackgroundColor="#FEF2F2" Stroke="#FECACA" StrokeThickness="1"
+                        Padding="14,10" Margin="0,12,0,0"
+                        IsVisible="{Binding HasError}">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Label Text="&#xE000;" FontFamily="MaterialIcons" FontSize="18"
+                               TextColor="#EF4444" VerticalOptions="Center" Grid.Column="0"/>
+                        <Label Text="{Binding ErrorMessage}" FontSize="13"
+                               TextColor="#DC2626" VerticalOptions="Center" Grid.Column="1"
+                               LineBreakMode="WordWrap"/>
+                    </Grid>
+                </Border>
+
+                <!-- Bouton Se connecter -->
+                <Button Text="Se connecter" Command="{Binding LoginCommand}"
+                        IsEnabled="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}"
+                        BackgroundColor="#512BD4" TextColor="White" FontSize="15"
+                        FontAttributes="Bold" HeightRequest="50" CornerRadius="10"
+                        Margin="0,24,0,0"/>
+
+                <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
+                                   Color="#512BD4" Margin="0,12,0,0" HorizontalOptions="Center"/>
+
+                <!-- Séparateur -->
+                <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="12" Margin="0,28,0,28">
+                    <BoxView Color="#E2E8F0" HeightRequest="1" VerticalOptions="Center" Grid.Column="0"/>
+                    <Label Text="ou" FontSize="13" TextColor="#94A3B8" Grid.Column="1"/>
+                    <BoxView Color="#E2E8F0" HeightRequest="1" VerticalOptions="Center" Grid.Column="2"/>
+                </Grid>
+
+                <!-- Bouton Créer un compte -->
+                <Button Text="Créer un compte" Command="{Binding GoToRegisterCommand}"
+                        BackgroundColor="Transparent" BorderColor="#E2E8F0" BorderWidth="1.5"
+                        TextColor="#512BD4" FontSize="14" FontAttributes="Bold"
+                        HeightRequest="48" CornerRadius="10"/>
+
+                <!-- Footer -->
+                <Label Text="Authentification Firebase · CallOfPhoenix API"
+                       FontSize="11" TextColor="#CBD5E1" HorizontalOptions="Center"
+                       Margin="0,32,0,0"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>

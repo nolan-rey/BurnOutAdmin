@@ -12,6 +12,7 @@ public partial class SavedSessionCardViewModel : ObservableObject
     private readonly Action<SavedSessionCardViewModel>? _deleteAction;
     private readonly Action<SavedSessionCardViewModel>? _toggleAction;
     private readonly Action<SavedSessionCardViewModel>? _assignAction;
+    private readonly Action<SavedSessionCardViewModel>? _editAction;
 
     [ObservableProperty] private bool _isSelected;
 
@@ -35,12 +36,14 @@ public partial class SavedSessionCardViewModel : ObservableObject
         SavedSessionEntry entry,
         Action<SavedSessionCardViewModel>? deleteAction = null,
         Action<SavedSessionCardViewModel>? toggleAction = null,
-        Action<SavedSessionCardViewModel>? assignAction = null)
+        Action<SavedSessionCardViewModel>? assignAction = null,
+        Action<SavedSessionCardViewModel>? editAction = null)
     {
         Entry = entry;
         _deleteAction = deleteAction;
         _toggleAction = toggleAction;
         _assignAction = assignAction;
+        _editAction   = editAction;
     }
 
     partial void OnIsSelectedChanged(bool value)
@@ -60,4 +63,7 @@ public partial class SavedSessionCardViewModel : ObservableObject
 
     [RelayCommand]
     private void Assign() => _assignAction?.Invoke(this);
+
+    [RelayCommand]
+    private void Edit() => _editAction?.Invoke(this);
 }

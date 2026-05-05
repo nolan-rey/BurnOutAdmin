@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using BurnOutAdmin.Models;
 using BurnOutAdmin.Services;
+using BurnOutAdmin.Services.Api;
+using BurnOutAdmin.Views.Auth;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -9,7 +11,9 @@ namespace BurnOutAdmin.ViewModels;
 public partial class MainShellViewModel : BaseViewModel
 {
     private readonly INavigationService _navigationService;
-    private readonly IAlertService _alertService;
+    private readonly IAlertService      _alertService;
+    private readonly IApiAuthService    _authService;
+    private readonly IServiceProvider   _serviceProvider;
 
     [ObservableProperty]
     private bool _isSidebarExpanded = true;
@@ -23,10 +27,31 @@ public partial class MainShellViewModel : BaseViewModel
     [ObservableProperty]
     private ObservableCollection<SidebarMenuItem> _menuItems = new();
 
-    public MainShellViewModel(INavigationService navigationService, IAlertService alertService)
+    /// <summary>Email de l'utilisateur connecté (affiché dans la sidebar et les paramètres).</summary>
+    public string CurrentUserEmail =>
+        _authService.CurrentUserEmail ?? "utilisateur@app.fr";
+
+    /// <summary>Initiales extraites de l'email (ex. "test@test.com" → "T").</summary>
+    public string CurrentUserInitials
+    {
+        get
+        {
+            var email = _authService.CurrentUserEmail ?? string.Empty;
+            var local = email.Contains('@') ? email[..email.IndexOf('@')] : email;
+            return local.Length > 0 ? local[0].ToString().ToUpperInvariant() : "?";
+        }
+    }
+
+    public MainShellViewModel(
+        INavigationService navigationService,
+        IAlertService      alertService,
+        IApiAuthService    authService,
+        IServiceProvider   serviceProvider)
     {
         _navigationService = navigationService;
-        _alertService = alertService;
+        _alertService      = alertService;
+        _authService       = authService;
+        _serviceProvider   = serviceProvider;
         _navigationService.CurrentViewModelChanged += HandleCurrentViewModelChanged;
 
         InitializeMenuItems();
@@ -79,6 +104,21 @@ public partial class MainShellViewModel : BaseViewModel
     [RelayCommand]
     private async Task LogoutAsync()
     {
-        await _alertService.AlertAsync("Déconnexion", "Fonctionnalité de déconnexion à implémenter");
+        var confirmed = await _alertService.ConfirmAsync(
+            "Déconnexion",
+            "Voulez-vous vraiment vous déconnecter ?",
+            "Se déconnecter",
+            "Annuler");
+
+        if (!confirmed) return;
+
+        _authService.Logout();
+
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            var loginView = _serviceProvider.GetRequiredService<LoginView>();
+            if (Application.Current?.Windows is { Count: > 0 } windows)
+                windows[0].Page = loginView;
+        });
     }
 }

@@ -77,4 +77,31 @@ public class MockProgrammeService : IProgrammeService
         var count = _mockProgrammes.Count(p => p.IsActive);
         return Task.FromResult(count);
     }
+
+    public Task<Programme?> CreateProgrammeAsync(Programme programme)
+    {
+        programme.Id = _mockProgrammes.Count + 1;
+        programme.IsActive = true;
+        programme.CreatedAt = DateTime.UtcNow;
+        _mockProgrammes.Add(programme);
+        return Task.FromResult<Programme?>(programme);
+    }
+
+    public Task<bool> UpdateProgrammeAsync(Programme programme)
+    {
+        var existing = _mockProgrammes.FirstOrDefault(p => p.Id == programme.Id);
+        if (existing is null) return Task.FromResult(false);
+        existing.Name = programme.Name;
+        existing.Description = programme.Description;
+        existing.Type = programme.Type;
+        existing.Level = programme.Level;
+        existing.IsActive = programme.IsActive;
+        return Task.FromResult(true);
+    }
+
+    public Task<bool> DeleteProgrammeAsync(int id)
+    {
+        var removed = _mockProgrammes.RemoveAll(p => p.Id == id) > 0;
+        return Task.FromResult(removed);
+    }
 }

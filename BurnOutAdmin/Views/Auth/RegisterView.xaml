@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BurnOutAdmin.ViewModels.Auth"
+             x:Class="BurnOutAdmin.Views.Auth.RegisterView"
+             x:DataType="vm:RegisterViewModel"
+             Title="Créer un compte">
+
+    <Grid ColumnDefinitions="2*,3*">
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- PANNEAU GAUCHE — Branding (identique au login)             -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <Grid Grid.Column="0">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#1A0B5E" Offset="0"/>
+                    <GradientStop Color="#512BD4" Offset="1"/>
+                </LinearGradientBrush>
+            </Grid.Background>
+
+            <Ellipse Fill="White" Opacity="0.04" WidthRequest="420" HeightRequest="420"
+                     HorizontalOptions="End" VerticalOptions="Start" Margin="0,-140,-140,0"/>
+            <Ellipse Fill="White" Opacity="0.06" WidthRequest="260" HeightRequest="260"
+                     HorizontalOptions="Start" VerticalOptions="End" Margin="-80,0,0,-80"/>
+            <Ellipse Fill="White" Opacity="0.03" WidthRequest="160" HeightRequest="160"
+                     HorizontalOptions="Center" VerticalOptions="Center" Margin="60,100,0,0"/>
+
+            <VerticalStackLayout VerticalOptions="Center" Padding="48,0,40,0" Spacing="0">
+                <Label Text="&#xE7FE;" FontFamily="MaterialIcons" FontSize="54"
+                       TextColor="White" Margin="0,0,0,20"/>
+
+                <Label Text="Rejoignez" FontSize="36" FontAttributes="Bold" TextColor="White"/>
+                <Label Text="l'équipe" FontSize="36" FontAttributes="Bold"
+                       TextColor="#A78BFA" Margin="0,0,0,16"/>
+
+                <Label Text="Créez votre compte coach ou administrateur pour accéder à la plateforme BurnOut."
+                       FontSize="15" TextColor="#C4B5FD" LineBreakMode="WordWrap"
+                       Margin="0,0,24,52"/>
+
+                <!-- Étapes visuelles -->
+                <VerticalStackLayout Spacing="0">
+
+                    <!-- Étape 1 -->
+                    <Grid ColumnDefinitions="40,*" ColumnSpacing="16">
+                        <Border WidthRequest="40" HeightRequest="40" BackgroundColor="#512BD4"
+                                Stroke="Transparent" VerticalOptions="Start" Grid.Column="0">
+                            <Border.StrokeShape><Ellipse/></Border.StrokeShape>
+                            <Label Text="1" FontSize="16" FontAttributes="Bold"
+                                   TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                            <Label Text="Choix du rôle" FontSize="14" FontAttributes="Bold" TextColor="White"/>
+                            <Label Text="Coach ou Administrateur" FontSize="12" TextColor="#A78BFA"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Ligne de connexion -->
+                    <BoxView Color="#FFFFFF30" WidthRequest="2" HeightRequest="24"
+                             HorizontalOptions="Start" Margin="19,4,0,4"/>
+
+                    <!-- Étape 2 -->
+                    <Grid ColumnDefinitions="40,*" ColumnSpacing="16">
+                        <Border WidthRequest="40" HeightRequest="40" BackgroundColor="#FFFFFF28"
+                                Stroke="Transparent" VerticalOptions="Start" Grid.Column="0">
+                            <Border.StrokeShape><Ellipse/></Border.StrokeShape>
+                            <Label Text="2" FontSize="16" FontAttributes="Bold"
+                                   TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                            <Label Text="Informations du profil" FontSize="14" FontAttributes="Bold" TextColor="White"/>
+                            <Label Text="Nom, email, mot de passe, code" FontSize="12" TextColor="#A78BFA"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- PANNEAU DROIT — Formulaire                                  -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <ScrollView Grid.Column="1" BackgroundColor="White">
+            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                  Padding="0,48" Spacing="0" WidthRequest="480">
+
+                <!-- En-tête avec badge étape -->
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,32">
+                    <VerticalStackLayout Grid.Column="0" Spacing="4">
+                        <Label Text="Créer un compte" FontSize="30" FontAttributes="Bold" TextColor="#1E293B"/>
+                        <Label Text="{Binding StepSubtitle}" FontSize="14" TextColor="#64748B" LineBreakMode="WordWrap"/>
+                    </VerticalStackLayout>
+                    <Border Grid.Column="1" BackgroundColor="#EEF2FF" Stroke="#C7D2FE"
+                            StrokeThickness="1" Padding="12,6" VerticalOptions="Start">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                        <Label Text="{Binding StepLabel}" FontSize="12" FontAttributes="Bold" TextColor="#4338CA"/>
+                    </Border>
+                </Grid>
+
+                <!-- ════════════════════════════════════════════════ -->
+                <!-- ÉTAPE 1 — Choix du rôle                         -->
+                <!-- ════════════════════════════════════════════════ -->
+                <VerticalStackLayout IsVisible="{Binding IsStep1}" Spacing="0">
+
+                    <Label Text="Quel est votre rôle ?"
+                           FontSize="16" FontAttributes="Bold" TextColor="#1E293B" Margin="0,0,0,4"/>
+                    <Label Text="Votre accès et vos permissions seront configurés selon le rôle choisi."
+                           FontSize="13" TextColor="#64748B" Margin="0,0,0,20" LineBreakMode="WordWrap"/>
+
+                    <!-- Cartes de rôle -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="14" Margin="0,0,0,16">
+
+                        <!-- Coach -->
+                        <Border Grid.Column="0"
+                                Stroke="{Binding CoachCardBorder}"
+                                BackgroundColor="{Binding CoachCardBg}"
+                                StrokeThickness="2" Padding="20,24">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectCoachCommand}"/>
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                                <Border WidthRequest="56" HeightRequest="56"
+                                        BackgroundColor="{Binding CoachCardBg}"
+                                        Stroke="{Binding CoachCardBorder}" StrokeThickness="1.5"
+                                        HorizontalOptions="Center">
+                                    <Border.StrokeShape><Ellipse/></Border.StrokeShape>
+                                    <Label Text="&#xE3A9;" FontFamily="MaterialIcons" FontSize="28"
+                                           TextColor="{Binding CoachIconColor}"
+                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
+                                <Label Text="Coach" FontSize="17" FontAttributes="Bold"
+                                       TextColor="#1E293B" HorizontalOptions="Center"/>
+                                <Label Text="Suivi des clients, programmes et séances"
+                                       FontSize="12" TextColor="#64748B"
+                                       HorizontalTextAlignment="Center" LineBreakMode="WordWrap"/>
+                                <Border BackgroundColor="#512BD4" WidthRequest="24" HeightRequest="24"
+                                        HorizontalOptions="Center"
+                                        IsVisible="{Binding IsCoachSelected}">
+                                    <Border.StrokeShape><Ellipse/></Border.StrokeShape>
+                                    <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="14"
+                                           TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Administrateur -->
+                        <Border Grid.Column="1"
+                                Stroke="{Binding AdminCardBorder}"
+                                BackgroundColor="{Binding AdminCardBg}"
+                                StrokeThickness="2" Padding="20,24">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectAdminCommand}"/>
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                                <Border WidthRequest="56" HeightRequest="56"
+                                        BackgroundColor="{Binding AdminCardBg}"
+                                        Stroke="{Binding AdminCardBorder}" StrokeThickness="1.5"
+                                        HorizontalOptions="Center">
+                                    <Border.StrokeShape><Ellipse/></Border.StrokeShape>
+                                    <Label Text="&#xE8D3;" FontFamily="MaterialIcons" FontSize="28"
+                                           TextColor="{Binding AdminIconColor}"
+                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
+                                <Label Text="Administrateur" FontSize="17" FontAttributes="Bold"
+                                       TextColor="#1E293B" HorizontalOptions="Center"/>
+                                <Label Text="Accès complet à la gestion de la salle"
+                                       FontSize="12" TextColor="#64748B"
+                                       HorizontalTextAlignment="Center" LineBreakMode="WordWrap"/>
+                                <Border BackgroundColor="#512BD4" WidthRequest="24" HeightRequest="24"
+                                        HorizontalOptions="Center"
+                                        IsVisible="{Binding IsAdminSelected}">
+                                    <Border.StrokeShape><Ellipse/></Border.StrokeShape>
+                                    <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="14"
+                                           TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
+                            </VerticalStackLayout>
+                        </Border>
+
+                    </Grid>
+
+                    <!-- Info box quand rôle sélectionné -->
+                    <Border BackgroundColor="#EEF2FF" Stroke="#C7D2FE" StrokeThickness="1"
+                            Padding="14,12" Margin="0,0,0,20"
+                            IsVisible="{Binding CanContinue}">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <Label Text="&#xE88E;" FontFamily="MaterialIcons" FontSize="20"
+                                   TextColor="#6366F1" VerticalOptions="Center" Grid.Column="0"/>
+                            <Label Text="{Binding RoleInfoText}" FontSize="13" TextColor="#4338CA"
+                                   VerticalOptions="Center" Grid.Column="1" LineBreakMode="WordWrap"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Bouton Continuer -->
+                    <Button Text="Continuer" Command="{Binding NextStepCommand}"
+                            IsEnabled="{Binding CanContinue}"
+                            BackgroundColor="#512BD4" TextColor="White"
+                            FontSize="15" FontAttributes="Bold"
+                            HeightRequest="50" CornerRadius="10"/>
+
+                </VerticalStackLayout>
+
+                <!-- ════════════════════════════════════════════════ -->
+                <!-- ÉTAPE 2 — Informations du profil                -->
+                <!-- ════════════════════════════════════════════════ -->
+                <VerticalStackLayout IsVisible="{Binding IsStep2}" Spacing="0">
+
+                    <!-- Badge du rôle sélectionné -->
+                    <Border BackgroundColor="{Binding RoleBadgeBg}" Stroke="Transparent"
+                            Padding="12,6" HorizontalOptions="Start" Margin="0,0,0,24">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                        <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="6">
+                            <Label Text="{Binding RoleIcon}" FontFamily="MaterialIcons" FontSize="16"
+                                   TextColor="{Binding RoleBadgeText}" VerticalOptions="Center" Grid.Column="0"/>
+                            <Label Text="{Binding SelectedRole}" FontSize="13" FontAttributes="Bold"
+                                   TextColor="{Binding RoleBadgeText}" VerticalOptions="Center" Grid.Column="1"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Prénom + Nom -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,0,0,16">
+                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                            <Label Text="Prénom *" FontSize="13" FontAttributes="Bold" TextColor="#374151"/>
+                            <Border BackgroundColor="#F8FAFC" Stroke="#E2E8F0" StrokeThickness="1" Padding="12,0">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                                <Entry Text="{Binding FirstName}" Placeholder="Jean"
+                                       PlaceholderColor="#CBD5E1" TextColor="#1E293B" FontSize="14"
+                                       HeightRequest="44" BackgroundColor="Transparent"/>
+                            </Border>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" Spacing="6">
+                            <Label Text="Nom *" FontSize="13" FontAttributes="Bold" TextColor="#374151"/>
+                            <Border BackgroundColor="#F8FAFC" Stroke="#E2E8F0" StrokeThickness="1" Padding="12,0">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                                <Entry Text="{Binding LastName}" Placeholder="Dupont"
+                                       PlaceholderColor="#CBD5E1" TextColor="#1E293B" FontSize="14"
+                                       HeightRequest="44" BackgroundColor="Transparent"/>
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Email -->
+                    <Label Text="Adresse e-mail *" FontSize="13" FontAttributes="Bold"
+                           TextColor="#374151" Margin="0,0,0,6"/>
+                    <Border BackgroundColor="#F8FAFC" Stroke="#E2E8F0" StrokeThickness="1"
+                            Padding="14,0" Margin="0,0,0,16">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <Label Text="&#xE0BE;" FontFamily="MaterialIcons" FontSize="20"
+                                   TextColor="#94A3B8" VerticalOptions="Center" Grid.Column="0"/>
+                            <Entry Text="{Binding Email}" Placeholder="jean.dupont@burnout.fr"
+                                   PlaceholderColor="#CBD5E1" TextColor="#1E293B" FontSize="14"
+                                   HeightRequest="44" Keyboard="Email" BackgroundColor="Transparent"
+                                   Grid.Column="1"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Spécialité (coach uniquement) -->
+                    <VerticalStackLayout IsVisible="{Binding IsCoachRole}" Margin="0,0,0,16" Spacing="6">
+                        <Label Text="Spécialité *" FontSize="13" FontAttributes="Bold" TextColor="#374151"/>
+                        <Border BackgroundColor="#F8FAFC" Stroke="#E2E8F0" StrokeThickness="1" Padding="14,0">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                <Label Text="&#xE3A9;" FontFamily="MaterialIcons" FontSize="20"
+                                       TextColor="#94A3B8" VerticalOptions="Center" Grid.Column="0"/>
+                                <Picker SelectedItem="{Binding Specialty}"
+                                        ItemsSource="{Binding Specialties}"
+                                        Title="Choisir une spécialité"
+                                        TitleColor="#CBD5E1" TextColor="#1E293B" FontSize="14"
+                                        HeightRequest="44" BackgroundColor="Transparent"
+                                        Grid.Column="1"/>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Mot de passe + Confirmation -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,0,0,16">
+                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                            <Label Text="Mot de passe *" FontSize="13" FontAttributes="Bold" TextColor="#374151"/>
+                            <Border BackgroundColor="#F8FAFC" Stroke="#E2E8F0" StrokeThickness="1" Padding="12,0">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                                <Entry Text="{Binding Password}" Placeholder="8 car. minimum"
+                                       PlaceholderColor="#CBD5E1" TextColor="#1E293B" FontSize="14"
+                                       HeightRequest="44" IsPassword="True" BackgroundColor="Transparent"/>
+                            </Border>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" Spacing="6">
+                            <Label Text="Confirmer *" FontSize="13" FontAttributes="Bold" TextColor="#374151"/>
+                            <Border BackgroundColor="#F8FAFC" Stroke="#E2E8F0" StrokeThickness="1" Padding="12,0">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                                <Entry Text="{Binding ConfirmPassword}" Placeholder="••••••••"
+                                       PlaceholderColor="#CBD5E1" TextColor="#1E293B" FontSize="14"
+                                       HeightRequest="44" IsPassword="True" BackgroundColor="Transparent"/>
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Code de vérification -->
+                    <Label Text="{Binding VerificationCodeLabel}" FontSize="13" FontAttributes="Bold"
+                           TextColor="#374151" Margin="0,0,0,6"/>
+                    <Border BackgroundColor="#FFFBEB" Stroke="#FDE68A" StrokeThickness="1"
+                            Padding="14,0" Margin="0,0,0,4">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <Label Text="&#xE88D;" FontFamily="MaterialIcons" FontSize="20"
+                                   TextColor="#F59E0B" VerticalOptions="Center" Grid.Column="0"/>
+                            <Entry Text="{Binding VerificationCode}"
+                                   Placeholder="{Binding VerificationCodePlaceholder}"
+                                   PlaceholderColor="#CBD5E1" TextColor="#1E293B" FontSize="14"
+                                   HeightRequest="44" BackgroundColor="Transparent" Grid.Column="1"/>
+                        </Grid>
+                    </Border>
+                    <Label Text="{Binding VerificationCodeDescription}"
+                           FontSize="11" TextColor="#92400E" Margin="0,4,0,20"/>
+
+                    <!-- Bannière erreur -->
+                    <Border BackgroundColor="#FEF2F2" Stroke="#FECACA" StrokeThickness="1"
+                            Padding="14,10" Margin="0,0,0,16"
+                            IsVisible="{Binding HasError}">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <Label Text="&#xE000;" FontFamily="MaterialIcons" FontSize="18"
+                                   TextColor="#EF4444" VerticalOptions="Center" Grid.Column="0"/>
+                            <Label Text="{Binding ErrorMessage}" FontSize="13"
+                                   TextColor="#DC2626" VerticalOptions="Center" Grid.Column="1"
+                                   LineBreakMode="WordWrap"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Bouton Créer le compte -->
+                    <Button Text="Créer mon compte" Command="{Binding RegisterCommand}"
+                            IsEnabled="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}"
+                            BackgroundColor="#512BD4" TextColor="White"
+                            FontSize="15" FontAttributes="Bold"
+                            HeightRequest="50" CornerRadius="10"/>
+
+                    <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
+                                       Color="#512BD4" Margin="0,10,0,0" HorizontalOptions="Center"/>
+
+                    <!-- Retour étape 1 -->
+                    <Button Text="&#xE5C4;  Modifier le rôle" Command="{Binding BackCommand}"
+                            BackgroundColor="Transparent" TextColor="#64748B"
+                            FontSize="13" HeightRequest="40" Margin="0,8,0,0"/>
+
+                </VerticalStackLayout>
+
+                <!-- Lien retour login -->
+                <Grid ColumnDefinitions="Auto,Auto" HorizontalOptions="Center"
+                      ColumnSpacing="4" Margin="0,28,0,0">
+                    <Label Text="Déjà un compte ?" FontSize="13" TextColor="#64748B"
+                           VerticalOptions="Center" Grid.Column="0"/>
+                    <Label Text="Se connecter" FontSize="13" FontAttributes="Bold"
+                           TextColor="#512BD4" VerticalOptions="Center" Grid.Column="1">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding GoToLoginCommand}"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </Grid>
+
+                <Label Text="Authentification Firebase · CallOfPhoenix API"
+                       FontSize="11" TextColor="#CBD5E1"
+                       HorizontalOptions="Center" Margin="0,16,0,0"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>

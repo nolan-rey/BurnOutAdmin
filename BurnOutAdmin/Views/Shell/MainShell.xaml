@@ -31,29 +31,49 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Logo Section + Toggle Button -->
-                <Grid Grid.Row="0" Margin="12,20,12,28">
+                <!-- ── Header ÉTENDU : logo + nom | bouton toggle ── -->
+                <Grid Grid.Row="0" Margin="12,16,12,24"
+                      IsVisible="{Binding IsSidebarExpanded}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <HorizontalStackLayout Grid.Column="0" Spacing="12" VerticalOptions="Center"
-                                           IsVisible="{Binding IsSidebarExpanded}">
-                        <Ellipse WidthRequest="36" HeightRequest="36" Fill="#0F172A" VerticalOptions="Center"/>
+
+                    <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
+                        <Image Source="cop_logo.png" WidthRequest="40" HeightRequest="40"
+                               VerticalOptions="Center" Aspect="AspectFit"/>
                         <VerticalStackLayout VerticalOptions="Center" Spacing="1">
-                            <Label Text="Burnout" FontSize="18" FontAttributes="Bold" TextColor="#1E293B"/>
-                            <Label Text="Supervision v1.2" FontSize="11" TextColor="#64748B"/>
+                            <Label Text="Call of Phoenix" FontSize="14" FontAttributes="Bold"
+                                   TextColor="#1E293B"/>
+                            <Label Text="Admin · v1.2" FontSize="10" TextColor="#64748B"/>
                         </VerticalStackLayout>
                     </HorizontalStackLayout>
-                    <Border Grid.Column="1" StrokeThickness="0" WidthRequest="36" HeightRequest="36"
+
+                    <Border Grid.Column="1" StrokeThickness="0" WidthRequest="32" HeightRequest="32"
                             VerticalOptions="Center" HorizontalOptions="End">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding ToggleSidebarCommand}"/>
                         </Border.GestureRecognizers>
-                        <Label Text="&#xE5D2;" FontFamily="MaterialIcons" FontSize="22"
-                               TextColor="#64748B" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        <Label Text="&#xE5D2;" FontFamily="MaterialIcons" FontSize="20"
+                               TextColor="#94A3B8" HorizontalOptions="Center" VerticalOptions="Center"/>
                     </Border>
                 </Grid>
+
+                <!-- ── Header RÉDUIT : logo au-dessus du bouton toggle ── -->
+                <VerticalStackLayout Grid.Row="0" Margin="0,16,0,24" Spacing="8"
+                                     HorizontalOptions="Center"
+                                     IsVisible="{Binding IsSidebarExpanded, Converter={StaticResource InvertedBoolConverter}}">
+                    <Image Source="cop_logo.png" WidthRequest="38" HeightRequest="38"
+                           HorizontalOptions="Center" Aspect="AspectFit"/>
+                    <Border StrokeThickness="0" WidthRequest="32" HeightRequest="32"
+                            HorizontalOptions="Center">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleSidebarCommand}"/>
+                        </Border.GestureRecognizers>
+                        <Label Text="&#xE5D2;" FontFamily="MaterialIcons" FontSize="20"
+                               TextColor="#94A3B8" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
+                </VerticalStackLayout>
 
                 <!-- Navigation Items -->
                 <VerticalStackLayout Grid.Row="1" Margin="12,0" Spacing="2">
@@ -182,19 +202,80 @@
 
                 </VerticalStackLayout>
 
-                <!-- Logout -->
-                <Border Grid.Row="2" StrokeThickness="0" Margin="12,0,12,20">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding LogoutCommand}"/>
-                    </Border.GestureRecognizers>
-                    <HorizontalStackLayout Padding="14,11" Spacing="14">
-                        <Label Text="&#xE9BA;" FontFamily="MaterialIcons" FontSize="20"
-                               TextColor="#E11D48" VerticalOptions="Center"/>
-                        <Label Text="Déconnexion" FontSize="14"
-                               IsVisible="{Binding IsSidebarExpanded}"
-                               TextColor="#E11D48" VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
-                </Border>
+                <!-- Profil utilisateur + Déconnexion -->
+                <Grid Grid.Row="2" Margin="12,0,12,20">
+
+                    <!-- Sidebar étendue : carte complète -->
+                    <Border StrokeThickness="1" Stroke="#EEF2FF" BackgroundColor="#F8FAFF"
+                            Padding="14,12" IsVisible="{Binding IsSidebarExpanded}">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                        <Grid RowDefinitions="Auto,1,Auto" RowSpacing="10">
+
+                            <!-- Avatar + email -->
+                            <HorizontalStackLayout Grid.Row="0" Spacing="12">
+                                <!-- Avatar initiales -->
+                                <Grid WidthRequest="36" HeightRequest="36">
+                                    <Ellipse Fill="#512BD4" WidthRequest="36" HeightRequest="36"/>
+                                    <Label Text="{Binding CurrentUserInitials}"
+                                           FontSize="15" FontAttributes="Bold" TextColor="White"
+                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Grid>
+                                <VerticalStackLayout VerticalOptions="Center" Spacing="1">
+                                    <Label Text="Connecté" FontSize="10" TextColor="#94A3B8"/>
+                                    <Label Text="{Binding CurrentUserEmail}" FontSize="12"
+                                           FontAttributes="Bold" TextColor="#1E293B"
+                                           LineBreakMode="TailTruncation" MaximumWidthRequest="130"/>
+                                </VerticalStackLayout>
+                            </HorizontalStackLayout>
+
+                            <!-- Séparateur -->
+                            <BoxView Grid.Row="1" HeightRequest="1" BackgroundColor="#E2E8F0"/>
+
+                            <!-- Bouton déconnexion -->
+                            <Grid Grid.Row="2">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding LogoutCommand}"/>
+                                </Grid.GestureRecognizers>
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="&#xE9BA;" FontFamily="MaterialIcons" FontSize="16"
+                                           TextColor="#E11D48" VerticalOptions="Center"/>
+                                    <Label Text="Déconnexion" FontSize="13" FontAttributes="Bold"
+                                           TextColor="#E11D48" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Grid>
+
+                        </Grid>
+                    </Border>
+
+                    <!-- Sidebar réduite : avatar + bouton logout empilés -->
+                    <VerticalStackLayout
+                        IsVisible="{Binding IsSidebarExpanded, Converter={StaticResource InvertedBoolConverter}}"
+                        HorizontalOptions="Center" Spacing="6" Margin="0,4">
+
+                        <!-- Avatar initiales -->
+                        <Grid WidthRequest="36" HeightRequest="36" HorizontalOptions="Center">
+                            <Ellipse Fill="#512BD4" WidthRequest="36" HeightRequest="36"/>
+                            <Label Text="{Binding CurrentUserInitials}"
+                                   FontSize="15" FontAttributes="Bold" TextColor="White"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Grid>
+
+                        <!-- Bouton déconnexion (icône seule) -->
+                        <Border StrokeThickness="0" BackgroundColor="#FEF2F2"
+                                WidthRequest="36" HeightRequest="36"
+                                HorizontalOptions="Center">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding LogoutCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="&#xE9BA;" FontFamily="MaterialIcons" FontSize="18"
+                                   TextColor="#E11D48"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+
+                    </VerticalStackLayout>
+
+                </Grid>
 
             </Grid>
         </Grid>
