@@ -132,11 +132,7 @@ public class ApiClientService : IClientService
                 NfcUid = string.IsNullOrWhiteSpace(client.NfcUid) ? null : client.NfcUid
             };
 
-            // Résoudre l'ID SQL réel depuis le Firebase UID avant d'appeler PUT /clients/{id}
-            var sqlId = await ResolveSqlIdAsync(client);
-            Console.WriteLine($"[ApiClientService] UpdateClient uid={client.FirebaseUid} → sqlId={sqlId}");
-
-            var result = await _api.PutAsync<ApiSuccessDto>($"/clients/{sqlId}", clientDto);
+            var result = await _api.PutAsync<ApiSuccessDto>($"/clients/{client.Id}", clientDto);
             if (result?.Success != true)
             {
                 Console.WriteLine($"[ApiClientService] UpdateClientAsync failed: {result?.Error}");
@@ -187,49 +183,6 @@ public class ApiClientService : IClientService
             Console.WriteLine($"[ApiClientService] DeleteClientAsync({id}) error: {ex.Message}");
             return false;
         }
-    }
-
-    // ── Résolution ID SQL ─────────────────────────────────────────
-
-    /// <summary>
-    /// Résout l'ID SQL réel d'un client à partir de son Firebase UID.
-    ///
-    /// GET /users/{firebase_uid} retourne l'objet complet avec id_user/id si le serveur
-    /// joint les données SQL. En cas d'échec on retombe sur client.Id (index local).
-    /// </summary>
-    private async Task<int> ResolveSqlIdAsync(Client client)
-    {
-        if (!string.IsNullOrEmpty(client.FirebaseUid))
-        {
-            try
-            {
-                // GET /users/{firebase_uid} — le serveur retourne id_user si les tables sont jointes
-                var r1 = await _api.GetAsync<UserResponseDto>($"/users/{client.FirebaseUid}");
-                var id1 = r1?.Data?.ResolvedId ?? 0;
-                if (id1 > 0)
-                {
-                    Console.WriteLine($"[ApiClientService] ResolveSqlId via /users/{client.FirebaseUid} → {id1}");
-                    return id1;
-                }
-
-                // Fallback : GET /clients?firebase_uid ou GET /users/{uid} format direct
-                var r2 = await _api.GetAsync<UserDto>($"/users/{client.FirebaseUid}");
-                var id2 = r2?.ResolvedId ?? 0;
-                if (id2 > 0)
-                {
-                    Console.WriteLine($"[ApiClientService] ResolveSqlId via /users/{client.FirebaseUid} (direct) → {id2}");
-                    return id2;
-                }
-            }
-            catch (UnauthorizedAccessException) { throw; }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ApiClientService] ResolveSqlId failed: {ex.Message} — fallback id={client.Id}");
-            }
-        }
-
-        // Dernier recours : ID local (peut être un index incorrect)
-        return client.Id;
     }
 
     // ── Mapping ClientDto → Client (source : GET /clients) ──────────
