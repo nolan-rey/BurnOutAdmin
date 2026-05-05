@@ -6,268 +6,507 @@
              xmlns:converters="clr-namespace:BurnOutAdmin.Converters"
              x:Class="BurnOutAdmin.Views.NfcLogs.NfcLogsView"
              x:DataType="viewmodels:NfcLogsViewModel"
-             BackgroundColor="#F6F7F8">
+             BackgroundColor="#F1F5F9">
 
     <ContentView.Resources>
-        <Color x:Key="Primary">#137FEC</Color>
-        <Color x:Key="TextDark">#111418</Color>
-        <Color x:Key="TextMedium">#6B7280</Color>
-        <Color x:Key="TextLight">#9CA3AF</Color>
-        <Color x:Key="BorderColor">#E5E7EB</Color>
-        <Color x:Key="BgGray50">#F9FAFB</Color>
-        <Color x:Key="StatusGreen">#15803D</Color>
-        <Color x:Key="StatusGreenBg">#DCFCE7</Color>
-        <Color x:Key="StatusRedText">#B91C1C</Color>
-        <Color x:Key="StatusRedBg">#FEE2E2</Color>
-        <Color x:Key="StatusYellowText">#A16207</Color>
-        <Color x:Key="StatusYellowBg">#FEF9C3</Color>
         <converters:InvertedBoolConverter x:Key="InvertedBool"/>
     </ContentView.Resources>
 
-    <Grid Padding="32,24" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="0">
+    <Grid Padding="28,24" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="0">
 
-        <!-- Breadcrumb -->
-        <HorizontalStackLayout Grid.Row="0" Spacing="6" Margin="0,0,0,12">
-            <Label Text="Accueil" FontSize="13" TextColor="{StaticResource TextLight}"/>
-            <Label Text="/" FontSize="13" TextColor="{StaticResource TextLight}" Margin="2,0"/>
-            <Label Text="Journal NFC" FontSize="13" TextColor="{StaticResource TextDark}" FontAttributes="Bold"/>
-        </HorizontalStackLayout>
-
-        <!-- Header + Status indicators -->
-        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,20">
-            <VerticalStackLayout Grid.Column="0" Spacing="4">
-                <Label Text="Journal NFC" FontSize="26" FontAttributes="Bold" TextColor="{StaticResource TextDark}"/>
-                <Label Text="Historique des accès par carte NFC" FontSize="13" TextColor="{StaticResource TextMedium}"/>
-            </VerticalStackLayout>
-            <!-- Status badges + Actions -->
-            <HorizontalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
-                <!-- Reader status -->
-                <Border BackgroundColor="{StaticResource StatusGreenBg}" Stroke="{StaticResource BorderColor}" StrokeThickness="1" Padding="10,6"
-                        IsVisible="{Binding IsReaderConnected}">
-                    <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                    <HorizontalStackLayout Spacing="6">
-                        <Border BackgroundColor="#22C55E" StrokeThickness="0" HeightRequest="8" WidthRequest="8" VerticalOptions="Center">
-                            <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
-                        </Border>
-                        <Label Text="Reader" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource StatusGreen}" VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
-                </Border>
-                <Border BackgroundColor="{StaticResource StatusRedBg}" Stroke="{StaticResource BorderColor}" StrokeThickness="1" Padding="10,6"
-                        IsVisible="{Binding IsReaderConnected, Converter={StaticResource InvertedBool}}">
-                    <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                    <HorizontalStackLayout Spacing="6">
-                        <Border BackgroundColor="#EF4444" StrokeThickness="0" HeightRequest="8" WidthRequest="8" VerticalOptions="Center">
-                            <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
-                        </Border>
-                        <Label Text="Reader" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource StatusRedText}" VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
-                </Border>
-                <!-- MQTT status -->
-                <Border BackgroundColor="{StaticResource StatusGreenBg}" Stroke="{StaticResource BorderColor}" StrokeThickness="1" Padding="10,6"
-                        IsVisible="{Binding IsMqttConnected}">
-                    <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                    <HorizontalStackLayout Spacing="6">
-                        <Border BackgroundColor="#22C55E" StrokeThickness="0" HeightRequest="8" WidthRequest="8" VerticalOptions="Center">
-                            <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
-                        </Border>
-                        <Label Text="MQTT" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource StatusGreen}" VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
-                </Border>
-                <Border BackgroundColor="{StaticResource StatusRedBg}" Stroke="{StaticResource BorderColor}" StrokeThickness="1" Padding="10,6"
-                        IsVisible="{Binding IsMqttConnected, Converter={StaticResource InvertedBool}}">
-                    <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                    <HorizontalStackLayout Spacing="6">
-                        <Border BackgroundColor="#EF4444" StrokeThickness="0" HeightRequest="8" WidthRequest="8" VerticalOptions="Center">
-                            <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
-                        </Border>
-                        <Label Text="MQTT" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource StatusRedText}" VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
-                </Border>
-                <!-- Live toggle -->
-                <Button Text="Démarrer Live" Command="{Binding StartLiveCommand}"
-                        BackgroundColor="{StaticResource Primary}" TextColor="White"
-                        FontAttributes="Bold" FontSize="13" CornerRadius="8" HeightRequest="38" Padding="16,0"
-                        IsVisible="{Binding IsLiveActive, Converter={StaticResource InvertedBool}}"/>
-                <Button Text="Arrêter Live" Command="{Binding StopLiveCommand}"
-                        BackgroundColor="#DC2626" TextColor="White"
-                        FontAttributes="Bold" FontSize="13" CornerRadius="8" HeightRequest="38" Padding="16,0"
-                        IsVisible="{Binding IsLiveActive}"/>
-            </HorizontalStackLayout>
-        </Grid>
-
-        <!-- Toolbar: Search + Filter + Simulate + Refresh -->
-        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="10" Margin="0,0,0,16">
-            <!-- Search -->
-            <Border Grid.Column="0" BackgroundColor="White" Stroke="{StaticResource BorderColor}" StrokeThickness="1" HeightRequest="42">
-                <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                <Grid ColumnDefinitions="Auto,*" Padding="12,0">
-                    <Image Grid.Column="0" VerticalOptions="Center" WidthRequest="16" HeightRequest="16">
-                        <Image.Source><FontImageSource Glyph="&#x1F50D;" Color="{StaticResource TextLight}" Size="16"/></Image.Source>
-                    </Image>
-                    <Entry Grid.Column="1" Placeholder="Rechercher par UID, client, résultat..."
-                           PlaceholderColor="{StaticResource TextLight}" Text="{Binding SearchText}"
-                           TextColor="{StaticResource TextDark}" BackgroundColor="Transparent" FontSize="13"
-                           VerticalOptions="Center" Margin="6,0,0,0"/>
-                </Grid>
-            </Border>
-            <!-- Toggle today/all -->
-            <Button Grid.Column="1" Command="{Binding ToggleFilterCommand}"
-                    BackgroundColor="White" TextColor="{StaticResource TextDark}" BorderColor="{StaticResource BorderColor}" BorderWidth="1"
-                    FontSize="12" CornerRadius="8" HeightRequest="42" Padding="14,0">
-                <Button.Triggers>
-                    <DataTrigger TargetType="Button" Binding="{Binding ShowTodayOnly}" Value="True">
-                        <Setter Property="Text" Value="Aujourd'hui"/>
-                    </DataTrigger>
-                    <DataTrigger TargetType="Button" Binding="{Binding ShowTodayOnly}" Value="False">
-                        <Setter Property="Text" Value="Tout"/>
-                    </DataTrigger>
-                </Button.Triggers>
-            </Button>
-            <!-- Simulate scan (dev) -->
-            <Border Grid.Column="2" BackgroundColor="White" Stroke="{StaticResource BorderColor}" StrokeThickness="1" HeightRequest="42" Padding="8,0">
-                <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                    <Entry Text="{Binding SimulateUid}" Placeholder="UID" PlaceholderColor="{StaticResource TextLight}"
-                           TextColor="{StaticResource TextDark}" BackgroundColor="Transparent" FontSize="12"
-                           WidthRequest="100" VerticalOptions="Center"/>
-                    <Button Text="Simuler" Command="{Binding SimulateScanCommand}"
-                            BackgroundColor="#F3F4F6" TextColor="{StaticResource TextDark}" FontSize="11"
-                            CornerRadius="6" HeightRequest="30" Padding="10,0"/>
+        <!-- ═══ Header ═══ -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,20">
+            <VerticalStackLayout Grid.Column="0" Spacing="3">
+                <HorizontalStackLayout Spacing="6">
+                    <Label Text="Accueil" FontSize="12" TextColor="#94A3B8"/>
+                    <Label Text="›" FontSize="12" TextColor="#CBD5E1"/>
+                    <Label Text="Journal NFC" FontSize="12" TextColor="#475569" FontAttributes="Bold"/>
                 </HorizontalStackLayout>
-            </Border>
-            <!-- Clear -->
-            <Button Grid.Column="3" Text="Vider" Command="{Binding ClearLogsCommand}"
-                    BackgroundColor="White" TextColor="{StaticResource TextMedium}" BorderColor="{StaticResource BorderColor}" BorderWidth="1"
-                    FontSize="12" CornerRadius="8" HeightRequest="42" Padding="14,0"/>
-            <!-- Refresh -->
-            <Button Grid.Column="4" Text="Actualiser" Command="{Binding RefreshLogsCommand}"
-                    BackgroundColor="{StaticResource Primary}" TextColor="White" FontAttributes="Bold"
-                    FontSize="12" CornerRadius="8" HeightRequest="42" Padding="16,0"/>
+                <Label Text="Journal NFC — Flux MQTT Live" FontSize="24" FontAttributes="Bold" TextColor="#0F172A"/>
+                <Label Text="Écoute en temps réel sur rfid/access · Raspberry Pi" FontSize="13" TextColor="#94A3B8"/>
+            </VerticalStackLayout>
+
+            <!-- Boutons connect/disconnect -->
+            <HorizontalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
+                <Button Text="Connecter"
+                        Command="{Binding StartLiveCommand}"
+                        BackgroundColor="#10B981" TextColor="White"
+                        FontAttributes="Bold" FontSize="13"
+                        CornerRadius="8" Padding="18,10"
+                        IsVisible="{Binding IsLiveActive, Converter={StaticResource InvertedBool}}"/>
+                <Button Text="Déconnecter"
+                        Command="{Binding StopLiveCommand}"
+                        BackgroundColor="#EF4444" TextColor="White"
+                        FontAttributes="Bold" FontSize="13"
+                        CornerRadius="8" Padding="18,10"
+                        IsVisible="{Binding IsLiveActive}"/>
+                <Button Text="Actualiser historique"
+                        Command="{Binding RefreshLogsCommand}"
+                        BackgroundColor="White" TextColor="#374151"
+                        BorderColor="#E2E8F0" BorderWidth="1"
+                        FontSize="13" CornerRadius="8" Padding="14,10"/>
+            </HorizontalStackLayout>
         </Grid>
 
-        <!-- Live indicator banner -->
-        <Border Grid.Row="3" BackgroundColor="#EFF6FF" Stroke="#DBEAFE" StrokeThickness="1" Padding="12,8" Margin="0,0,0,16"
-                IsVisible="{Binding IsLiveActive}">
-            <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-            <HorizontalStackLayout Spacing="8">
-                <Border BackgroundColor="{StaticResource Primary}" StrokeThickness="0" HeightRequest="8" WidthRequest="8" VerticalOptions="Center">
-                    <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+        <!-- ═══ Barre de statut MQTT ═══ -->
+        <Border Grid.Row="1" Margin="0,0,0,16"
+                StrokeShape="RoundRectangle 10" StrokeThickness="1">
+            <Border.Triggers>
+                <DataTrigger TargetType="Border" Binding="{Binding IsMqttConnected}" Value="True">
+                    <Setter Property="BackgroundColor" Value="#F0FDF4"/>
+                    <Setter Property="Stroke" Value="#BBF7D0"/>
+                </DataTrigger>
+                <DataTrigger TargetType="Border" Binding="{Binding IsMqttConnected}" Value="False">
+                    <Setter Property="BackgroundColor" Value="#FEF2F2"/>
+                    <Setter Property="Stroke" Value="#FECACA"/>
+                </DataTrigger>
+                <DataTrigger TargetType="Border" Binding="{Binding IsConnecting}" Value="True">
+                    <Setter Property="BackgroundColor" Value="#FFFBEB"/>
+                    <Setter Property="Stroke" Value="#FDE68A"/>
+                </DataTrigger>
+            </Border.Triggers>
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" Padding="16,10" ColumnSpacing="14">
+
+                <!-- Indicateur point -->
+                <Border Grid.Column="0" WidthRequest="10" HeightRequest="10"
+                        StrokeThickness="0" VerticalOptions="Center">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="5"/></Border.StrokeShape>
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsMqttConnected}" Value="True">
+                            <Setter Property="BackgroundColor" Value="#22C55E"/>
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsMqttConnected}" Value="False">
+                            <Setter Property="BackgroundColor" Value="#EF4444"/>
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsConnecting}" Value="True">
+                            <Setter Property="BackgroundColor" Value="#F59E0B"/>
+                        </DataTrigger>
+                    </Border.Triggers>
                 </Border>
-                <Label Text="Mode Live actif — Les nouveaux scans apparaissent en temps réel" FontSize="12" TextColor="{StaticResource Primary}" FontAttributes="Bold" VerticalOptions="Center"/>
-            </HorizontalStackLayout>
+
+                <!-- Statut texte -->
+                <Label Grid.Column="1" Text="{Binding ConnectionStatusText}"
+                       FontSize="13" FontAttributes="Bold" VerticalOptions="Center">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsMqttConnected}" Value="True">
+                            <Setter Property="TextColor" Value="#15803D"/>
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsMqttConnected}" Value="False">
+                            <Setter Property="TextColor" Value="#B91C1C"/>
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsConnecting}" Value="True">
+                            <Setter Property="TextColor" Value="#92400E"/>
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+
+                <!-- Stats session -->
+                <HorizontalStackLayout Grid.Column="2" Spacing="4" VerticalOptions="Center"
+                                       IsVisible="{Binding IsLiveActive}">
+                    <Border BackgroundColor="#F1F5F9" StrokeShape="RoundRectangle 6" Stroke="#E2E8F0" Padding="8,4">
+                        <Label Text="{Binding SessionTotal, StringFormat='📡 {0} scans'}"
+                               FontSize="11" FontAttributes="Bold" TextColor="#475569"/>
+                    </Border>
+                    <Border BackgroundColor="#F0FDF4" StrokeShape="RoundRectangle 6" Stroke="#BBF7D0" Padding="8,4">
+                        <Label Text="{Binding SessionAuthorized, StringFormat='✅ {0}'}"
+                               FontSize="11" FontAttributes="Bold" TextColor="#15803D"/>
+                    </Border>
+                    <Border BackgroundColor="#FEF2F2" StrokeShape="RoundRectangle 6" Stroke="#FECACA" Padding="8,4">
+                        <Label Text="{Binding SessionDenied, StringFormat='❌ {0}'}"
+                               FontSize="11" FontAttributes="Bold" TextColor="#B91C1C"/>
+                    </Border>
+                </HorizontalStackLayout>
+
+                <!-- Topic -->
+                <Border Grid.Column="3" BackgroundColor="#EEF2FF" StrokeShape="RoundRectangle 6"
+                        Stroke="#C7D2FE" Padding="8,4" VerticalOptions="Center"
+                        IsVisible="{Binding IsLiveActive}">
+                    <Label Text="rfid/access" FontSize="11" FontAttributes="Bold" TextColor="#4F46E5"/>
+                </Border>
+
+                <!-- Vider feed -->
+                <Button Grid.Column="4" Text="Vider feed"
+                        Command="{Binding ClearLiveFeedCommand}"
+                        BackgroundColor="Transparent" TextColor="#64748B"
+                        BorderColor="#E2E8F0" BorderWidth="1"
+                        FontSize="11" CornerRadius="6" Padding="10,4"
+                        IsVisible="{Binding IsLiveActive}"/>
+
+                <!-- Spinner connexion -->
+                <ActivityIndicator Grid.Column="5"
+                                   IsRunning="{Binding IsConnecting}"
+                                   IsVisible="{Binding IsConnecting}"
+                                   Color="#F59E0B" WidthRequest="18" HeightRequest="18"
+                                   VerticalOptions="Center"/>
+            </Grid>
         </Border>
 
-        <!-- Logs Table Card -->
-        <Border Grid.Row="4" BackgroundColor="White" Stroke="{StaticResource BorderColor}" StrokeThickness="1">
-            <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
-            <Border.Shadow><Shadow Brush="#000" Offset="0,1" Radius="3" Opacity="0.05"/></Border.Shadow>
-            <Grid RowDefinitions="Auto,*,Auto">
-                <!-- Table Header -->
-                <Border Grid.Row="0" BackgroundColor="{StaticResource BgGray50}" StrokeThickness="0">
-                    <Border.StrokeShape><RoundRectangle CornerRadius="10,10,0,0"/></Border.StrokeShape>
-                    <Grid ColumnDefinitions="60,*,100,120,100,80" Padding="20,12" BackgroundColor="{StaticResource BgGray50}">
-                        <Label Grid.Column="0" Text="HEURE" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8"/>
-                        <Label Grid.Column="1" Text="CLIENT" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8"/>
-                        <Label Grid.Column="2" Text="UID" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8"/>
-                        <Label Grid.Column="3" Text="RAISON" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8"/>
-                        <Label Grid.Column="4" Text="SOURCE" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8"/>
-                        <Label Grid.Column="5" Text="STATUT" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" CharacterSpacing="0.8" HorizontalTextAlignment="Center"/>
-                    </Grid>
-                </Border>
-                <BoxView Grid.Row="0" VerticalOptions="End" HeightRequest="1" Color="{StaticResource BorderColor}"/>
+        <!-- ═══ Contenu principal : Live feed + Historique ═══ -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16">
 
-                <!-- Table Body -->
-                <CollectionView Grid.Row="1" ItemsSource="{Binding NfcLogs}" SelectionMode="Single" SelectedItem="{Binding SelectedLog}">
-                    <CollectionView.EmptyView>
-                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8" Padding="0,60">
-                            <Label Text="Aucun log NFC" FontSize="16" TextColor="{StaticResource TextMedium}" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
-                            <Label Text="Démarrez le live ou actualisez pour voir les logs." FontSize="13" TextColor="{StaticResource TextLight}" HorizontalTextAlignment="Center"/>
-                        </VerticalStackLayout>
-                    </CollectionView.EmptyView>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:NfcLog">
-                            <Border BackgroundColor="White" StrokeThickness="0" Padding="0">
-                                <Grid RowDefinitions="*,Auto">
-                                    <Grid Grid.Row="0" ColumnDefinitions="60,*,100,120,100,80" Padding="20,12">
-                                        <!-- Time -->
-                                        <Label Grid.Column="0" Text="{Binding Timestamp, StringFormat='{0:HH:mm}'}"
-                                               FontSize="13" TextColor="{StaticResource TextDark}" VerticalOptions="Center"/>
-                                        <!-- Client -->
-                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
-                                            <Label Text="{Binding ClientName}" FontSize="13" FontAttributes="Bold"
-                                                   TextColor="{StaticResource TextDark}" LineBreakMode="TailTruncation"/>
-                                        </VerticalStackLayout>
+            <!-- ══ FEED LIVE MQTT ══ -->
+            <Border Grid.Column="0"
+                    BackgroundColor="White"
+                    StrokeShape="RoundRectangle 12"
+                    Stroke="#E2E8F0" StrokeThickness="1">
+                <Border.Shadow><Shadow Brush="#000" Offset="0,2" Radius="8" Opacity="0.06"/></Border.Shadow>
+                <Grid RowDefinitions="Auto,1,*,Auto">
+
+                    <!-- Header feed -->
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#F8FAFC">
+                        <HorizontalStackLayout Grid.Column="0" Spacing="8" VerticalOptions="Center">
+                            <!-- Pulsing dot quand live -->
+                            <Border WidthRequest="8" HeightRequest="8"
+                                    StrokeThickness="0" VerticalOptions="Center">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsLiveActive}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="#22C55E"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsLiveActive}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="#CBD5E1"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                            </Border>
+                            <Label Text="Flux temps réel" FontSize="14" FontAttributes="Bold" TextColor="#0F172A"/>
+                        </HorizontalStackLayout>
+                        <Label Grid.Column="2"
+                               Text="{Binding LiveFeedLogs.Count, StringFormat='{0} événements'}"
+                               FontSize="11" TextColor="#94A3B8" VerticalOptions="Center"/>
+                    </Grid>
+
+                    <BoxView Grid.Row="1" BackgroundColor="#F1F5F9"/>
+
+                    <!-- Liste live -->
+                    <CollectionView Grid.Row="2"
+                                    ItemsSource="{Binding LiveFeedLogs}"
+                                    VerticalScrollBarVisibility="Default">
+                        <CollectionView.EmptyView>
+                            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center"
+                                                 Spacing="10" Padding="0,60">
+                                <Label Text="📡" FontSize="40" HorizontalTextAlignment="Center"/>
+                                <Label Text="En attente de scans…"
+                                       FontSize="15" FontAttributes="Bold"
+                                       TextColor="#94A3B8" HorizontalTextAlignment="Center"/>
+                                <Label Text="Connectez-vous au broker MQTT puis scannez un badge."
+                                       FontSize="12" TextColor="#CBD5E1" HorizontalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:NfcLog">
+                                <Grid ColumnDefinitions="4,*" Margin="0,0,0,1">
+
+                                    <!-- Bande couleur statut -->
+                                    <BoxView Grid.Column="0" VerticalOptions="Fill">
+                                        <BoxView.Triggers>
+                                            <DataTrigger TargetType="BoxView" Binding="{Binding IsAuthorized}" Value="True">
+                                                <Setter Property="Color" Value="#22C55E"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="BoxView" Binding="{Binding IsPending}" Value="True">
+                                                <Setter Property="Color" Value="#F59E0B"/>
+                                            </DataTrigger>
+                                            <MultiTrigger TargetType="BoxView">
+                                                <MultiTrigger.Conditions>
+                                                    <BindingCondition Binding="{Binding IsAuthorized}" Value="False"/>
+                                                    <BindingCondition Binding="{Binding IsPending}"    Value="False"/>
+                                                </MultiTrigger.Conditions>
+                                                <Setter Property="Color" Value="#EF4444"/>
+                                            </MultiTrigger>
+                                        </BoxView.Triggers>
+                                    </BoxView>
+
+                                    <!-- Contenu ligne -->
+                                    <Grid Grid.Column="1" ColumnDefinitions="52,Auto,*,Auto"
+                                          ColumnSpacing="10" Padding="12,9,12,9">
+
+                                        <!-- Heure -->
+                                        <Label Grid.Column="0"
+                                               Text="{Binding Timestamp, StringFormat='{0:HH:mm:ss}'}"
+                                               FontSize="11" TextColor="#64748B"
+                                               FontFamily="Monospace"
+                                               VerticalOptions="Center"/>
+
                                         <!-- UID -->
-                                        <Border Grid.Column="2" BackgroundColor="#F3F4F6" Stroke="{StaticResource BorderColor}" StrokeThickness="1"
-                                                Padding="6,3" VerticalOptions="Center" HorizontalOptions="Start">
-                                            <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
-                                            <Label Text="{Binding Uid}" FontSize="11" TextColor="{StaticResource TextMedium}"/>
+                                        <Border Grid.Column="1"
+                                                StrokeShape="RoundRectangle 5"
+                                                StrokeThickness="1" Padding="6,3"
+                                                VerticalOptions="Center">
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsAuthorized}" Value="True">
+                                                    <Setter Property="BackgroundColor" Value="#F0FDF4"/>
+                                                    <Setter Property="Stroke" Value="#BBF7D0"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsPending}" Value="True">
+                                                    <Setter Property="BackgroundColor" Value="#FFFBEB"/>
+                                                    <Setter Property="Stroke" Value="#FDE68A"/>
+                                                </DataTrigger>
+                                                <MultiTrigger TargetType="Border">
+                                                    <MultiTrigger.Conditions>
+                                                        <BindingCondition Binding="{Binding IsAuthorized}" Value="False"/>
+                                                        <BindingCondition Binding="{Binding IsPending}"    Value="False"/>
+                                                    </MultiTrigger.Conditions>
+                                                    <Setter Property="BackgroundColor" Value="#FEF2F2"/>
+                                                    <Setter Property="Stroke" Value="#FECACA"/>
+                                                </MultiTrigger>
+                                            </Border.Triggers>
+                                            <Label Text="{Binding Uid}"
+                                                   FontSize="12" FontAttributes="Bold"
+                                                   FontFamily="Monospace">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsAuthorized}" Value="True">
+                                                        <Setter Property="TextColor" Value="#15803D"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsPending}" Value="True">
+                                                        <Setter Property="TextColor" Value="#92400E"/>
+                                                    </DataTrigger>
+                                                    <MultiTrigger TargetType="Label">
+                                                        <MultiTrigger.Conditions>
+                                                            <BindingCondition Binding="{Binding IsAuthorized}" Value="False"/>
+                                                            <BindingCondition Binding="{Binding IsPending}"    Value="False"/>
+                                                        </MultiTrigger.Conditions>
+                                                        <Setter Property="TextColor" Value="#B91C1C"/>
+                                                    </MultiTrigger>
+                                                </Label.Triggers>
+                                            </Label>
                                         </Border>
-                                        <!-- Reason -->
-                                        <Label Grid.Column="3" Text="{Binding Reason}" FontSize="12"
-                                               TextColor="{StaticResource TextMedium}" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
-                                        <!-- Source -->
-                                        <Label Grid.Column="4" Text="{Binding Source}" FontSize="12"
-                                               TextColor="{StaticResource TextLight}" VerticalOptions="Center"/>
-                                        <!-- Status Badge -->
-                                        <HorizontalStackLayout Grid.Column="5" HorizontalOptions="Center" VerticalOptions="Center">
-                                            <!-- Authorized -->
-                                            <Border IsVisible="False" BackgroundColor="{StaticResource StatusGreenBg}" StrokeThickness="0" Padding="8,4">
-                                                <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+
+                                        <!-- Client / Raison -->
+                                        <VerticalStackLayout Grid.Column="2" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="{Binding ClientName}"
+                                                   FontSize="13" FontAttributes="Bold"
+                                                   TextColor="#0F172A"
+                                                   IsVisible="{Binding ClientName, Converter={x:Static converters:StringNotEmptyConverter.Instance}}"
+                                                   LineBreakMode="TailTruncation"/>
+                                            <Label Text="{Binding Reason}"
+                                                   FontSize="11" TextColor="#64748B"
+                                                   LineBreakMode="TailTruncation"/>
+                                        </VerticalStackLayout>
+
+                                        <!-- Badge statut -->
+                                        <Border Grid.Column="3" StrokeThickness="0" Padding="8,4"
+                                                VerticalOptions="Center" HorizontalOptions="End">
+                                            <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsAuthorized}" Value="True">
+                                                    <Setter Property="BackgroundColor" Value="#DCFCE7"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsPending}" Value="True">
+                                                    <Setter Property="BackgroundColor" Value="#FEF9C3"/>
+                                                </DataTrigger>
+                                                <MultiTrigger TargetType="Border">
+                                                    <MultiTrigger.Conditions>
+                                                        <BindingCondition Binding="{Binding IsAuthorized}" Value="False"/>
+                                                        <BindingCondition Binding="{Binding IsPending}"    Value="False"/>
+                                                    </MultiTrigger.Conditions>
+                                                    <Setter Property="BackgroundColor" Value="#FEE2E2"/>
+                                                </MultiTrigger>
+                                            </Border.Triggers>
+                                            <Label Text="{Binding ResultText}" FontSize="11" FontAttributes="Bold">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsAuthorized}" Value="True">
+                                                        <Setter Property="TextColor" Value="#15803D"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsPending}" Value="True">
+                                                        <Setter Property="TextColor" Value="#92400E"/>
+                                                    </DataTrigger>
+                                                    <MultiTrigger TargetType="Label">
+                                                        <MultiTrigger.Conditions>
+                                                            <BindingCondition Binding="{Binding IsAuthorized}" Value="False"/>
+                                                            <BindingCondition Binding="{Binding IsPending}"    Value="False"/>
+                                                        </MultiTrigger.Conditions>
+                                                        <Setter Property="TextColor" Value="#B91C1C"/>
+                                                    </MultiTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </Border>
+
+                                    </Grid>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <!-- Footer feed -->
+                    <Border Grid.Row="3" BackgroundColor="#F8FAFC" StrokeThickness="0"
+                            Padding="16,8">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="0,0,12,12"/></Border.StrokeShape>
+                        <Label Text="{Binding LiveFeedLogs.Count, StringFormat='Feed limité à 200 entrées · {0} actuellement'}"
+                               FontSize="11" TextColor="#94A3B8"/>
+                    </Border>
+
+                </Grid>
+            </Border>
+
+            <!-- ══ HISTORIQUE API ══ -->
+            <Border Grid.Column="1"
+                    BackgroundColor="White"
+                    StrokeShape="RoundRectangle 12"
+                    Stroke="#E2E8F0" StrokeThickness="1">
+                <Border.Shadow><Shadow Brush="#000" Offset="0,2" Radius="8" Opacity="0.06"/></Border.Shadow>
+                <Grid RowDefinitions="Auto,1,Auto,1,*,Auto">
+
+                    <!-- Header historique -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Padding="16,12" BackgroundColor="#F8FAFC">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Historique API" FontSize="14" FontAttributes="Bold" TextColor="#0F172A"/>
+                            <Label Text="Logs cloud (base de données)" FontSize="11" TextColor="#94A3B8"/>
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1" VerticalOptions="Center"
+                                Command="{Binding ToggleFilterCommand}"
+                                BackgroundColor="#EEF2FF" TextColor="#4F46E5"
+                                BorderColor="#C7D2FE" BorderWidth="1"
+                                FontSize="11" FontAttributes="Bold" CornerRadius="6" Padding="10,5">
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button" Binding="{Binding ShowTodayOnly}" Value="True">
+                                    <Setter Property="Text" Value="Aujourd'hui"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Button" Binding="{Binding ShowTodayOnly}" Value="False">
+                                    <Setter Property="Text" Value="Tout"/>
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                    </Grid>
+
+                    <BoxView Grid.Row="1" BackgroundColor="#F1F5F9"/>
+
+                    <!-- Recherche -->
+                    <Border Grid.Row="2" Margin="12,10,12,0"
+                            Stroke="#E2E8F0" StrokeThickness="1"
+                            StrokeShape="RoundRectangle 8"
+                            BackgroundColor="#F8FAFC" Padding="0" HeightRequest="36">
+                        <Grid ColumnDefinitions="36,*">
+                            <Label Grid.Column="0" Text="🔍" FontSize="13"
+                                   HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
+                                   TextColor="#94A3B8"/>
+                            <Entry Grid.Column="1"
+                                   Text="{Binding SearchText}"
+                                   Placeholder="UID, client, résultat…"
+                                   PlaceholderColor="#CBD5E1"
+                                   TextColor="#0F172A" FontSize="12"
+                                   BackgroundColor="Transparent"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <BoxView Grid.Row="3" BackgroundColor="#F1F5F9" Margin="0,10,0,0"/>
+
+                    <!-- Header colonnes -->
+                    <Grid Grid.Row="3" ColumnDefinitions="55,*,90,100,75" Padding="16,8" BackgroundColor="#F8FAFC" Margin="0,10,0,0">
+                        <Label Grid.Column="0" Text="HEURE"    FontSize="9" FontAttributes="Bold" TextColor="#94A3B8" CharacterSpacing="0.8"/>
+                        <Label Grid.Column="1" Text="CLIENT"   FontSize="9" FontAttributes="Bold" TextColor="#94A3B8" CharacterSpacing="0.8"/>
+                        <Label Grid.Column="2" Text="UID"      FontSize="9" FontAttributes="Bold" TextColor="#94A3B8" CharacterSpacing="0.8"/>
+                        <Label Grid.Column="3" Text="RAISON"   FontSize="9" FontAttributes="Bold" TextColor="#94A3B8" CharacterSpacing="0.8"/>
+                        <Label Grid.Column="4" Text="STATUT"   FontSize="9" FontAttributes="Bold" TextColor="#94A3B8" CharacterSpacing="0.8" HorizontalTextAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Lignes -->
+                    <CollectionView Grid.Row="4"
+                                    ItemsSource="{Binding NfcLogs}"
+                                    SelectionMode="Single"
+                                    SelectedItem="{Binding SelectedLog}"
+                                    VerticalScrollBarVisibility="Default">
+                        <CollectionView.EmptyView>
+                            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center"
+                                                 Spacing="6" Padding="0,40">
+                                <Label Text="Aucun log" FontSize="14" FontAttributes="Bold"
+                                       TextColor="#94A3B8" HorizontalTextAlignment="Center"/>
+                                <Label Text="Actualisez ou modifiez le filtre."
+                                       FontSize="11" TextColor="#CBD5E1" HorizontalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:NfcLog">
+                                <Grid RowDefinitions="*,1">
+                                    <Grid Grid.Row="0" ColumnDefinitions="55,*,90,100,75"
+                                          Padding="16,10" ColumnSpacing="8">
+                                        <!-- Heure -->
+                                        <Label Grid.Column="0"
+                                               Text="{Binding Timestamp, StringFormat='{0:HH:mm}'}"
+                                               FontSize="12" TextColor="#475569" VerticalOptions="Center"/>
+                                        <!-- Client -->
+                                        <Label Grid.Column="1"
+                                               Text="{Binding ClientName}"
+                                               FontSize="12" FontAttributes="Bold"
+                                               TextColor="#0F172A" VerticalOptions="Center"
+                                               LineBreakMode="TailTruncation"/>
+                                        <!-- UID -->
+                                        <Border Grid.Column="2"
+                                                BackgroundColor="#F1F5F9" Stroke="#E2E8F0"
+                                                StrokeThickness="1" Padding="5,2"
+                                                VerticalOptions="Center" HorizontalOptions="Start">
+                                            <Border.StrokeShape><RoundRectangle CornerRadius="4"/></Border.StrokeShape>
+                                            <Label Text="{Binding Uid}" FontSize="10" TextColor="#64748B"/>
+                                        </Border>
+                                        <!-- Raison -->
+                                        <Label Grid.Column="3"
+                                               Text="{Binding Reason}"
+                                               FontSize="11" TextColor="#64748B"
+                                               VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                                        <!-- Statut -->
+                                        <HorizontalStackLayout Grid.Column="4" HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Border IsVisible="False" StrokeThickness="0" Padding="7,3">
+                                                <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
                                                 <Border.Triggers>
                                                     <DataTrigger TargetType="Border" Binding="{Binding IsAuthorized}" Value="True">
                                                         <Setter Property="IsVisible" Value="True"/>
+                                                        <Setter Property="BackgroundColor" Value="#DCFCE7"/>
                                                     </DataTrigger>
                                                 </Border.Triggers>
-                                                <Label Text="Autorisé" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource StatusGreen}"/>
+                                                <Label Text="✓ Autorisé" FontSize="10" FontAttributes="Bold" TextColor="#15803D"/>
                                             </Border>
-                                            <!-- Pending -->
-                                            <Border IsVisible="False" BackgroundColor="{StaticResource StatusYellowBg}" StrokeThickness="0" Padding="8,4">
-                                                <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                                            <Border IsVisible="False" StrokeThickness="0" Padding="7,3">
+                                                <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
                                                 <Border.Triggers>
                                                     <DataTrigger TargetType="Border" Binding="{Binding IsPending}" Value="True">
                                                         <Setter Property="IsVisible" Value="True"/>
+                                                        <Setter Property="BackgroundColor" Value="#FEF9C3"/>
                                                     </DataTrigger>
                                                 </Border.Triggers>
-                                                <Label Text="En attente" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource StatusYellowText}"/>
+                                                <Label Text="⏳ Attente" FontSize="10" FontAttributes="Bold" TextColor="#92400E"/>
                                             </Border>
-                                            <!-- Denied (default if not Authorized and not Pending) -->
-                                            <Border IsVisible="False" BackgroundColor="{StaticResource StatusRedBg}" StrokeThickness="0" Padding="8,4">
-                                                <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                                            <Border IsVisible="False" StrokeThickness="0" Padding="7,3">
+                                                <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
                                                 <Border.Triggers>
                                                     <MultiTrigger TargetType="Border">
                                                         <MultiTrigger.Conditions>
                                                             <BindingCondition Binding="{Binding IsAuthorized}" Value="False"/>
-                                                            <BindingCondition Binding="{Binding IsPending}" Value="False"/>
+                                                            <BindingCondition Binding="{Binding IsPending}"    Value="False"/>
                                                         </MultiTrigger.Conditions>
                                                         <Setter Property="IsVisible" Value="True"/>
+                                                        <Setter Property="BackgroundColor" Value="#FEE2E2"/>
                                                     </MultiTrigger>
                                                 </Border.Triggers>
-                                                <Label Text="Refusé" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource StatusRedText}"/>
+                                                <Label Text="✕ Refusé" FontSize="10" FontAttributes="Bold" TextColor="#B91C1C"/>
                                             </Border>
                                         </HorizontalStackLayout>
                                     </Grid>
-                                    <BoxView Grid.Row="1" HeightRequest="1" Color="{StaticResource BorderColor}" VerticalOptions="End"/>
+                                    <BoxView Grid.Row="1" Color="#F1F5F9" HeightRequest="1"/>
                                 </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
 
-                <!-- Footer -->
-                <Border Grid.Row="2" BackgroundColor="{StaticResource BgGray50}" StrokeThickness="0" Padding="20,12">
-                    <Border.StrokeShape><RoundRectangle CornerRadius="0,0,10,10"/></Border.StrokeShape>
-                    <Label Text="{Binding NfcLogs.Count, StringFormat='Affichage de {0} logs'}" FontSize="12" TextColor="{StaticResource TextLight}"/>
-                </Border>
-            </Grid>
-        </Border>
+                    <!-- Footer -->
+                    <Border Grid.Row="5" BackgroundColor="#F8FAFC" StrokeThickness="0" Padding="16,8">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="0,0,12,12"/></Border.StrokeShape>
+                        <Label Text="{Binding NfcLogs.Count, StringFormat='{0} logs chargés'}"
+                               FontSize="11" TextColor="#94A3B8"/>
+                    </Border>
 
-        <!-- Loading Overlay -->
-        <Grid Grid.RowSpan="5" IsVisible="{Binding IsBusy}" BackgroundColor="#80000000" VerticalOptions="Fill" HorizontalOptions="Fill">
+                </Grid>
+            </Border>
+
+        </Grid>
+
+        <!-- Chargement overlay -->
+        <Grid Grid.RowSpan="4" IsVisible="{Binding IsBusy}"
+              BackgroundColor="#80000000" VerticalOptions="Fill" HorizontalOptions="Fill">
             <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="12">
-                <ActivityIndicator IsRunning="{Binding IsBusy}" Color="White" HeightRequest="48" WidthRequest="48"/>
-                <Label Text="Chargement..." FontSize="16" TextColor="White" FontAttributes="Bold"/>
+                <ActivityIndicator IsRunning="{Binding IsBusy}" Color="White"
+                                   HeightRequest="48" WidthRequest="48"/>
+                <Label Text="Chargement…" FontSize="16" TextColor="White" FontAttributes="Bold"/>
             </VerticalStackLayout>
         </Grid>
+
     </Grid>
 </ContentView>
