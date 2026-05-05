@@ -28,44 +28,24 @@ public class ApiClientService : IClientService
 
     public async Task<List<Client>> GetClientsAsync()
     {
-        List<Client>? clients = null;
-
-        // ── 1️⃣ GET /clients — données SQL complètes avec IDs réels ──
+        // GET /users — source officielle (Firebase Auth + données jointes)
         try
         {
-            var r = await _api.GetAsync<ClientListResponseDto>("/clients");
-            var data = r?.Data;
-            if (data is { Count: > 0 })
+            var response = await _api.GetAsync<UserListResponseDto>("/users");
+            if (response is not null)
             {
-                clients = data.Select(MapClientDtoToClient).ToList();
-                Console.WriteLine($"[ApiClientService] GET /clients OK — {clients.Count} client(s)");
+                var users = response.Users ?? [];
+                Console.WriteLine($"[ApiClientService] /users OK — {users.Count} utilisateur(s)");
+                return users.Select((u, i) => MapUserToClient(u, i + 1)).ToList();
             }
         }
         catch (UnauthorizedAccessException) { throw; }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ApiClientService] GET /clients: {ex.Message}");
+            Console.WriteLine($"[ApiClientService] GetClientsAsync error: {ex.Message}");
         }
 
-        // ── 2️⃣ Fallback : GET /users (Firebase — données limitées) ──
-        // Déclenché si /clients a échoué OU n'a retourné aucune donnée.
-        if (clients is null or { Count: 0 })
-        {
-            try
-            {
-                var r = await _api.GetAsync<UserListResponseDto>("/users");
-                var users = r?.Users ?? [];
-                Console.WriteLine($"[ApiClientService] GET /users fallback — {users.Count} user(s)");
-                clients = users.Select((u, i) => MapUserToClient(u, i + 1)).ToList();
-            }
-            catch (UnauthorizedAccessException) { throw; }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ApiClientService] GET /users error: {ex.Message}");
-            }
-        }
-
-        return clients ?? [];
+        return [];
     }
 
     public async Task<Client?> GetClientByIdAsync(int id)
