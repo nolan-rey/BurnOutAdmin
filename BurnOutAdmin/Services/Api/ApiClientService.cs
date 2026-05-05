@@ -120,6 +120,29 @@ public class ApiClientService : IClientService
         }
     }
 
+    /// <summary>Mise à jour du statut uniquement — body minimal { "statut": "..." }.</summary>
+    public async Task<bool> UpdateStatusAsync(int clientId, string newStatus)
+    {
+        try
+        {
+            var dto = new UpdateStatutDto { Statut = MapStatutToApi(newStatus) };
+            var result = await _api.PutAsync<ApiSuccessDto>($"/users/{clientId}", dto);
+            if (result?.Success != true)
+            {
+                Console.WriteLine($"[ApiClientService] UpdateStatusAsync failed: {result?.Error}");
+                return false;
+            }
+            Console.WriteLine($"[ApiClientService] UpdateStatus {clientId} → {dto.Statut} OK");
+            return true;
+        }
+        catch (UnauthorizedAccessException) { throw; }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClientService] UpdateStatusAsync error: {ex.Message}");
+            return false;
+        }
+    }
+
     public async Task<bool> UpdateClientAsync(Client client)
     {
         try
@@ -133,7 +156,7 @@ public class ApiClientService : IClientService
                 NfcUid = string.IsNullOrWhiteSpace(client.NfcUid) ? null : client.NfcUid
             };
 
-            var result = await _api.PutAsync<ApiSuccessDto>($"/clients/{client.Id}", clientDto);
+            var result = await _api.PutAsync<ApiSuccessDto>($"/users/{client.Id}", clientDto);
             if (result?.Success != true)
             {
                 Console.WriteLine($"[ApiClientService] UpdateClientAsync failed: {result?.Error}");

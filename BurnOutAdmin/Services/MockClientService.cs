@@ -168,6 +168,16 @@ public class MockClientService : IClientService
         }
     }
 
+    public Task<bool> UpdateStatusAsync(int clientId, string newStatus)
+    {
+        lock (_lock)
+        {
+            var existing = _mockClients.FirstOrDefault(c => c.Id == clientId);
+            if (existing is not null) existing.Status = newStatus;
+        }
+        return Task.FromResult(true);
+    }
+
     public async Task<bool> UpdateClientAsync(Client client)
     {
         await Task.Delay(150);

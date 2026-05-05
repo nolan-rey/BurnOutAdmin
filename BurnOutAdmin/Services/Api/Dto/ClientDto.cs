@@ -246,7 +246,15 @@ public class CreateAbonnementDto
     public int AutoRenouvellement { get; set; }
 }
 
-// ── Mise à jour client (PUT /clients/{id}) ────────────────────────────────────
+// ── Mise à jour statut uniquement (PUT /users/{id}) ─────────────────────────
+
+public class UpdateStatutDto
+{
+    [JsonPropertyName("statut")]
+    public string Statut { get; set; } = string.Empty;
+}
+
+// ── Mise à jour client complète (PUT /users/{id}) ────────────────────────────
 
 public class UpdateClientDto
 {

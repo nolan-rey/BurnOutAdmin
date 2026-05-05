@@ -302,17 +302,21 @@ public partial class ClientsViewModel : BaseViewModel
 
         try
         {
-            // Mise à jour locale immédiate + rebuild de la liste filtrée
+            // Mise à jour locale immédiate
             client.Status = newStatus;
             ApplyFilters();
 
-            // Persistance via API
-            await _clientService.UpdateClientAsync(client);
+            // PUT /users/{id}  body: { "statut": "..." }
+            var ok = await _clientService.UpdateStatusAsync(client.Id, newStatus);
+            if (!ok)
+            {
+                client.Status = oldStatus;
+                ApplyFilters();
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[ClientsVM] SetQuickStatus error: {ex.Message}");
-            // Revert sur échec
             client.Status = oldStatus;
             ApplyFilters();
         }
