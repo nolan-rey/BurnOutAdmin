@@ -28,15 +28,16 @@ public class ApiClientService : IClientService
 
     public async Task<List<Client>> GetClientsAsync()
     {
-        // GET /users — source officielle (Firebase Auth + données jointes)
+        // GET /users retourne désormais { "success":true, "data":[{id_client, prenom, statut…}] }
+        // → même format que ClientListResponseDto, on réutilise le même mapping.
         try
         {
-            var response = await _api.GetAsync<UserListResponseDto>("/users");
-            if (response is not null)
+            var response = await _api.GetAsync<ClientListResponseDto>("/users");
+            var data = response?.Data;
+            if (data is { Count: > 0 })
             {
-                var users = response.Users ?? [];
-                Console.WriteLine($"[ApiClientService] /users OK — {users.Count} utilisateur(s)");
-                return users.Select((u, i) => MapUserToClient(u, i + 1)).ToList();
+                Console.WriteLine($"[ApiClientService] /users OK — {data.Count} client(s)");
+                return data.Select(MapClientDtoToClient).ToList();
             }
         }
         catch (UnauthorizedAccessException) { throw; }
