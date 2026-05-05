@@ -28,40 +28,44 @@ public class ApiClientService : IClientService
 
     public async Task<List<Client>> GetClientsAsync()
     {
-        // ── 1️⃣ Endpoint principal : GET /clients (retourne SQL id + données complètes) ──
+        List<Client>? clients = null;
+
+        // ── 1️⃣ GET /clients — données SQL complètes avec IDs réels ──
         try
         {
-            var response = await _api.GetAsync<ClientListResponseDto>("/clients");
-            if (response?.Data is { Count: > 0 })
+            var r = await _api.GetAsync<ClientListResponseDto>("/clients");
+            var data = r?.Data;
+            if (data is { Count: > 0 })
             {
-                Console.WriteLine($"[ApiClientService] /clients OK — {response.Data.Count} client(s)");
-                return response.Data.Select(MapClientDtoToClient).ToList();
+                clients = data.Select(MapClientDtoToClient).ToList();
+                Console.WriteLine($"[ApiClientService] GET /clients OK — {clients.Count} client(s)");
             }
         }
         catch (UnauthorizedAccessException) { throw; }
-        catch (Exception ex1)
+        catch (Exception ex)
         {
-            Console.WriteLine($"[ApiClientService] /clients échoué : {ex1.Message} — fallback /users");
+            Console.WriteLine($"[ApiClientService] GET /clients: {ex.Message}");
         }
 
-        // ── 2️⃣ Fallback : GET /users (Firebase — sans ID SQL, sans statut) ──
-        try
+        // ── 2️⃣ Fallback : GET /users (Firebase — données limitées) ──
+        // Déclenché si /clients a échoué OU n'a retourné aucune donnée.
+        if (clients is null or { Count: 0 })
         {
-            var response = await _api.GetAsync<UserListResponseDto>("/users");
-            if (response is not null)
+            try
             {
-                var users = response.Users;
-                Console.WriteLine($"[ApiClientService] /users fallback OK — {users.Count} utilisateur(s)");
-                return users.Select((u, i) => MapUserToClient(u, i + 1)).ToList();
+                var r = await _api.GetAsync<UserListResponseDto>("/users");
+                var users = r?.Users ?? [];
+                Console.WriteLine($"[ApiClientService] GET /users fallback — {users.Count} user(s)");
+                clients = users.Select((u, i) => MapUserToClient(u, i + 1)).ToList();
+            }
+            catch (UnauthorizedAccessException) { throw; }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClientService] GET /users error: {ex.Message}");
             }
         }
-        catch (UnauthorizedAccessException) { throw; }
-        catch (Exception ex2)
-        {
-            Console.WriteLine($"[ApiClientService] GetClientsAsync error: {ex2.Message}");
-        }
 
-        return [];
+        return clients ?? [];
     }
 
     public async Task<Client?> GetClientByIdAsync(int id)
