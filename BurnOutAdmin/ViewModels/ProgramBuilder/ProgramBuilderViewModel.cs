@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Text.Json;
 using BurnOutAdmin.Models;
 using BurnOutAdmin.Models.Program;
 using BurnOutAdmin.Services;
@@ -21,6 +22,21 @@ public partial class ProgramBuilderViewModel : BaseViewModel
     [ObservableProperty] private SessionViewModel? _currentSession;
     [ObservableProperty] private string _seanceName = string.Empty;
     [ObservableProperty] private string _seanceDescription = string.Empty;
+
+    /// <summary>
+    /// Raccourci direct vers CurrentSession.Categories, mis à jour explicitement
+    /// quand CurrentSession change. Évite les bugs de binding chaîné MAUI sur CollectionView.
+    /// </summary>
+    public System.Collections.ObjectModel.ObservableCollection<CategoryViewModel> SessionCategories
+        => CurrentSession?.Categories ?? _emptyCategories;
+
+    private static readonly System.Collections.ObjectModel.ObservableCollection<CategoryViewModel>
+        _emptyCategories = new();
+
+    // ── Mode édition ──────────────────────────────────────────────
+    // > 0 = on modifie une séance existante, 0 = nouvelle séance
+    private int _editingSessionId;
+    private SavedSessionEntry? _pendingEditEntry;
 
     // ── Bibliothèque ─────────────────────────────────────────────
     [ObservableProperty] private string _librarySearchText = string.Empty;
@@ -69,12 +85,75 @@ public partial class ProgramBuilderViewModel : BaseViewModel
             await _libraryService.InitializeAsync();
             await RefreshLibraryAsync();
 
-            if (CurrentSession is null)
+            // Si une séance est en attente d'édition, la charger sur le main thread
+            if (_pendingEditEntry is not null)
+            {
+                var entryToLoad = _pendingEditEntry;
+                _pendingEditEntry = null;
+                await MainThread.InvokeOnMainThreadAsync(() => LoadSessionFromEntry(entryToLoad));
+            }
+            else if (CurrentSession is null)
+            {
                 InitNewSeance();
+            }
         }
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    /// <summary>
+    /// Appelé depuis ProgrammesViewModel avant la navigation pour pré-charger la séance à modifier.
+    /// </summary>
+    public void SetPendingEdit(SavedSessionEntry entry)
+    {
+        _pendingEditEntry = entry;
+        // Si LoadAsync a déjà tourné (IsBusy = false), charger immédiatement sur le main thread
+        if (!IsBusy)
+            MainThread.BeginInvokeOnMainThread(() => LoadSessionFromEntry(entry));
+    }
+
+    private void LoadSessionFromEntry(SavedSessionEntry entry)
+    {
+        try
+        {
+            Console.WriteLine($"[ProgramBuilderViewModel] LoadSessionFromEntry: DataJson length={entry.DataJson?.Length ?? 0}");
+            Console.WriteLine($"[ProgramBuilderViewModel] DataJson preview: {entry.DataJson?[..Math.Min(200, entry.DataJson?.Length ?? 0)]}");
+
+            var model = JsonSerializer.Deserialize<SessionModel>(entry.DataJson);
+            if (model is null)
+            {
+                Console.WriteLine("[ProgramBuilderViewModel] Deserialization returned null — InitNewSeance");
+                SeanceName        = entry.Name;
+                SeanceDescription = entry.Description;
+                _editingSessionId = entry.Id;
+                var emptyModel = new SessionModel { Id = Guid.NewGuid(), Name = entry.Name, Order = 1 };
+                CurrentSession = new SessionViewModel(emptyModel, removeAction: null);
+                return;
+            }
+
+            Console.WriteLine($"[ProgramBuilderViewModel] Model OK — {model.Categories.Count} catégorie(s)");
+
+            // Reconstruire le ViewModel complet depuis le modèle désérialisé
+            // IMPORTANT : tout doit se faire sur le main thread pour que les bindings MAUI se mettent à jour
+            var sessionVm = new SessionViewModel(model, removeAction: null);
+
+            CurrentSession    = sessionVm;
+            SeanceName        = entry.Name;
+            SeanceDescription = entry.Description;
+            _editingSessionId = entry.Id;
+
+            Console.WriteLine($"[ProgramBuilderViewModel] Session chargée : '{SeanceName}', {CurrentSession.Categories.Count} catégories");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ProgramBuilderViewModel] LoadSessionFromEntry error: {ex.Message}");
+            SeanceName        = entry.Name;
+            SeanceDescription = entry.Description;
+            _editingSessionId = entry.Id;
+            var emptyModel = new SessionModel { Id = Guid.NewGuid(), Name = entry.Name, Order = 1 };
+            CurrentSession = new SessionViewModel(emptyModel, removeAction: null);
         }
     }
 
@@ -86,9 +165,19 @@ public partial class ProgramBuilderViewModel : BaseViewModel
             Name = string.Empty,
             Order = 1
         };
-        CurrentSession = new SessionViewModel(model, removeAction: null);
-        SeanceName = string.Empty;
+        CurrentSession    = new SessionViewModel(model, removeAction: null);
+        SeanceName        = string.Empty;
         SeanceDescription = string.Empty;
+        _editingSessionId = 0;
+    }
+
+    // ── Synchronisation CurrentSession ──────────────────────────
+
+    partial void OnCurrentSessionChanged(SessionViewModel? value)
+    {
+        // Notifie explicitement que SessionCategories a changé
+        // → force le CollectionView à rebinder même après un chargement asynchrone
+        OnPropertyChanged(nameof(SessionCategories));
     }
 
     // ── Synchronisation nom ──────────────────────────────────────
@@ -234,15 +323,17 @@ public partial class ProgramBuilderViewModel : BaseViewModel
                     {
                         Name = c.Name,
                         Exercises = c.SubCategories
-                            .SelectMany(sc => sc.Exercises)
-                            .Select(e => new AssignedExercise
+                            .SelectMany(sc => sc.Exercises.Select(e => new AssignedExercise
                             {
-                                Name = e.Name,
-                                Sets = e.Sets,
-                                Reps = e.Reps,
-                                Weight = e.Weight,
-                                Rpe = e.Rpe
-                            }).ToList()
+                                Name   = e.Name,
+                                Sets   = sc.Sets,
+                                Reps   = int.TryParse(e.RepsText, out var r) ? r : 0,
+                                Weight = double.TryParse(e.WeightText,
+                                             System.Globalization.NumberStyles.Any,
+                                             System.Globalization.CultureInfo.InvariantCulture,
+                                             out var w) ? w : 0,
+                                Rpe    = 0
+                            })).ToList()
                     }).ToList()
                 }
             }
@@ -269,13 +360,30 @@ public partial class ProgramBuilderViewModel : BaseViewModel
         }
 
         await _sessionLibraryService.InitializeAsync();
-        await _sessionLibraryService.SaveSessionAsync(
-            SeanceName.Trim(),
-            SeanceDescription.Trim(),
-            CurrentSession.Model);
 
-        await _alertService.AlertAsync("Séance sauvegardée",
-            $"La séance \"{SeanceName}\" est disponible dans la bibliothèque des Programmes.");
+        if (_editingSessionId > 0)
+        {
+            // ── Mode modification ──────────────────────────────────
+            await _sessionLibraryService.UpdateSessionAsync(
+                _editingSessionId,
+                SeanceName.Trim(),
+                SeanceDescription.Trim(),
+                CurrentSession.Model);
+
+            await _alertService.AlertAsync("Séance mise à jour",
+                $"La séance \"{SeanceName}\" a été modifiée avec succès.");
+        }
+        else
+        {
+            // ── Mode création ──────────────────────────────────────
+            await _sessionLibraryService.SaveSessionAsync(
+                SeanceName.Trim(),
+                SeanceDescription.Trim(),
+                CurrentSession.Model);
+
+            await _alertService.AlertAsync("Séance sauvegardée",
+                $"La séance \"{SeanceName}\" est disponible dans la bibliothèque des Programmes.");
+        }
 
         InitNewSeance(); // Réinitialise pour une nouvelle séance
     }

@@ -1,68 +1,89 @@
 using System.Collections.ObjectModel;
-using System.Text.Json;
 using BurnOutAdmin.Models;
-using BurnOutAdmin.Models.Program;
 using BurnOutAdmin.Services;
 using BurnOutAdmin.Services.SessionLibrary;
 using BurnOutAdmin.ViewModels.ProgramBuilder;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Graphics;
 
 namespace BurnOutAdmin.ViewModels;
 
 public partial class ProgrammesViewModel : BaseViewModel
 {
-    private readonly ISessionLibraryService _sessionLibraryService;
-    private readonly IClientService _clientService;
+    private readonly IProgrammeService        _programmeService;
+    private readonly ISessionLibraryService   _sessionLibraryService;
+    private readonly IClientService           _clientService;
     private readonly IProgramAssignmentService _assignmentService;
-    private readonly IAlertService _alertService;
+    private readonly IAlertService            _alertService;
+    private readonly INavigationService       _navigationService;
 
-    // ── Bibliothèque de séances ───────────────────────────────────
+    // ── Bibliothèque de séances (gauche) ─────────────────────────
     public ObservableCollection<SavedSessionCardViewModel> SavedSessions { get; } = new();
 
-    // ── Programmes créés ─────────────────────────────────────────
-    public ObservableCollection<SavedProgrammeViewModel> SavedProgrammes { get; } = new();
+    // ── Programmes API (droite) ──────────────────────────────────
+    public ObservableCollection<ProgrammeCardViewModel> Programmes { get; } = new();
 
-    // ── Création programme ────────────────────────────────────────
-    [ObservableProperty] private bool _isCreateProgramOpen;
-    [ObservableProperty] private string _newProgramName = string.Empty;
-    [ObservableProperty] private string _newProgramDescription = string.Empty;
+    [ObservableProperty] private ProgrammeCardViewModel? _selectedProgramme;
 
-    public ObservableCollection<SavedSessionCardViewModel> SelectedSessions { get; } = new();
+    // ── Formulaire Créer / Modifier ──────────────────────────────
+    [ObservableProperty] private bool   _isModalOpen;
+    [ObservableProperty] private bool   _isEditMode;
+    [ObservableProperty] private string _modalNom         = string.Empty;
+    [ObservableProperty] private string _modalDescription = string.Empty;
+    [ObservableProperty] private int    _modalTypeIndex   = 3; // Mixte par défaut
+    [ObservableProperty] private int    _modalNiveauIndex = 1; // Intermédiaire par défaut
+    [ObservableProperty] private int    _modalDuree       = 8;
+    [ObservableProperty] private int    _modalSeances     = 3;
+    [ObservableProperty] private bool   _modalIsActif     = true;
 
-    // ── Assignation multi-client ──────────────────────────────────
-    [ObservableProperty] private bool _isAssignPanelOpen;
+    public string ModalTitle => IsEditMode ? "Modifier le programme" : "Nouveau programme";
+
+    public List<string> TypeItems   { get; } = new() { "Cardio", "Force", "Souplesse", "Mixte" };
+    public List<string> NiveauItems { get; } = new() { "Débutant", "Intermédiaire", "Avancé" };
+
+    // ── Suppression ──────────────────────────────────────────────
+    [ObservableProperty] private bool                   _isDeleteConfirmOpen;
+    [ObservableProperty] private ProgrammeCardViewModel? _cardPendingDelete;
+
+    // ── Assignation client ────────────────────────────────────────
+    [ObservableProperty] private bool   _isAssignPanelOpen;
     [ObservableProperty] private string _assignTargetName = string.Empty;
-    [ObservableProperty] private string _assignTargetType = string.Empty; // "Séance" ou "Programme"
     [ObservableProperty] private DateTime _assignStartDate = DateTime.Today;
 
     public ObservableCollection<ClientSelectionViewModel> SelectableClients { get; } = new();
+    private ProgrammeCardViewModel? _programmeToAssign;
 
-    // Référence à ce qui est en cours d'assignation
-    private SavedSessionCardViewModel? _sessionToAssign;
-    private SavedProgrammeViewModel? _programmeToAssign;
+    // ── Erreur ────────────────────────────────────────────────────
+    [ObservableProperty] private string? _errorMessage;
 
     // ── États computed ────────────────────────────────────────────
-    public bool IsSessionsEmpty => SavedSessions.Count == 0;
-    public bool IsProgrammesEmpty => SavedProgrammes.Count == 0;
-    public bool HasSelectedSessions => SelectedSessions.Count > 0;
+    public bool IsSessionsEmpty   => SavedSessions.Count == 0;
+    public bool IsProgrammesEmpty => Programmes.Count == 0 && !IsBusy;
     public bool HasSelectedClients => SelectableClients.Any(c => c.IsSelected);
 
-    public ProgrammesViewModel(
-        ISessionLibraryService sessionLibraryService,
-        IClientService clientService,
-        IProgramAssignmentService assignmentService,
-        IAlertService alertService)
-    {
-        _sessionLibraryService = sessionLibraryService;
-        _clientService = clientService;
-        _assignmentService = assignmentService;
-        _alertService = alertService;
-        Title = "Programmes";
+    // ─────────────────────────────────────────────────────────────
 
-        SelectedSessions.CollectionChanged += (_, _) =>
-            OnPropertyChanged(nameof(HasSelectedSessions));
+    public ProgrammesViewModel(
+        IProgrammeService        programmeService,
+        ISessionLibraryService   sessionLibraryService,
+        IClientService           clientService,
+        IProgramAssignmentService assignmentService,
+        IAlertService            alertService,
+        INavigationService       navigationService)
+    {
+        _programmeService      = programmeService;
+        _sessionLibraryService = sessionLibraryService;
+        _clientService         = clientService;
+        _assignmentService     = assignmentService;
+        _alertService          = alertService;
+        _navigationService     = navigationService;
+        Title = "Programmes";
     }
+
+    // ── Navigation ────────────────────────────────────────────────
+
+    public override Task OnActivatedAsync() => LoadAsync();
 
     // ── Chargement ────────────────────────────────────────────────
 
@@ -73,12 +94,18 @@ public partial class ProgrammesViewModel : BaseViewModel
         try
         {
             IsBusy = true;
-            await _sessionLibraryService.InitializeAsync();
-            await RefreshSessionsAsync();
+            ErrorMessage = null;
+            await Task.WhenAll(RefreshSessionsAsync(), RefreshProgrammesAsync());
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Erreur de chargement : {ex.Message}";
         }
         finally
         {
             IsBusy = false;
+            OnPropertyChanged(nameof(IsSessionsEmpty));
+            OnPropertyChanged(nameof(IsProgrammesEmpty));
         }
     }
 
@@ -87,104 +114,208 @@ public partial class ProgrammesViewModel : BaseViewModel
         var entries = await _sessionLibraryService.GetAllSessionsAsync();
         SavedSessions.Clear();
         foreach (var e in entries)
-            SavedSessions.Add(new SavedSessionCardViewModel(e, OnDeleteSession, OnToggleSession, OnAssignSession));
-
+            SavedSessions.Add(new SavedSessionCardViewModel(e,
+                deleteAction: OnDeleteSession,
+                toggleAction: null,
+                assignAction: null,
+                editAction:   OnEditSession));
         OnPropertyChanged(nameof(IsSessionsEmpty));
     }
 
-    // ── Suppression séance ────────────────────────────────────────
+    private async Task RefreshProgrammesAsync()
+    {
+        var list = await _programmeService.GetProgrammesAsync();
+        Programmes.Clear();
+        foreach (var p in list)
+            Programmes.Add(new ProgrammeCardViewModel(p, OnEditProgramme, OnDeleteProgramme, OnAssignProgramme));
+        OnPropertyChanged(nameof(IsProgrammesEmpty));
+    }
+
+    // ── Séances : suppression ─────────────────────────────────────
 
     private async void OnDeleteSession(SavedSessionCardViewModel card)
     {
         await _sessionLibraryService.DeleteSessionAsync(card.Entry.Id);
         SavedSessions.Remove(card);
-        SelectedSessions.Remove(card);
         OnPropertyChanged(nameof(IsSessionsEmpty));
     }
 
-    // ── Sélection pour création de programme ─────────────────────
+    // ── Séances : modification ────────────────────────────────────
 
-    private void OnToggleSession(SavedSessionCardViewModel card)
+    private void OnEditSession(SavedSessionCardViewModel card)
     {
-        if (!IsCreateProgramOpen) return;
+        // Naviguer vers le Créateur de Séance
+        // NavigateTo crée (Transient) et stocke dans CurrentViewModel le ProgramBuilderViewModel
+        _navigationService.NavigateTo("ProgramBuilder");
 
-        card.IsSelected = !card.IsSelected;
-        if (card.IsSelected)
-            SelectedSessions.Add(card);
-        else
-            SelectedSessions.Remove(card);
+        // CurrentViewModel est maintenant le nouveau ProgramBuilderViewModel
+        // SetPendingEdit gère les deux cas : LoadAsync pas encore lancé ou déjà terminé
+        if (_navigationService.CurrentViewModel is ProgramBuilderViewModel pbvm)
+            pbvm.SetPendingEdit(card.Entry);
     }
 
-    // ── Création de programme ─────────────────────────────────────
+    // ── Programmes : Créer ────────────────────────────────────────
 
     [RelayCommand]
-    private void OpenCreateProgram()
+    private void OpenCreate()
     {
-        NewProgramName = string.Empty;
-        NewProgramDescription = string.Empty;
-        foreach (var s in SavedSessions) s.IsSelected = false;
-        SelectedSessions.Clear();
-        IsCreateProgramOpen = true;
+        IsEditMode       = false;
+        ModalNom         = string.Empty;
+        ModalDescription = string.Empty;
+        ModalTypeIndex   = 3;
+        ModalNiveauIndex = 1;
+        ModalDuree       = 8;
+        ModalSeances     = 3;
+        ModalIsActif     = true;
+        ErrorMessage     = null;
+        OnPropertyChanged(nameof(ModalTitle));
+        IsModalOpen = true;
     }
 
     [RelayCommand]
-    private void CancelCreateProgram()
+    private void CancelModal()
     {
-        foreach (var s in SavedSessions) s.IsSelected = false;
-        SelectedSessions.Clear();
-        IsCreateProgramOpen = false;
+        IsModalOpen  = false;
+        ErrorMessage = null;
     }
 
     [RelayCommand]
-    private async Task ConfirmCreateProgramAsync()
+    private async Task ConfirmModalAsync()
     {
-        if (string.IsNullOrWhiteSpace(NewProgramName))
+        if (string.IsNullOrWhiteSpace(ModalNom))
         {
-            await _alertService.AlertAsync("Attention", "Donnez un nom au programme.");
+            ErrorMessage = "Le nom du programme est obligatoire.";
             return;
         }
-        if (SelectedSessions.Count == 0)
+
+        if (IsBusy) return;
+
+        try
         {
-            await _alertService.AlertAsync("Attention", "Sélectionnez au moins une séance dans la bibliothèque.");
-            return;
+            IsBusy = true;
+            ErrorMessage = null;
+
+            if (IsEditMode && SelectedProgramme is not null)
+            {
+                // ── Modification ──
+                var p = SelectedProgramme.Programme;
+                p.Name        = ModalNom.Trim();
+                p.Description = ModalDescription.Trim();
+                p.Type        = (ProgrammeType)ModalTypeIndex;
+                p.Level       = (ProgrammeLevel)ModalNiveauIndex;
+                p.IsActive    = ModalIsActif;
+
+                var ok = await _programmeService.UpdateProgrammeAsync(p);
+                if (!ok)
+                {
+                    ErrorMessage = "Échec de la mise à jour. Vérifiez votre connexion.";
+                    return;
+                }
+            }
+            else
+            {
+                // ── Création ──
+                var newProgramme = new Programme
+                {
+                    Name            = ModalNom.Trim(),
+                    Description     = ModalDescription.Trim(),
+                    Type            = (ProgrammeType)ModalTypeIndex,
+                    Level           = (ProgrammeLevel)ModalNiveauIndex,
+                    DurationWeeks   = ModalDuree,
+                    SessionsPerWeek = ModalSeances,
+                    IsActive        = true
+                };
+
+                var created = await _programmeService.CreateProgrammeAsync(newProgramme);
+                if (created is null)
+                {
+                    ErrorMessage = "Échec de la création. Vérifiez votre connexion.";
+                    return;
+                }
+            }
+
+            IsModalOpen = false;
+            await RefreshProgrammesAsync();
         }
-
-        // On conserve les entrées complètes pour l'assignation ultérieure
-        var programme = new SavedProgrammeViewModel(
-            NewProgramName.Trim(),
-            NewProgramDescription.Trim(),
-            SelectedSessions.Select(s => s.Entry).ToList(),
-            DateTime.Now,
-            OnAssignProgramme);
-
-        SavedProgrammes.Insert(0, programme);
-        OnPropertyChanged(nameof(IsProgrammesEmpty));
-
-        foreach (var s in SavedSessions) s.IsSelected = false;
-        SelectedSessions.Clear();
-        IsCreateProgramOpen = false;
-
-        await _alertService.AlertAsync("Programme créé",
-            $"Le programme \"{programme.Name}\" avec {programme.SessionCount} séance(s) a été créé.");
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Erreur : {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
-    // ── Ouverture panneau d'assignation ──────────────────────────
+    // ── Programmes : Modifier ─────────────────────────────────────
 
-    private void OnAssignSession(SavedSessionCardViewModel card)
+    private void OnEditProgramme(ProgrammeCardViewModel card)
     {
-        _sessionToAssign = card;
-        _programmeToAssign = null;
-        _ = OpenAssignPanelAsync(card.Name, "Séance");
+        SelectedProgramme = card;
+        IsEditMode        = true;
+        ModalNom          = card.Programme.Name;
+        ModalDescription  = card.Programme.Description;
+        ModalTypeIndex    = (int)card.Programme.Type;
+        ModalNiveauIndex  = (int)card.Programme.Level;
+        ModalDuree        = card.Programme.DurationWeeks;
+        ModalSeances      = card.Programme.SessionsPerWeek;
+        ModalIsActif      = card.Programme.IsActive;
+        ErrorMessage      = null;
+        OnPropertyChanged(nameof(ModalTitle));
+        IsModalOpen = true;
     }
 
-    private void OnAssignProgramme(SavedProgrammeViewModel programme)
+    // ── Programmes : Supprimer ────────────────────────────────────
+
+    private void OnDeleteProgramme(ProgrammeCardViewModel card)
     {
-        _programmeToAssign = programme;
-        _sessionToAssign = null;
-        _ = OpenAssignPanelAsync(programme.Name, "Programme");
+        CardPendingDelete    = card;
+        IsDeleteConfirmOpen  = true;
     }
 
-    private async Task OpenAssignPanelAsync(string name, string type)
+    [RelayCommand]
+    private void CancelDelete()
+    {
+        IsDeleteConfirmOpen = false;
+        CardPendingDelete   = null;
+    }
+
+    [RelayCommand]
+    private async Task ConfirmDeleteAsync()
+    {
+        var card = CardPendingDelete;
+        IsDeleteConfirmOpen = false;
+        CardPendingDelete   = null;
+
+        if (card is null || IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            await _programmeService.DeleteProgrammeAsync(card.Programme.Id);
+            Programmes.Remove(card);
+            if (SelectedProgramme == card) SelectedProgramme = null;
+            OnPropertyChanged(nameof(IsProgrammesEmpty));
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Erreur suppression : {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    // ── Assignation client ────────────────────────────────────────
+
+    private void OnAssignProgramme(ProgrammeCardViewModel card)
+    {
+        _programmeToAssign = card;
+        _ = OpenAssignPanelAsync(card.Programme.Name);
+    }
+
+    private async Task OpenAssignPanelAsync(string name)
     {
         try
         {
@@ -203,8 +334,7 @@ public partial class ProgrammesViewModel : BaseViewModel
             }
 
             AssignTargetName = name;
-            AssignTargetType = type;
-            AssignStartDate = DateTime.Today;
+            AssignStartDate  = DateTime.Today;
             OnPropertyChanged(nameof(HasSelectedClients));
             IsAssignPanelOpen = true;
         }
@@ -217,9 +347,8 @@ public partial class ProgrammesViewModel : BaseViewModel
     [RelayCommand]
     private void CancelAssign()
     {
-        _sessionToAssign = null;
         _programmeToAssign = null;
-        IsAssignPanelOpen = false;
+        IsAssignPanelOpen  = false;
     }
 
     [RelayCommand]
@@ -232,118 +361,90 @@ public partial class ProgrammesViewModel : BaseViewModel
             return;
         }
 
+        var card = _programmeToAssign;
+        if (card is null) return;
+
         foreach (var clientVm in selected)
         {
-            ClientProgramAssignment assignment;
-
-            if (_sessionToAssign is not null)
+            var assignment = new ClientProgramAssignment
             {
-                // ── Séance unique ────────────────────────────────
-                var sessionModel = TryDeserializeSession(_sessionToAssign.Entry.DataJson);
-                assignment = new ClientProgramAssignment
+                ClientId    = clientVm.Client.Id,
+                ProgramName = card.Programme.Name,
+                AssignedAt  = AssignStartDate,
+                Sessions    = new List<AssignedSession>
                 {
-                    ClientId = clientVm.Client.Id,
-                    ProgramName = AssignTargetName,
-                    AssignedAt = AssignStartDate,
-                    Sessions = new List<AssignedSession>
+                    new()
                     {
-                        new()
-                        {
-                            Name = AssignTargetName,
-                            Order = 1,
-                            Categories = BuildCategories(sessionModel)
-                        }
+                        Name  = card.Programme.Name,
+                        Order = 1,
+                        Categories = new List<AssignedCategory>()
                     }
-                };
-            }
-            else if (_programmeToAssign is not null)
-            {
-                // ── Programme multi-séances ──────────────────────
-                assignment = new ClientProgramAssignment
-                {
-                    ClientId = clientVm.Client.Id,
-                    ProgramName = AssignTargetName,
-                    AssignedAt = AssignStartDate,
-                    Sessions = _programmeToAssign.Sessions.Select((entry, i) =>
-                    {
-                        var model = TryDeserializeSession(entry.DataJson);
-                        return new AssignedSession
-                        {
-                            Name = entry.Name,
-                            Order = i + 1,
-                            Categories = BuildCategories(model)
-                        };
-                    }).ToList()
-                };
-            }
-            else continue;
-
+                }
+            };
             await _assignmentService.AssignProgramAsync(assignment);
         }
 
         IsAssignPanelOpen = false;
         var count = selected.Count;
-        await _alertService.AlertAsync("Assigné avec succès",
-            $"\"{AssignTargetName}\" a été assigné à {count} client{(count > 1 ? "s" : "")} avec succès.");
-    }
-
-    // ── Helpers ───────────────────────────────────────────────────
-
-    private static SessionModel? TryDeserializeSession(string json)
-    {
-        try { return JsonSerializer.Deserialize<SessionModel>(json); }
-        catch { return null; }
-    }
-
-    private static List<AssignedCategory> BuildCategories(SessionModel? session)
-    {
-        if (session is null) return new();
-
-        return session.Categories.Select(c => new AssignedCategory
-        {
-            Name = c.Name,
-            Exercises = c.SubCategories
-                .SelectMany(sc => sc.Exercises)
-                .Select(e => new AssignedExercise
-                {
-                    Name = e.Name,
-                    Sets = e.Sets,
-                    Reps = e.Reps,
-                    Weight = e.Weight,
-                    Rpe = e.Rpe
-                }).ToList()
-        }).ToList();
+        await _alertService.AlertAsync("Assigné",
+            $"\"{card.Programme.Name}\" assigné à {count} client{(count > 1 ? "s" : "")}.");
     }
 }
 
-// ── ViewModel d'un programme créé ────────────────────────────────
-public partial class SavedProgrammeViewModel : ObservableObject
+// ── ViewModel d'une carte programme API ─────────────────────────
+
+public partial class ProgrammeCardViewModel : ObservableObject
 {
-    private readonly Action<SavedProgrammeViewModel>? _assignAction;
+    private readonly Action<ProgrammeCardViewModel> _editAction;
+    private readonly Action<ProgrammeCardViewModel> _deleteAction;
+    private readonly Action<ProgrammeCardViewModel> _assignAction;
 
-    public string Name { get; }
-    public string Description { get; }
-    public List<SavedSessionEntry> Sessions { get; }   // entrées complètes avec DataJson
-    public int SessionCount => Sessions.Count;
-    public string CreatedAt { get; }
-    public string SubTitle => $"{SessionCount} séance{(SessionCount > 1 ? "s" : "")}";
-    public string SessionsPreview =>
-        string.Join(" · ", Sessions.Take(3).Select(s => s.Name)) + (Sessions.Count > 3 ? " …" : "");
+    public Programme Programme { get; }
 
-    public SavedProgrammeViewModel(
-        string name,
-        string description,
-        List<SavedSessionEntry> sessions,
-        DateTime createdAt,
-        Action<SavedProgrammeViewModel>? assignAction = null)
+    public string Name        => Programme.Name;
+    public string Description => string.IsNullOrWhiteSpace(Programme.Description)
+        ? "Aucune description" : Programme.Description;
+    public string TypeText    => Programme.TypeText;
+    public string LevelText   => Programme.LevelText;
+    public string StatusText  => Programme.IsActive ? "Actif" : "Inactif";
+    public string DurationText => $"{Programme.DurationWeeks} sem. · {Programme.SessionsPerWeek} séance{(Programme.SessionsPerWeek > 1 ? "s" : "")}/sem.";
+    public string CreatedAt   => Programme.CreatedAt.ToString("dd/MM/yyyy");
+
+    public Color TypeBadgeColor => Programme.Type switch
     {
-        Name = name;
-        Description = description;
-        Sessions = sessions;
-        CreatedAt = createdAt.ToString("dd/MM/yyyy");
+        ProgrammeType.Cardio      => Color.FromArgb("#DC2626"),
+        ProgrammeType.Strength    => Color.FromArgb("#7C3AED"),
+        ProgrammeType.Flexibility => Color.FromArgb("#059669"),
+        _                         => Color.FromArgb("#4F46E5")
+    };
+
+    public Color TypeBadgeBg => Programme.Type switch
+    {
+        ProgrammeType.Cardio      => Color.FromArgb("#FEF2F2"),
+        ProgrammeType.Strength    => Color.FromArgb("#F5F3FF"),
+        ProgrammeType.Flexibility => Color.FromArgb("#F0FDF4"),
+        _                         => Color.FromArgb("#EEF2FF")
+    };
+
+    public Color StatusColor => Programme.IsActive
+        ? Color.FromArgb("#16A34A") : Color.FromArgb("#94A3B8");
+
+    public Color StatusBg => Programme.IsActive
+        ? Color.FromArgb("#F0FDF4") : Color.FromArgb("#F8FAFC");
+
+    public ProgrammeCardViewModel(
+        Programme programme,
+        Action<ProgrammeCardViewModel> editAction,
+        Action<ProgrammeCardViewModel> deleteAction,
+        Action<ProgrammeCardViewModel> assignAction)
+    {
+        Programme     = programme;
+        _editAction   = editAction;
+        _deleteAction = deleteAction;
         _assignAction = assignAction;
     }
 
-    [RelayCommand]
-    private void Assign() => _assignAction?.Invoke(this);
+    [RelayCommand] void Edit()   => _editAction(this);
+    [RelayCommand] void Delete() => _deleteAction(this);
+    [RelayCommand] void Assign() => _assignAction(this);
 }

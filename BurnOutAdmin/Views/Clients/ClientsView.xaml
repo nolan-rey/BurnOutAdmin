@@ -239,6 +239,51 @@
                                                         <Label Text="Suspendu" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" VerticalOptions="Center"/>
                                                     </HorizontalStackLayout>
                                                 </Border>
+                                                <!-- Inactif badge -->
+                                                <Border IsVisible="False" BackgroundColor="{StaticResource BgGray100}" Stroke="{StaticResource BorderColor}" StrokeThickness="1" Padding="8,4" VerticalOptions="Center">
+                                                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding Status}" Value="Inactif">
+                                                            <Setter Property="IsVisible" Value="True"/>
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <HorizontalStackLayout Spacing="5">
+                                                        <Border BackgroundColor="{StaticResource TextLight}" StrokeThickness="0" HeightRequest="6" WidthRequest="6" VerticalOptions="Center">
+                                                            <Border.StrokeShape><RoundRectangle CornerRadius="3"/></Border.StrokeShape>
+                                                        </Border>
+                                                        <Label Text="Inactif" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextMedium}" VerticalOptions="Center"/>
+                                                    </HorizontalStackLayout>
+                                                </Border>
+                                                <!-- Admin badge -->
+                                                <Border IsVisible="False" BackgroundColor="#EDE9FE" Stroke="#C4B5FD" StrokeThickness="1" Padding="8,4" VerticalOptions="Center">
+                                                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding Status}" Value="Admin">
+                                                            <Setter Property="IsVisible" Value="True"/>
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <HorizontalStackLayout Spacing="5">
+                                                        <Border BackgroundColor="#7C3AED" StrokeThickness="0" HeightRequest="6" WidthRequest="6" VerticalOptions="Center">
+                                                            <Border.StrokeShape><RoundRectangle CornerRadius="3"/></Border.StrokeShape>
+                                                        </Border>
+                                                        <Label Text="Admin" FontSize="11" FontAttributes="Bold" TextColor="#7C3AED" VerticalOptions="Center"/>
+                                                    </HorizontalStackLayout>
+                                                </Border>
+                                                <!-- Coach badge -->
+                                                <Border IsVisible="False" BackgroundColor="#DBEAFE" Stroke="#BFDBFE" StrokeThickness="1" Padding="8,4" VerticalOptions="Center">
+                                                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding Status}" Value="Coach">
+                                                            <Setter Property="IsVisible" Value="True"/>
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <HorizontalStackLayout Spacing="5">
+                                                        <Border BackgroundColor="#2563EB" StrokeThickness="0" HeightRequest="6" WidthRequest="6" VerticalOptions="Center">
+                                                            <Border.StrokeShape><RoundRectangle CornerRadius="3"/></Border.StrokeShape>
+                                                        </Border>
+                                                        <Label Text="Coach" FontSize="11" FontAttributes="Bold" TextColor="#2563EB" VerticalOptions="Center"/>
+                                                    </HorizontalStackLayout>
+                                                </Border>
                                             </HorizontalStackLayout>
                                             <!-- NFC UID -->
                                             <HorizontalStackLayout Grid.Column="3" Spacing="6" VerticalOptions="Center">

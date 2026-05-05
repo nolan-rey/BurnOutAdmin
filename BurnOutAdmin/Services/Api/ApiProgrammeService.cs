@@ -1,51 +1,73 @@
+using System.Text.Json;
 using BurnOutAdmin.Models;
+using BurnOutAdmin.Services;
 using BurnOutAdmin.Services.Api.Dto;
 
 namespace BurnOutAdmin.Services.Api;
 
 /// <summary>
-/// Implémentation de <see cref="IProgrammeService"/> utilisant l'API REST CallOfPhoenix.
+/// Implémentation de <see cref="IProgrammeService"/> utilisant l'API REST BurnOut.
 ///
 /// Mapping API → modèle local :
-///   id_programme  → Id
-///   nom_programme → Name
-///   description   → Description
-///   date_debut / date_fin → DurationWeeks (calculé)
-///   (type, level non fournis par l'API) → valeurs par défaut
-///   date_fin >= today → IsActive = true
+///   id_programme       → Id
+///   nom_programme      → Name
+///   description        → Description
+///   type               → Type (cardio/force/souplesse/mixte → enum)
+///   niveau             → Level (debutant/intermediaire/avance → enum)
+///   duree_semaines     → DurationWeeks
+///   seances_par_semaine → SessionsPerWeek
+///   is_actif           → IsActive
+///   created_at         → CreatedAt
 ///
-/// NOTE : L'API ne fournit pas encore les champs type, level, sessions_per_week.
-/// Ces champs seront mappés correctement dès que l'API sera mise à jour.
-/// Voir docs/API_Gap_Analysis.md pour le détail des modifications nécessaires.
+/// Endpoint : GET /programmes  (liste), POST/PUT/DELETE /programmes/{id}
 /// </summary>
 public class ApiProgrammeService : IProgrammeService
 {
     private readonly ApiHttpClient _api;
 
-    public ApiProgrammeService(ApiHttpClient api)
-    {
-        _api = api;
-    }
+    public ApiProgrammeService(ApiHttpClient api) => _api = api;
+
+    // ── Lecture ───────────────────────────────────────────────────
 
     public async Task<List<Programme>> GetProgrammesAsync()
     {
+        // 1️⃣ Format enveloppé { success, data: [...] }  — format confirmé par les logs
         try
         {
-            var dtos = await _api.GetAsync<List<ProgrammeDto>>("/programmes");
-            if (dtos is null) return [];
-            return dtos.Select(MapToProgramme).ToList();
+            var response = await _api.GetAsync<ProgrammeListResponseDto>("/programmes");
+            if (response is not null)
+            {
+                Console.WriteLine($"[ApiProgrammeService] OK — {response.Data?.Count ?? 0} programme(s)");
+                return response.Data?.Select(MapToProgramme).ToList() ?? [];
+            }
+        }
+        catch (UnauthorizedAccessException) { throw; }
+        catch (Exception ex1)
+        {
+            Console.WriteLine($"[ApiProgrammeService] Format enveloppé échoué : {ex1.Message} — essai tableau brut");
+        }
+
+        // 2️⃣ Fallback format tableau brut [...]
+        try
+        {
+            var list = await _api.GetAsync<List<ProgrammeDto>>("/programmes");
+            if (list is not null)
+            {
+                Console.WriteLine($"[ApiProgrammeService] Tableau brut OK — {list.Count} programme(s)");
+                return list.Select(MapToProgramme).ToList();
+            }
         }
         catch (UnauthorizedAccessException) { throw; }
         catch (Exception ex)
         {
             Console.WriteLine($"[ApiProgrammeService] GetProgrammesAsync error: {ex.Message}");
-            return [];
         }
+
+        return [];
     }
 
     public async Task<Programme?> GetProgrammeByIdAsync(int id)
     {
-        // L'API ne fournit pas GET /programmes/{id} — on charge tout et on filtre
         var all = await GetProgrammesAsync();
         return all.FirstOrDefault(p => p.Id == id);
     }
@@ -56,29 +78,62 @@ public class ApiProgrammeService : IProgrammeService
         return all.Count(p => p.IsActive);
     }
 
-    // ── CRUD (utilisable à terme depuis les ViewModels) ───────────
+    // ── Écriture ──────────────────────────────────────────────────
 
-    public async Task<bool> CreateProgrammeAsync(CreateProgrammeDto dto)
+    public async Task<Programme?> CreateProgrammeAsync(Programme programme)
     {
         try
         {
-            var result = await _api.PostAsync<ApiSuccessDto>("/programmes", dto);
-            return result?.Success ?? false;
+            var dto = new CreateProgrammeDto
+            {
+                NomProgramme      = programme.Name,
+                Description       = programme.Description,
+                Type              = MapTypeToApi(programme.Type),
+                Niveau            = MapLevelToApi(programme.Level),
+                DureeSemaines     = programme.DurationWeeks,
+                SeancesParSemaine = programme.SessionsPerWeek,
+                DateDebut         = DateTime.Today.ToString("yyyy-MM-dd"),
+                DateFin           = DateTime.Today.AddDays(programme.DurationWeeks * 7).ToString("yyyy-MM-dd")
+            };
+
+            var result = await _api.PostAsync<CreateProgrammeResponseDto>("/programmes", dto);
+            if (result?.Success == true)
+            {
+                programme.Id        = result.IdProgramme ?? 0;
+                programme.IsActive  = true;
+                programme.CreatedAt = DateTime.UtcNow;
+                return programme;
+            }
+
+            // L'API a répondu mais sans success=true → recharge la liste pour trouver le nouveau
+            Console.WriteLine($"[ApiProgrammeService] CreateProgrammeAsync: {result?.Error ?? "no error detail"}");
+            return null;
         }
+        catch (UnauthorizedAccessException) { throw; }
         catch (Exception ex)
         {
             Console.WriteLine($"[ApiProgrammeService] CreateProgrammeAsync error: {ex.Message}");
-            return false;
+            return null;
         }
     }
 
-    public async Task<bool> UpdateProgrammeAsync(int id, UpdateProgrammeDto dto)
+    public async Task<bool> UpdateProgrammeAsync(Programme programme)
     {
         try
         {
-            var result = await _api.PutAsync<ApiSuccessDto>($"/programmes/{id}", dto);
+            var dto = new UpdateProgrammeDto
+            {
+                NomProgramme = programme.Name,
+                Description  = programme.Description,
+                Type         = MapTypeToApi(programme.Type),
+                Niveau       = MapLevelToApi(programme.Level),
+                IsActif      = programme.IsActive ? 1 : 0
+            };
+
+            var result = await _api.PutAsync<ApiSuccessDto>($"/programmes/{programme.Id}", dto);
             return result?.Success ?? false;
         }
+        catch (UnauthorizedAccessException) { throw; }
         catch (Exception ex)
         {
             Console.WriteLine($"[ApiProgrammeService] UpdateProgrammeAsync error: {ex.Message}");
@@ -93,9 +148,10 @@ public class ApiProgrammeService : IProgrammeService
             await _api.DeleteAsync($"/programmes/{id}");
             return true;
         }
+        catch (UnauthorizedAccessException) { throw; }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ApiProgrammeService] DeleteProgrammeAsync error: {ex.Message}");
+            Console.WriteLine($"[ApiProgrammeService] DeleteProgrammeAsync({id}) error: {ex.Message}");
             return false;
         }
     }
@@ -108,25 +164,77 @@ public class ApiProgrammeService : IProgrammeService
         var start = TryParseDate(dto.DateDebut) ?? today;
         var end   = TryParseDate(dto.DateFin)   ?? today.AddDays(90);
 
-        var durationWeeks = (int)Math.Round((end - start).TotalDays / 7.0);
+        // is_actif : peut être bool JSON (true/false) ou int JSON (0/1)
+        var isActive = ResolveIsActif(dto.IsActif) ?? end >= today;
+
+        var durationWeeks = dto.DureeSemaines ?? (int)Math.Round((end - start).TotalDays / 7.0);
 
         return new Programme
         {
-            Id             = dto.IdProgramme,
-            Name           = dto.NomProgramme,
-            Description    = dto.Description ?? string.Empty,
-            Type           = ProgrammeType.Mixed,           // Non fourni par l'API (v1)
-            Level          = ProgrammeLevel.Intermediate,   // Non fourni par l'API (v1)
-            DurationWeeks  = Math.Max(1, durationWeeks),
-            SessionsPerWeek = 3,                            // Non fourni par l'API (v1)
-            IsActive       = end >= today,
-            CreatedAt      = start
+            Id              = dto.IdProgramme,
+            Name            = dto.NomProgramme,
+            Description     = dto.Description ?? string.Empty,
+            Type            = MapType(dto.Type),
+            Level           = MapLevel(dto.Niveau),
+            DurationWeeks   = Math.Max(1, durationWeeks),
+            SessionsPerWeek = dto.SeancesParSemaine ?? 3,
+            IsActive        = isActive,
+            CreatedAt       = TryParseDate(dto.CreatedAt) ?? start
         };
+    }
+
+    // ── Helpers Type ──────────────────────────────────────────────
+
+    private static ProgrammeType MapType(string? s) => s switch
+    {
+        "cardio"    => ProgrammeType.Cardio,
+        "force"     => ProgrammeType.Strength,
+        "souplesse" => ProgrammeType.Flexibility,
+        "mixte"     => ProgrammeType.Mixed,
+        _           => ProgrammeType.Mixed
+    };
+
+    private static string MapTypeToApi(ProgrammeType t) => t switch
+    {
+        ProgrammeType.Cardio      => "cardio",
+        ProgrammeType.Strength    => "force",
+        ProgrammeType.Flexibility => "souplesse",
+        _                         => "mixte"
+    };
+
+    private static ProgrammeLevel MapLevel(string? s) => s switch
+    {
+        "debutant"      => ProgrammeLevel.Beginner,
+        "intermediaire" => ProgrammeLevel.Intermediate,
+        "avance"        => ProgrammeLevel.Advanced,
+        _               => ProgrammeLevel.Intermediate
+    };
+
+    private static string MapLevelToApi(ProgrammeLevel l) => l switch
+    {
+        ProgrammeLevel.Beginner     => "debutant",
+        ProgrammeLevel.Intermediate => "intermediaire",
+        ProgrammeLevel.Advanced     => "avance",
+        _                           => "intermediaire"
+    };
+
+    /// <summary>
+    /// is_actif peut être bool JSON (true/false) ou int JSON (0/1) selon la version de l'API.
+    /// Retourne null si le champ est absent (le mapping utilisera un fallback par date).
+    /// </summary>
+    private static bool? ResolveIsActif(JsonElement? el)
+    {
+        if (!el.HasValue || el.Value.ValueKind == JsonValueKind.Null) return null;
+        if (el.Value.ValueKind == JsonValueKind.True)  return true;
+        if (el.Value.ValueKind == JsonValueKind.False) return false;
+        if (el.Value.ValueKind == JsonValueKind.Number) return el.Value.GetInt32() != 0;
+        return null;
     }
 
     private static DateTime? TryParseDate(string? s)
     {
         if (string.IsNullOrEmpty(s)) return null;
-        return DateTime.TryParse(s, out var d) ? d : null;
+        return DateTime.TryParse(s, null,
+            System.Globalization.DateTimeStyles.RoundtripKind, out var d) ? d : null;
     }
 }

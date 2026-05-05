@@ -63,6 +63,27 @@ public class SqliteSessionLibraryService : ISessionLibraryService
         return entry;
     }
 
+    public async Task UpdateSessionAsync(int id, string name, string description, SessionModel session)
+    {
+        await InitializeAsync();
+
+        var exerciseCount = session.Categories
+            .SelectMany(c => c.SubCategories)
+            .SelectMany(sc => sc.Exercises)
+            .Count();
+
+        var existing = await _db!.FindAsync<SavedSessionEntry>(id);
+        if (existing is null) return;
+
+        existing.Name          = name;
+        existing.Description   = description;
+        existing.DataJson      = System.Text.Json.JsonSerializer.Serialize(session);
+        existing.ExerciseCount = exerciseCount;
+        existing.CategoryCount = session.Categories.Count;
+
+        await _db!.UpdateAsync(existing);
+    }
+
     public async Task DeleteSessionAsync(int id)
     {
         await InitializeAsync();

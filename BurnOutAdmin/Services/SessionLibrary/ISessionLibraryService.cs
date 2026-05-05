@@ -9,5 +9,6 @@ public interface ISessionLibraryService
     // ── Séances ───────────────────────────────────────────────────
     Task<List<SavedSessionEntry>> GetAllSessionsAsync();
     Task<SavedSessionEntry> SaveSessionAsync(string name, string description, SessionModel session);
+    Task UpdateSessionAsync(int id, string name, string description, SessionModel session);
     Task DeleteSessionAsync(int id);
 }

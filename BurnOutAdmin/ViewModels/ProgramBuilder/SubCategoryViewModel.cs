@@ -8,26 +8,31 @@ namespace BurnOutAdmin.ViewModels.ProgramBuilder;
 public partial class SubCategoryViewModel : BaseViewModel
 {
     public SubCategoryModel Model { get; }
-
     private readonly Action<SubCategoryViewModel>? _removeAction;
 
-    [ObservableProperty]
-    private string _name;
+    [ObservableProperty] private string _name;
+    [ObservableProperty] private int    _order;
+    [ObservableProperty] private int    _sets;
+    [ObservableProperty] private int    _restTime;
+    [ObservableProperty] private SubCategoryType _type;
+    [ObservableProperty] private bool   _isExpanded = true;
 
-    [ObservableProperty]
-    private int _order;
+    // ── Note ──────────────────────────────────────────────────────
+    [ObservableProperty] private string _note;
 
-    [ObservableProperty]
-    private int _sets;
+    // ── Repos formaté (secondes → "0'", "2'", "90''") ────────────
+    public string RestTimeDisplay
+    {
+        get
+        {
+            if (RestTime == 0) return "0'";
+            if (RestTime % 60 == 0) return $"{RestTime / 60}'";
+            return $"{RestTime}''";
+        }
+    }
 
-    [ObservableProperty]
-    private int _restTime;
-
-    [ObservableProperty]
-    private SubCategoryType _type;
-
-    [ObservableProperty]
-    private bool _isExpanded = true;
+    // ── Label header bloc ─────────────────────────────────────────
+    public string SetsLabel => $"{Sets} série{(Sets > 1 ? "s" : "")}  ({RestTimeDisplay} récup)";
 
     public string ExpandIcon => IsExpanded ? "▼" : "▶";
 
@@ -35,46 +40,28 @@ public partial class SubCategoryViewModel : BaseViewModel
 
     public SubCategoryViewModel(SubCategoryModel model, Action<SubCategoryViewModel>? removeAction = null)
     {
-        Model = model;
+        Model         = model;
         _removeAction = removeAction;
 
-        _name = model.Name;
-        _order = model.Order;
-        _sets = model.Sets;
+        _name     = model.Name;
+        _order    = model.Order;
+        _sets     = model.Sets;
         _restTime = model.RestTime;
-        _type = model.Type;
+        _type     = model.Type;
+        _note     = model.Note;
 
         foreach (var exercise in model.Exercises)
-        {
             Exercises.Add(new ExerciseViewModel(exercise, RemoveExercise));
-        }
     }
 
-    partial void OnNameChanged(string value)
-    {
-        Model.Name = value;
-    }
+    // ── Sync model ────────────────────────────────────────────────
+    partial void OnNameChanged(string v)  { Model.Name     = v; }
+    partial void OnOrderChanged(int v)    { Model.Order    = v; }
+    partial void OnSetsChanged(int v)     { Model.Sets     = v; OnPropertyChanged(nameof(SetsLabel)); }
+    partial void OnRestTimeChanged(int v) { Model.RestTime = v; OnPropertyChanged(nameof(RestTimeDisplay)); OnPropertyChanged(nameof(SetsLabel)); }
+    partial void OnNoteChanged(string v)  { Model.Note     = v; }
 
-    partial void OnOrderChanged(int value)
-    {
-        Model.Order = value;
-    }
-
-    partial void OnSetsChanged(int value)
-    {
-        Model.Sets = value;
-    }
-
-    partial void OnRestTimeChanged(int value)
-    {
-        Model.RestTime = value;
-    }
-
-    partial void OnTypeChanged(SubCategoryType value)
-    {
-        Model.Type = value;
-    }
-
+    // ── Commandes ─────────────────────────────────────────────────
     [RelayCommand]
     private void ToggleExpanded()
     {
@@ -85,65 +72,44 @@ public partial class SubCategoryViewModel : BaseViewModel
     [RelayCommand]
     private void AddExercise()
     {
-        var exercise = CreateExercise();
-        Exercises.Add(exercise);
-    }
-
-    [RelayCommand]
-    private void DeleteSubCategory()
-    {
-        if (_removeAction == null)
-            return;
-
-        _removeAction(this);
-    }
-
-    public void AddExerciseFromLibrary(ExerciseLibraryItem libraryItem)
-    {
         var model = new ExerciseModel
         {
-            Id = Guid.NewGuid(),
-            Name = libraryItem.Name,
-            Sets = 3,
-            Reps = 10,
-            Weight = 0,
-            Rpe = 0,
-            Order = Exercises.Count + 1
+            Id       = Guid.NewGuid(),
+            Name     = "Nouvel exercice",
+            RepsText = "10",
+            Order    = Exercises.Count + 1
         };
-
         Model.Exercises.Add(model);
         Exercises.Add(new ExerciseViewModel(model, RemoveExercise));
     }
 
-    private ExerciseViewModel CreateExercise()
+    [RelayCommand]
+    private void DeleteSubCategory() => _removeAction?.Invoke(this);
+
+    public void AddExerciseFromLibrary(ExerciseLibraryItem item)
     {
         var model = new ExerciseModel
         {
-            Id = Guid.NewGuid(),
-            Name = "Nouvel Exercice",
-            Sets = 3,
-            Reps = 10,
-            Weight = 0,
-            Rpe = 0,
-            Order = Exercises.Count + 1
+            Id       = Guid.NewGuid(),
+            Name     = item.Name,
+            RepsText = "10",
+            Order    = Exercises.Count + 1
         };
-
         Model.Exercises.Add(model);
-        return new ExerciseViewModel(model, RemoveExercise);
+        Exercises.Add(new ExerciseViewModel(model, RemoveExercise));
+        IsExpanded = true;
     }
 
-    private void RemoveExercise(ExerciseViewModel exercise)
+    private void RemoveExercise(ExerciseViewModel ex)
     {
-        Exercises.Remove(exercise);
-        Model.Exercises.Remove(exercise.Model);
+        Exercises.Remove(ex);
+        Model.Exercises.Remove(ex.Model);
         RecalculateOrders();
     }
 
     private void RecalculateOrders()
     {
         for (var i = 0; i < Exercises.Count; i++)
-        {
             Exercises[i].Order = i + 1;
-        }
     }
 }

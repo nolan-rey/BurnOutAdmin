@@ -95,7 +95,26 @@ public class ApiHttpClient
         if (response.Content.Headers.ContentLength == 0)
             return default;
 
-        return await response.Content.ReadFromJsonAsync<T>(JsonOptions);
+        // ── Lire la réponse en brut pour logguer avant désérialisation ──
+        var rawJson = await response.Content.ReadAsStringAsync();
+
+        // Log tronqué à 500 chars pour ne pas polluer la console
+        var preview = rawJson.Length > 500 ? rawJson[..500] + "…" : rawJson;
+        Console.WriteLine($"[ApiHttpClient] {method.Method} {path} → {(int)response.StatusCode} | RAW: {preview}");
+
+        if (string.IsNullOrWhiteSpace(rawJson))
+            return default;
+
+        try
+        {
+            return JsonSerializer.Deserialize<T>(rawJson, JsonOptions);
+        }
+        catch (JsonException jex)
+        {
+            Console.WriteLine($"[ApiHttpClient] JSON DESERIALIZE ERROR for {typeof(T).Name} on {path}: {jex.Message}");
+            Console.WriteLine($"[ApiHttpClient] FULL RAW: {rawJson}");
+            throw;
+        }
     }
 }
 
