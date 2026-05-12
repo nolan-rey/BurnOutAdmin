@@ -91,7 +91,7 @@ public class ApiExerciseLibraryService : IExerciseLibraryService
 
             return new ExerciseLibraryEntry
             {
-                Id           = result?.IdExercice ?? 0,
+                Id           = result?.ResolvedId ?? 0,
                 Name         = name,
                 CategoryName = category,
                 MuscleGroup  = muscleGroup,
@@ -133,12 +133,12 @@ public class ApiExerciseLibraryService : IExerciseLibraryService
 
     private static ExerciseLibraryEntry MapToEntry(ExerciceDto dto) => new()
     {
-        Id           = dto.IdExercice,
+        Id           = dto.ResolvedId,
         Name         = dto.Nom,
         CategoryName = dto.Categorie ?? "Musculation",
         MuscleGroup  = dto.GroupeMusculaire ?? string.Empty,
         TagsJson     = ResolveTagsJson(dto.Tags),
-        IsDefault    = dto.IsDefault,
+        IsDefault    = dto.ResolvedIsDefault,
         CreatedAt    = TryParseDate(dto.CreatedAt) ?? DateTime.UtcNow
     };
 
