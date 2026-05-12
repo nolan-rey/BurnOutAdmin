@@ -100,3 +100,17 @@ public class CreateProgrammeSeanceResponseDto
     [JsonPropertyName("error")]
     public string? Error { get; set; }
 }
+
+// ── Mise à jour (PUT /programmes/{id}/seances/{seanceId}) ────────────────────
+
+public class UpdateProgrammeSeanceDto
+{
+    [JsonPropertyName("ordre")]
+    public int? Ordre { get; set; }
+
+    [JsonPropertyName("nom")]
+    public string? Nom { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+}

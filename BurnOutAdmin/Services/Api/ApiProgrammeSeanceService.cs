@@ -105,6 +105,34 @@ public class ApiProgrammeSeanceService : IProgrammeSeanceService
         }
     }
 
+    public async Task<bool> UpdateSeanceAsync(int programmeId, int seanceId, int? order, string? name, string? description)
+    {
+        if (programmeId <= 0 || seanceId <= 0) return false;
+        if (order is null && name is null && description is null) return true; // rien à faire
+
+        try
+        {
+            var dto = new UpdateProgrammeSeanceDto
+            {
+                Ordre       = order,
+                Nom         = name,
+                Description = description
+            };
+
+            var result = await _api.PutAsync<ApiSuccessDto>(
+                $"/programmes/{programmeId}/seances/{seanceId}", dto);
+            var ok = result?.Success ?? false;
+            Console.WriteLine($"[ApiProgrammeSeanceService] PUT /programmes/{programmeId}/seances/{seanceId} ordre={order} → success={ok}");
+            return ok;
+        }
+        catch (UnauthorizedAccessException) { throw; }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiProgrammeSeanceService] UpdateSeance({programmeId}, {seanceId}): {ex.Message}");
+            return false;
+        }
+    }
+
     public async Task<bool> RemoveSeanceAsync(int programmeId, int seanceId)
     {
         if (programmeId <= 0 || seanceId <= 0) return false;

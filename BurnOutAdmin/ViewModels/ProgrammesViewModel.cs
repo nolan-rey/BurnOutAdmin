@@ -51,12 +51,21 @@ public partial class ProgrammesViewModel : BaseViewModel
     [ObservableProperty] private bool _isManageSeancesOpen;
     [ObservableProperty] private ProgrammeCardViewModel? _seancesTargetProgramme;
     [ObservableProperty] private bool _isAddSeanceFromLibraryOpen;
-    [ObservableProperty] private SavedSessionCardViewModel? _selectedTemplate;
 
     /// <summary>Séances actuellement attachées au programme ouvert dans le modal.</summary>
     public ObservableCollection<ProgrammeSeanceCardViewModel> ProgrammeSeances { get; } = new();
 
+    /// <summary>Templates affichés dans le picker multi-sélection (IsSelected sur chaque carte).</summary>
+    public ObservableCollection<SavedSessionCardViewModel> PickerTemplates { get; } = new();
+
     public bool IsProgrammeSeancesEmpty => ProgrammeSeances.Count == 0 && !IsBusy;
+    public bool HasSelectedTemplates    => PickerTemplates.Any(t => t.IsSelected);
+
+    // ── Édition inline d'une séance attachée ──────────────────────
+    [ObservableProperty] private bool _isEditSeanceOpen;
+    [ObservableProperty] private ProgrammeSeanceCardViewModel? _editingSeance;
+    [ObservableProperty] private string _editSeanceName = string.Empty;
+    [ObservableProperty] private string _editSeanceDescription = string.Empty;
 
     // ── Assignation client ────────────────────────────────────────
     [ObservableProperty] private bool   _isAssignPanelOpen;
@@ -344,24 +353,41 @@ public partial class ProgrammesViewModel : BaseViewModel
         var list = await _programmeSeanceService.GetSeancesAsync(SeancesTargetProgramme.Programme.Id);
         ProgrammeSeances.Clear();
         foreach (var s in list)
-            ProgrammeSeances.Add(new ProgrammeSeanceCardViewModel(s, OnRemoveProgrammeSeance));
+            ProgrammeSeances.Add(CreateSeanceCard(s));
         OnPropertyChanged(nameof(IsProgrammeSeancesEmpty));
     }
+
+    private ProgrammeSeanceCardViewModel CreateSeanceCard(ProgrammeSeance s) =>
+        new(s, OnRemoveProgrammeSeance, OnMoveSeanceUp, OnMoveSeanceDown, OnEditSeance);
 
     [RelayCommand]
     private void CloseManageSeances()
     {
         IsManageSeancesOpen = false;
         IsAddSeanceFromLibraryOpen = false;
+        IsEditSeanceOpen = false;
         SeancesTargetProgramme = null;
-        SelectedTemplate = null;
+        EditingSeance = null;
         ProgrammeSeances.Clear();
+        PickerTemplates.Clear();
     }
 
     [RelayCommand]
     private void OpenAddSeanceFromLibrary()
     {
-        SelectedTemplate = null;
+        // Reconstruit la liste du picker en clonant des cartes avec IsSelected reset
+        PickerTemplates.Clear();
+        foreach (var t in SavedSessions)
+        {
+            var card = new SavedSessionCardViewModel(t.Entry);
+            card.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(SavedSessionCardViewModel.IsSelected))
+                    OnPropertyChanged(nameof(HasSelectedTemplates));
+            };
+            PickerTemplates.Add(card);
+        }
+        OnPropertyChanged(nameof(HasSelectedTemplates));
         IsAddSeanceFromLibraryOpen = true;
     }
 
@@ -369,35 +395,60 @@ public partial class ProgrammesViewModel : BaseViewModel
     private void CancelAddSeanceFromLibrary()
     {
         IsAddSeanceFromLibraryOpen = false;
-        SelectedTemplate = null;
+        PickerTemplates.Clear();
+    }
+
+    /// <summary>Toggle IsSelected sur une carte du picker (utilisé par TapGestureRecognizer).</summary>
+    [RelayCommand]
+    private void ToggleTemplateSelection(SavedSessionCardViewModel? card)
+    {
+        if (card is null) return;
+        card.IsSelected = !card.IsSelected;
     }
 
     [RelayCommand]
     private async Task ConfirmAddSeanceFromLibraryAsync()
     {
-        if (SeancesTargetProgramme is null || SelectedTemplate is null) return;
+        if (SeancesTargetProgramme is null) return;
         if (IsBusy) return;
+
+        var selected = PickerTemplates.Where(t => t.IsSelected).ToList();
+        if (selected.Count == 0)
+        {
+            await _alertService.AlertAsync("Attention", "Sélectionnez au moins une séance.");
+            return;
+        }
 
         try
         {
             IsBusy = true;
-            var nextOrder = ProgrammeSeances.Count + 1;
-            var attached  = await _programmeSeanceService.AddSeanceFromTemplateAsync(
-                SeancesTargetProgramme.Programme.Id,
-                SelectedTemplate.Entry,
-                nextOrder);
+            var failures = new List<string>();
 
-            if (attached is null)
+            foreach (var template in selected)
             {
-                await _alertService.AlertAsync("Erreur",
-                    "Impossible d'ajouter la séance au programme. Vérifiez que l'endpoint /programmes/{id}/seances existe côté serveur.");
-                return;
+                var nextOrder = ProgrammeSeances.Count + 1;
+                var attached  = await _programmeSeanceService.AddSeanceFromTemplateAsync(
+                    SeancesTargetProgramme.Programme.Id, template.Entry, nextOrder);
+
+                if (attached is null)
+                {
+                    failures.Add(template.Name);
+                }
+                else
+                {
+                    ProgrammeSeances.Add(CreateSeanceCard(attached));
+                }
             }
 
-            ProgrammeSeances.Add(new ProgrammeSeanceCardViewModel(attached, OnRemoveProgrammeSeance));
             OnPropertyChanged(nameof(IsProgrammeSeancesEmpty));
             IsAddSeanceFromLibraryOpen = false;
-            SelectedTemplate = null;
+            PickerTemplates.Clear();
+
+            if (failures.Count > 0)
+            {
+                await _alertService.AlertAsync("Partiel",
+                    $"Échec d'ajout pour : {string.Join(", ", failures)}");
+            }
         }
         catch (Exception ex)
         {
@@ -409,6 +460,94 @@ public partial class ProgrammesViewModel : BaseViewModel
         }
     }
 
+    // ── Reorder ──────────────────────────────────────────────────
+
+    private async void OnMoveSeanceUp(ProgrammeSeanceCardViewModel card)
+    {
+        var idx = ProgrammeSeances.IndexOf(card);
+        if (idx <= 0) return;
+        await SwapAndPersistAsync(idx, idx - 1);
+    }
+
+    private async void OnMoveSeanceDown(ProgrammeSeanceCardViewModel card)
+    {
+        var idx = ProgrammeSeances.IndexOf(card);
+        if (idx < 0 || idx >= ProgrammeSeances.Count - 1) return;
+        await SwapAndPersistAsync(idx, idx + 1);
+    }
+
+    private async Task SwapAndPersistAsync(int from, int to)
+    {
+        if (SeancesTargetProgramme is null) return;
+        var programmeId = SeancesTargetProgramme.Programme.Id;
+
+        ProgrammeSeances.Move(from, to);
+
+        // Recalculer les ordres locaux (1-based) puis persister chaque changement
+        var tasks = new List<Task<bool>>();
+        for (var i = 0; i < ProgrammeSeances.Count; i++)
+        {
+            var card     = ProgrammeSeances[i];
+            var newOrder = i + 1;
+            if (card.Order == newOrder) continue;
+            card.Order = newOrder;
+            tasks.Add(_programmeSeanceService.UpdateSeanceAsync(
+                programmeId, card.Seance.Id, newOrder, null, null));
+        }
+
+        if (tasks.Count > 0)
+            await Task.WhenAll(tasks);
+    }
+
+    // ── Edit inline (nom / description) ──────────────────────────
+
+    private void OnEditSeance(ProgrammeSeanceCardViewModel card)
+    {
+        EditingSeance          = card;
+        EditSeanceName         = card.Name;
+        EditSeanceDescription  = card.Description;
+        IsEditSeanceOpen       = true;
+    }
+
+    [RelayCommand]
+    private void CancelEditSeance()
+    {
+        IsEditSeanceOpen = false;
+        EditingSeance    = null;
+    }
+
+    [RelayCommand]
+    private async Task ConfirmEditSeanceAsync()
+    {
+        if (SeancesTargetProgramme is null || EditingSeance is null) return;
+        if (string.IsNullOrWhiteSpace(EditSeanceName))
+        {
+            await _alertService.AlertAsync("Attention", "Le nom est obligatoire.");
+            return;
+        }
+
+        var ok = await _programmeSeanceService.UpdateSeanceAsync(
+            SeancesTargetProgramme.Programme.Id,
+            EditingSeance.Seance.Id,
+            null,
+            EditSeanceName.Trim(),
+            EditSeanceDescription.Trim());
+
+        if (ok)
+        {
+            EditingSeance.Name        = EditSeanceName.Trim();
+            EditingSeance.Description = EditSeanceDescription.Trim();
+            IsEditSeanceOpen          = false;
+            EditingSeance             = null;
+        }
+        else
+        {
+            await _alertService.AlertAsync("Erreur", "Impossible de modifier la séance.");
+        }
+    }
+
+    // ── Suppression ──────────────────────────────────────────────
+
     private async void OnRemoveProgrammeSeance(ProgrammeSeanceCardViewModel card)
     {
         if (SeancesTargetProgramme is null) return;
@@ -418,6 +557,9 @@ public partial class ProgrammesViewModel : BaseViewModel
         if (ok)
         {
             ProgrammeSeances.Remove(card);
+            // Recompacter les ordres locaux après suppression
+            for (var i = 0; i < ProgrammeSeances.Count; i++)
+                ProgrammeSeances[i].Order = i + 1;
             OnPropertyChanged(nameof(IsProgrammeSeancesEmpty));
         }
         else
@@ -576,22 +718,54 @@ public partial class ProgrammeCardViewModel : ObservableObject
 public partial class ProgrammeSeanceCardViewModel : ObservableObject
 {
     private readonly Action<ProgrammeSeanceCardViewModel> _removeAction;
+    private readonly Action<ProgrammeSeanceCardViewModel> _moveUpAction;
+    private readonly Action<ProgrammeSeanceCardViewModel> _moveDownAction;
+    private readonly Action<ProgrammeSeanceCardViewModel> _editAction;
 
     public ProgrammeSeance Seance { get; }
 
-    public string Name        => Seance.Name;
-    public string Description => string.IsNullOrWhiteSpace(Seance.Description)
-        ? "Aucune description" : Seance.Description;
-    public string OrderText   => $"S{Seance.Order}";
+    [ObservableProperty] private int _order;
+    [ObservableProperty] private string _name = string.Empty;
+    [ObservableProperty] private string _description = string.Empty;
+
+    public string DescriptionDisplay => string.IsNullOrWhiteSpace(Description)
+        ? "Aucune description" : Description;
+    public string OrderText   => $"S{Order}";
     public string ContentText => $"{Seance.CategoryCount} cat. · {Seance.ExerciseCount} ex.";
 
     public ProgrammeSeanceCardViewModel(
         ProgrammeSeance seance,
-        Action<ProgrammeSeanceCardViewModel> removeAction)
+        Action<ProgrammeSeanceCardViewModel> removeAction,
+        Action<ProgrammeSeanceCardViewModel> moveUpAction,
+        Action<ProgrammeSeanceCardViewModel> moveDownAction,
+        Action<ProgrammeSeanceCardViewModel> editAction)
     {
-        Seance        = seance;
-        _removeAction = removeAction;
+        Seance          = seance;
+        _removeAction   = removeAction;
+        _moveUpAction   = moveUpAction;
+        _moveDownAction = moveDownAction;
+        _editAction     = editAction;
+
+        _order       = seance.Order;
+        _name        = seance.Name;
+        _description = seance.Description;
     }
 
-    [RelayCommand] void Remove() => _removeAction(this);
+    partial void OnOrderChanged(int value)
+    {
+        Seance.Order = value;
+        OnPropertyChanged(nameof(OrderText));
+    }
+
+    partial void OnNameChanged(string value) => Seance.Name = value;
+    partial void OnDescriptionChanged(string value)
+    {
+        Seance.Description = value;
+        OnPropertyChanged(nameof(DescriptionDisplay));
+    }
+
+    [RelayCommand] void Remove()   => _removeAction(this);
+    [RelayCommand] void MoveUp()   => _moveUpAction(this);
+    [RelayCommand] void MoveDown() => _moveDownAction(this);
+    [RelayCommand] void Edit()     => _editAction(this);
 }
