@@ -279,14 +279,24 @@
 
                                             </HorizontalStackLayout>
 
-                                            <!-- Ligne 3 : bouton Assigner -->
-                                            <Button Grid.Row="2"
-                                                    Text="Assigner à des clients"
-                                                    Command="{Binding AssignCommand}"
-                                                    BackgroundColor="#4F46E5" TextColor="White"
-                                                    FontSize="13" FontAttributes="Bold"
-                                                    Padding="0,10" CornerRadius="8"
-                                                    HorizontalOptions="Fill"/>
+                                            <!-- Ligne 3 : boutons Séances + Assigner -->
+                                            <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="8">
+                                                <Button Grid.Column="0"
+                                                        Text="📋 Séances"
+                                                        Command="{Binding ManageSeancesCommand}"
+                                                        BackgroundColor="White" TextColor="#4F46E5"
+                                                        FontSize="13" FontAttributes="Bold"
+                                                        Padding="0,10" CornerRadius="8"
+                                                        BorderColor="#4F46E5" BorderWidth="1"
+                                                        HorizontalOptions="Fill"/>
+                                                <Button Grid.Column="1"
+                                                        Text="Assigner à des clients"
+                                                        Command="{Binding AssignCommand}"
+                                                        BackgroundColor="#4F46E5" TextColor="White"
+                                                        FontSize="13" FontAttributes="Bold"
+                                                        Padding="0,10" CornerRadius="8"
+                                                        HorizontalOptions="Fill"/>
+                                            </Grid>
 
                                         </Grid>
                                     </Border>
@@ -564,6 +574,245 @@
                                 BackgroundColor="#16A34A" TextColor="White"
                                 FontAttributes="Bold" FontSize="14"
                                 Padding="0,14" CornerRadius="8"/>
+                    </Grid>
+
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ==================== GESTION SÉANCES DU PROGRAMME ==================== -->
+        <Grid IsVisible="{Binding IsManageSeancesOpen}" BackgroundColor="#80000000"
+              VerticalOptions="Fill" HorizontalOptions="Fill">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CloseManageSeancesCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Border BackgroundColor="White" WidthRequest="640"
+                    MaximumHeightRequest="720"
+                    VerticalOptions="Center" HorizontalOptions="Center"
+                    Stroke="#E2E8F0" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16">
+                <Border.Shadow><Shadow Brush="#000" Offset="0,8" Radius="32" Opacity="0.2"/></Border.Shadow>
+                <Border.GestureRecognizers><TapGestureRecognizer/></Border.GestureRecognizers>
+
+                <Grid RowDefinitions="Auto,*,Auto">
+
+                    <!-- Header -->
+                    <Grid Grid.Row="0" Padding="24,20" ColumnDefinitions="*,Auto"
+                          BackgroundColor="#F8FAFC">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Séances du programme" FontSize="18"
+                                   FontAttributes="Bold" TextColor="#0F172A"/>
+                            <Label Text="{Binding SeancesTargetProgramme.Name}"
+                                   FontSize="13" TextColor="#64748B"/>
+                        </VerticalStackLayout>
+                        <Label Grid.Column="1" Text="✕"
+                               FontSize="18" TextColor="#94A3B8"
+                               WidthRequest="32" HeightRequest="32"
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               HorizontalTextAlignment="Center" VerticalTextAlignment="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CloseManageSeancesCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+
+                    <!-- Liste des séances + bouton ajouter -->
+                    <ScrollView Grid.Row="1">
+                        <VerticalStackLayout Padding="24" Spacing="14">
+
+                            <!-- Bouton + Ajouter une séance -->
+                            <Button Text="+ Ajouter une séance depuis la bibliothèque"
+                                    Command="{Binding OpenAddSeanceFromLibraryCommand}"
+                                    BackgroundColor="#EEF2FF" TextColor="#4F46E5"
+                                    FontSize="13" FontAttributes="Bold"
+                                    Padding="0,12" CornerRadius="8"
+                                    HorizontalOptions="Fill"/>
+
+                            <!-- Empty state -->
+                            <Border IsVisible="{Binding IsProgrammeSeancesEmpty}"
+                                    BackgroundColor="#F8FAFC"
+                                    Stroke="#E2E8F0" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 12"
+                                    Padding="24" Margin="0,4">
+                                <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                                    <Label Text="📋" FontSize="28"
+                                           HorizontalTextAlignment="Center"/>
+                                    <Label Text="Aucune séance dans ce programme"
+                                           FontSize="14" FontAttributes="Bold"
+                                           TextColor="#475569" HorizontalTextAlignment="Center"/>
+                                    <Label Text="Ajoutez-en une depuis la bibliothèque ci-dessus."
+                                           FontSize="12" TextColor="#94A3B8"
+                                           HorizontalTextAlignment="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Cards séances -->
+                            <CollectionView ItemsSource="{Binding ProgrammeSeances}"
+                                            ItemsLayout="VerticalList">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ProgrammeSeanceCardViewModel">
+                                        <Border BackgroundColor="White"
+                                                Stroke="#E2E8F0" StrokeThickness="1"
+                                                StrokeShape="RoundRectangle 10"
+                                                Margin="0,0,0,8" Padding="14,12">
+                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                                  ColumnSpacing="12">
+                                                <Border Grid.Column="0"
+                                                        BackgroundColor="#EEF2FF"
+                                                        Stroke="Transparent"
+                                                        StrokeShape="RoundRectangle 6"
+                                                        Padding="8,4" VerticalOptions="Center">
+                                                    <Label Text="{Binding OrderText}"
+                                                           FontSize="11" FontAttributes="Bold"
+                                                           TextColor="#4F46E5"/>
+                                                </Border>
+                                                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                                    <Label Text="{Binding Name}"
+                                                           FontSize="14" FontAttributes="Bold"
+                                                           TextColor="#0F172A"
+                                                           LineBreakMode="TailTruncation"/>
+                                                    <Label Text="{Binding Description}"
+                                                           FontSize="11" TextColor="#94A3B8"
+                                                           LineBreakMode="TailTruncation"/>
+                                                </VerticalStackLayout>
+                                                <Label Grid.Column="2"
+                                                       Text="{Binding ContentText}"
+                                                       FontSize="11" TextColor="#64748B"
+                                                       VerticalOptions="Center"/>
+                                                <Button Grid.Column="3" Text="✕"
+                                                        Command="{Binding RemoveCommand}"
+                                                        BackgroundColor="#FEF2F2"
+                                                        TextColor="#DC2626"
+                                                        FontSize="12"
+                                                        Padding="10,6" CornerRadius="6"
+                                                        BorderColor="#FECACA" BorderWidth="1"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                    <!-- Footer -->
+                    <Border Grid.Row="2" BackgroundColor="#F8FAFC"
+                            StrokeThickness="0" Padding="24,14">
+                        <Button Text="Fermer"
+                                Command="{Binding CloseManageSeancesCommand}"
+                                BackgroundColor="White"
+                                BorderColor="#E2E8F0" BorderWidth="1"
+                                TextColor="#374151"
+                                FontAttributes="Bold" FontSize="13"
+                                Padding="20,10" CornerRadius="8"
+                                HorizontalOptions="End"/>
+                    </Border>
+
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ==================== PICKER AJOUTER UNE SÉANCE DEPUIS LA BIBLIOTHÈQUE ==================== -->
+        <Grid IsVisible="{Binding IsAddSeanceFromLibraryOpen}" BackgroundColor="#80000000"
+              VerticalOptions="Fill" HorizontalOptions="Fill">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CancelAddSeanceFromLibraryCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Border BackgroundColor="White" WidthRequest="520" MaximumHeightRequest="620"
+                    VerticalOptions="Center" HorizontalOptions="Center"
+                    Stroke="#E2E8F0" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16">
+                <Border.Shadow><Shadow Brush="#000" Offset="0,8" Radius="32" Opacity="0.2"/></Border.Shadow>
+                <Border.GestureRecognizers><TapGestureRecognizer/></Border.GestureRecognizers>
+
+                <Grid RowDefinitions="Auto,*,Auto">
+
+                    <Grid Grid.Row="0" Padding="20,16" ColumnDefinitions="*,Auto"
+                          BackgroundColor="#F8FAFC">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Choisir une séance" FontSize="16"
+                                   FontAttributes="Bold" TextColor="#0F172A"/>
+                            <Label Text="Sélectionnez une séance de la bibliothèque à ajouter au programme."
+                                   FontSize="11" TextColor="#94A3B8"/>
+                        </VerticalStackLayout>
+                        <Label Grid.Column="1" Text="✕" FontSize="16" TextColor="#94A3B8"
+                               WidthRequest="28" HeightRequest="28"
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               HorizontalTextAlignment="Center" VerticalTextAlignment="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CancelAddSeanceFromLibraryCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+
+                    <ScrollView Grid.Row="1">
+                        <VerticalStackLayout Padding="20" Spacing="8">
+                            <CollectionView ItemsSource="{Binding SavedSessions}"
+                                            SelectionMode="Single"
+                                            SelectedItem="{Binding SelectedTemplate}">
+                                <CollectionView.EmptyView>
+                                    <VerticalStackLayout HorizontalOptions="Center" Spacing="6" Padding="0,40">
+                                        <Label Text="Aucune séance sauvegardée." FontSize="14"
+                                               FontAttributes="Bold" TextColor="#475569"
+                                               HorizontalTextAlignment="Center"/>
+                                        <Label Text="Créez-en une dans le Créateur de Séance."
+                                               FontSize="12" TextColor="#94A3B8"
+                                               HorizontalTextAlignment="Center"/>
+                                    </VerticalStackLayout>
+                                </CollectionView.EmptyView>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="cards:SavedSessionCardViewModel">
+                                        <Border BackgroundColor="White"
+                                                Stroke="#E2E8F0" StrokeThickness="1"
+                                                StrokeShape="RoundRectangle 8"
+                                                Margin="0,0,0,6" Padding="12,10">
+                                            <VisualStateManager.VisualStateGroups>
+                                                <VisualStateGroup Name="CommonStates">
+                                                    <VisualState Name="Normal"/>
+                                                    <VisualState Name="Selected">
+                                                        <VisualState.Setters>
+                                                            <Setter Property="BackgroundColor" Value="#EEF2FF"/>
+                                                            <Setter Property="Stroke" Value="#4F46E5"/>
+                                                        </VisualState.Setters>
+                                                    </VisualState>
+                                                </VisualStateGroup>
+                                            </VisualStateManager.VisualStateGroups>
+                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                                    <Label Text="{Binding Name}"
+                                                           FontSize="14" FontAttributes="Bold"
+                                                           TextColor="#0F172A"
+                                                           LineBreakMode="TailTruncation"/>
+                                                    <Label Text="{Binding Description}"
+                                                           FontSize="11" TextColor="#94A3B8"
+                                                           LineBreakMode="TailTruncation"/>
+                                                </VerticalStackLayout>
+                                                <Label Grid.Column="1"
+                                                       Text="{Binding SubTitle}"
+                                                       FontSize="11" TextColor="#64748B"
+                                                       VerticalOptions="Center"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                    <Grid Grid.Row="2" Padding="20,14" BackgroundColor="#F8FAFC"
+                          ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Button Grid.Column="0" Text="Annuler"
+                                Command="{Binding CancelAddSeanceFromLibraryCommand}"
+                                BackgroundColor="White" BorderColor="#E2E8F0" BorderWidth="1"
+                                TextColor="#374151" FontAttributes="Bold" FontSize="13"
+                                Padding="0,12" CornerRadius="8"/>
+                        <Button Grid.Column="1" Text="Ajouter au programme"
+                                Command="{Binding ConfirmAddSeanceFromLibraryCommand}"
+                                BackgroundColor="#16A34A" TextColor="White"
+                                FontAttributes="Bold" FontSize="13"
+                                Padding="0,12" CornerRadius="8"/>
                     </Grid>
 
                 </Grid>

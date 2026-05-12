@@ -15,6 +15,7 @@ public partial class ProgrammesViewModel : BaseViewModel
     private readonly ISessionLibraryService   _sessionLibraryService;
     private readonly IClientService           _clientService;
     private readonly IProgramAssignmentService _assignmentService;
+    private readonly IProgrammeSeanceService   _programmeSeanceService;
     private readonly IAlertService            _alertService;
     private readonly INavigationService       _navigationService;
 
@@ -46,6 +47,17 @@ public partial class ProgrammesViewModel : BaseViewModel
     [ObservableProperty] private bool                   _isDeleteConfirmOpen;
     [ObservableProperty] private ProgrammeCardViewModel? _cardPendingDelete;
 
+    // ── Gestion séances d'un programme ───────────────────────────
+    [ObservableProperty] private bool _isManageSeancesOpen;
+    [ObservableProperty] private ProgrammeCardViewModel? _seancesTargetProgramme;
+    [ObservableProperty] private bool _isAddSeanceFromLibraryOpen;
+    [ObservableProperty] private SavedSessionCardViewModel? _selectedTemplate;
+
+    /// <summary>Séances actuellement attachées au programme ouvert dans le modal.</summary>
+    public ObservableCollection<ProgrammeSeanceCardViewModel> ProgrammeSeances { get; } = new();
+
+    public bool IsProgrammeSeancesEmpty => ProgrammeSeances.Count == 0 && !IsBusy;
+
     // ── Assignation client ────────────────────────────────────────
     [ObservableProperty] private bool   _isAssignPanelOpen;
     [ObservableProperty] private string _assignTargetName = string.Empty;
@@ -69,15 +81,17 @@ public partial class ProgrammesViewModel : BaseViewModel
         ISessionLibraryService   sessionLibraryService,
         IClientService           clientService,
         IProgramAssignmentService assignmentService,
+        IProgrammeSeanceService   programmeSeanceService,
         IAlertService            alertService,
         INavigationService       navigationService)
     {
-        _programmeService      = programmeService;
-        _sessionLibraryService = sessionLibraryService;
-        _clientService         = clientService;
-        _assignmentService     = assignmentService;
-        _alertService          = alertService;
-        _navigationService     = navigationService;
+        _programmeService       = programmeService;
+        _sessionLibraryService  = sessionLibraryService;
+        _clientService          = clientService;
+        _assignmentService      = assignmentService;
+        _programmeSeanceService = programmeSeanceService;
+        _alertService           = alertService;
+        _navigationService      = navigationService;
         Title = "Programmes";
     }
 
@@ -127,7 +141,8 @@ public partial class ProgrammesViewModel : BaseViewModel
         var list = await _programmeService.GetProgrammesAsync();
         Programmes.Clear();
         foreach (var p in list)
-            Programmes.Add(new ProgrammeCardViewModel(p, OnEditProgramme, OnDeleteProgramme, OnAssignProgramme));
+            Programmes.Add(new ProgrammeCardViewModel(p,
+                OnEditProgramme, OnDeleteProgramme, OnAssignProgramme, OnManageSeances));
         OnPropertyChanged(nameof(IsProgrammesEmpty));
     }
 
@@ -307,6 +322,110 @@ public partial class ProgrammesViewModel : BaseViewModel
         }
     }
 
+    // ── Gestion des séances d'un programme ───────────────────────
+
+    private void OnManageSeances(ProgrammeCardViewModel card) =>
+        _ = OpenManageSeancesAsync(card);
+
+    private async Task OpenManageSeancesAsync(ProgrammeCardViewModel card)
+    {
+        SeancesTargetProgramme = card;
+        ProgrammeSeances.Clear();
+        IsManageSeancesOpen = true;
+        OnPropertyChanged(nameof(IsProgrammeSeancesEmpty));
+
+        await RefreshProgrammeSeancesAsync();
+    }
+
+    private async Task RefreshProgrammeSeancesAsync()
+    {
+        if (SeancesTargetProgramme is null) return;
+
+        var list = await _programmeSeanceService.GetSeancesAsync(SeancesTargetProgramme.Programme.Id);
+        ProgrammeSeances.Clear();
+        foreach (var s in list)
+            ProgrammeSeances.Add(new ProgrammeSeanceCardViewModel(s, OnRemoveProgrammeSeance));
+        OnPropertyChanged(nameof(IsProgrammeSeancesEmpty));
+    }
+
+    [RelayCommand]
+    private void CloseManageSeances()
+    {
+        IsManageSeancesOpen = false;
+        IsAddSeanceFromLibraryOpen = false;
+        SeancesTargetProgramme = null;
+        SelectedTemplate = null;
+        ProgrammeSeances.Clear();
+    }
+
+    [RelayCommand]
+    private void OpenAddSeanceFromLibrary()
+    {
+        SelectedTemplate = null;
+        IsAddSeanceFromLibraryOpen = true;
+    }
+
+    [RelayCommand]
+    private void CancelAddSeanceFromLibrary()
+    {
+        IsAddSeanceFromLibraryOpen = false;
+        SelectedTemplate = null;
+    }
+
+    [RelayCommand]
+    private async Task ConfirmAddSeanceFromLibraryAsync()
+    {
+        if (SeancesTargetProgramme is null || SelectedTemplate is null) return;
+        if (IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            var nextOrder = ProgrammeSeances.Count + 1;
+            var attached  = await _programmeSeanceService.AddSeanceFromTemplateAsync(
+                SeancesTargetProgramme.Programme.Id,
+                SelectedTemplate.Entry,
+                nextOrder);
+
+            if (attached is null)
+            {
+                await _alertService.AlertAsync("Erreur",
+                    "Impossible d'ajouter la séance au programme. Vérifiez que l'endpoint /programmes/{id}/seances existe côté serveur.");
+                return;
+            }
+
+            ProgrammeSeances.Add(new ProgrammeSeanceCardViewModel(attached, OnRemoveProgrammeSeance));
+            OnPropertyChanged(nameof(IsProgrammeSeancesEmpty));
+            IsAddSeanceFromLibraryOpen = false;
+            SelectedTemplate = null;
+        }
+        catch (Exception ex)
+        {
+            await _alertService.AlertAsync("Erreur", $"Échec de l'ajout : {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async void OnRemoveProgrammeSeance(ProgrammeSeanceCardViewModel card)
+    {
+        if (SeancesTargetProgramme is null) return;
+
+        var ok = await _programmeSeanceService.RemoveSeanceAsync(
+            SeancesTargetProgramme.Programme.Id, card.Seance.Id);
+        if (ok)
+        {
+            ProgrammeSeances.Remove(card);
+            OnPropertyChanged(nameof(IsProgrammeSeancesEmpty));
+        }
+        else
+        {
+            await _alertService.AlertAsync("Erreur", "Impossible de retirer la séance.");
+        }
+    }
+
     // ── Assignation client ────────────────────────────────────────
 
     private void OnAssignProgramme(ProgrammeCardViewModel card)
@@ -397,6 +516,7 @@ public partial class ProgrammeCardViewModel : ObservableObject
     private readonly Action<ProgrammeCardViewModel> _editAction;
     private readonly Action<ProgrammeCardViewModel> _deleteAction;
     private readonly Action<ProgrammeCardViewModel> _assignAction;
+    private readonly Action<ProgrammeCardViewModel> _manageSeancesAction;
 
     public Programme Programme { get; }
 
@@ -435,15 +555,43 @@ public partial class ProgrammeCardViewModel : ObservableObject
         Programme programme,
         Action<ProgrammeCardViewModel> editAction,
         Action<ProgrammeCardViewModel> deleteAction,
-        Action<ProgrammeCardViewModel> assignAction)
+        Action<ProgrammeCardViewModel> assignAction,
+        Action<ProgrammeCardViewModel> manageSeancesAction)
     {
-        Programme     = programme;
-        _editAction   = editAction;
-        _deleteAction = deleteAction;
-        _assignAction = assignAction;
+        Programme            = programme;
+        _editAction          = editAction;
+        _deleteAction        = deleteAction;
+        _assignAction        = assignAction;
+        _manageSeancesAction = manageSeancesAction;
     }
 
-    [RelayCommand] void Edit()   => _editAction(this);
-    [RelayCommand] void Delete() => _deleteAction(this);
-    [RelayCommand] void Assign() => _assignAction(this);
+    [RelayCommand] void Edit()           => _editAction(this);
+    [RelayCommand] void Delete()         => _deleteAction(this);
+    [RelayCommand] void Assign()         => _assignAction(this);
+    [RelayCommand] void ManageSeances()  => _manageSeancesAction(this);
+}
+
+// ── Carte d'une séance attachée à un programme ──────────────────
+
+public partial class ProgrammeSeanceCardViewModel : ObservableObject
+{
+    private readonly Action<ProgrammeSeanceCardViewModel> _removeAction;
+
+    public ProgrammeSeance Seance { get; }
+
+    public string Name        => Seance.Name;
+    public string Description => string.IsNullOrWhiteSpace(Seance.Description)
+        ? "Aucune description" : Seance.Description;
+    public string OrderText   => $"S{Seance.Order}";
+    public string ContentText => $"{Seance.CategoryCount} cat. · {Seance.ExerciseCount} ex.";
+
+    public ProgrammeSeanceCardViewModel(
+        ProgrammeSeance seance,
+        Action<ProgrammeSeanceCardViewModel> removeAction)
+    {
+        Seance        = seance;
+        _removeAction = removeAction;
+    }
+
+    [RelayCommand] void Remove() => _removeAction(this);
 }

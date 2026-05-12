@@ -1,0 +1,147 @@
+using BurnOutAdmin.Models;
+using BurnOutAdmin.Models.Program;
+using BurnOutAdmin.Services.Api.Dto;
+
+namespace BurnOutAdmin.Services.Api;
+
+/// <summary>
+/// Implémentation API de <see cref="IProgrammeSeanceService"/>.
+///
+/// Endpoints :
+///   GET    /programmes/{id}/seances
+///   POST   /programmes/{id}/seances
+///   DELETE /programmes/{id}/seances/{seanceId}
+///
+/// Pour attacher une séance, on transmet le data_json complet du template
+/// (seances_builder) — le serveur peut donc créer un enregistrement
+/// autonome dans `seances` sans devoir relire le template à chaque appel.
+/// </summary>
+public class ApiProgrammeSeanceService : IProgrammeSeanceService
+{
+    private readonly ApiHttpClient _api;
+
+    public ApiProgrammeSeanceService(ApiHttpClient api) => _api = api;
+
+    // ── Lecture ───────────────────────────────────────────────────
+
+    public async Task<List<ProgrammeSeance>> GetSeancesAsync(int programmeId)
+    {
+        if (programmeId <= 0) return [];
+
+        try
+        {
+            var response = await _api.GetAsync<ProgrammeSeanceListResponseDto>(
+                $"/programmes/{programmeId}/seances");
+            var data = response?.Data;
+            if (data is { Count: > 0 })
+            {
+                Console.WriteLine($"[ApiProgrammeSeanceService] GET /programmes/{programmeId}/seances OK — {data.Count} séance(s)");
+                return data.Select(MapToModel).OrderBy(s => s.Order).ToList();
+            }
+        }
+        catch (UnauthorizedAccessException) { throw; }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiProgrammeSeanceService] GetSeancesAsync({programmeId}): {ex.Message}");
+        }
+
+        return [];
+    }
+
+    // ── Écriture ──────────────────────────────────────────────────
+
+    public async Task<ProgrammeSeance?> AddSeanceFromTemplateAsync(
+        int programmeId, SavedSessionEntry template, int order)
+    {
+        if (programmeId <= 0)
+        {
+            Console.WriteLine("[ApiProgrammeSeanceService] AddSeance: programmeId invalide");
+            return null;
+        }
+
+        try
+        {
+            var dto = new CreateProgrammeSeanceDto
+            {
+                IdSeanceBuilder = template.Id,
+                Nom             = template.Name,
+                Description     = template.Description,
+                Ordre           = order,
+                ExerciseCount   = template.ExerciseCount,
+                CategoryCount   = template.CategoryCount,
+                DataJson        = string.IsNullOrWhiteSpace(template.DataJson) ? "{}" : template.DataJson
+            };
+
+            Console.WriteLine($"[ApiProgrammeSeanceService] POST /programmes/{programmeId}/seances nom='{dto.Nom}' ordre={dto.Ordre} template={dto.IdSeanceBuilder}");
+
+            var result = await _api.PostAsync<CreateProgrammeSeanceResponseDto>(
+                $"/programmes/{programmeId}/seances", dto);
+
+            if (result?.Success == true && result.ResolvedId is { } newId && newId > 0)
+            {
+                Console.WriteLine($"[ApiProgrammeSeanceService] Séance attachée id={newId}");
+                return new ProgrammeSeance
+                {
+                    Id              = newId,
+                    ProgrammeId     = programmeId,
+                    SeanceBuilderId = template.Id,
+                    Name            = template.Name,
+                    Description     = template.Description,
+                    Order           = order,
+                    ExerciseCount   = template.ExerciseCount,
+                    CategoryCount   = template.CategoryCount,
+                    CreatedAt       = DateTime.UtcNow
+                };
+            }
+
+            Console.WriteLine($"[ApiProgrammeSeanceService] AddSeance failed: {result?.Error}");
+            return null;
+        }
+        catch (UnauthorizedAccessException) { throw; }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiProgrammeSeanceService] AddSeanceFromTemplate error: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<bool> RemoveSeanceAsync(int programmeId, int seanceId)
+    {
+        if (programmeId <= 0 || seanceId <= 0) return false;
+
+        try
+        {
+            await _api.DeleteAsync($"/programmes/{programmeId}/seances/{seanceId}");
+            Console.WriteLine($"[ApiProgrammeSeanceService] DELETE /programmes/{programmeId}/seances/{seanceId} OK");
+            return true;
+        }
+        catch (UnauthorizedAccessException) { throw; }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiProgrammeSeanceService] RemoveSeance({programmeId}, {seanceId}): {ex.Message}");
+            return false;
+        }
+    }
+
+    // ── Mapping ───────────────────────────────────────────────────
+
+    private static ProgrammeSeance MapToModel(ProgrammeSeanceDto dto) => new()
+    {
+        Id              = dto.ResolvedId,
+        ProgrammeId     = dto.IdProgramme,
+        SeanceBuilderId = dto.IdSeanceBuilder,
+        Name            = dto.Nom,
+        Description     = dto.Description ?? string.Empty,
+        Order           = dto.Ordre ?? 0,
+        ExerciseCount   = dto.ExerciseCount ?? 0,
+        CategoryCount   = dto.CategoryCount ?? 0,
+        CreatedAt       = TryParseDate(dto.CreatedAt) ?? DateTime.UtcNow
+    };
+
+    private static DateTime? TryParseDate(string? s)
+    {
+        if (string.IsNullOrEmpty(s)) return null;
+        return DateTime.TryParse(s, null,
+            System.Globalization.DateTimeStyles.RoundtripKind, out var d) ? d : null;
+    }
+}

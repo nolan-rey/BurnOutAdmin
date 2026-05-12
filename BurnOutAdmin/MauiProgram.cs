@@ -76,6 +76,9 @@ public static class MauiProgram
         // Assignations programme → API réelle (remplace MockProgramAssignmentService)
         builder.Services.AddSingleton<IProgramAssignmentService, ApiProgramAssignmentService>();
 
+        // Séances attachées à un programme (jointure programmes ↔ seances)
+        builder.Services.AddSingleton<IProgrammeSeanceService, ApiProgrammeSeanceService>();
+
         // Bibliothèque d'exercices → API (27 exercices par défaut depuis la BDD)
         builder.Services.AddSingleton<IExerciseLibraryService, ApiExerciseLibraryService>();
 
