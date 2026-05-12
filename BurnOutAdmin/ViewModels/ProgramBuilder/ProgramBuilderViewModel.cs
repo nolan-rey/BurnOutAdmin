@@ -82,10 +82,9 @@ public partial class ProgramBuilderViewModel : BaseViewModel
         try
         {
             IsBusy = true;
-            await _libraryService.InitializeAsync();
-            await RefreshLibraryAsync();
 
-            // Si une séance est en attente d'édition, la charger sur le main thread
+            // 1. Initialiser la séance EN PREMIER pour que l'UI soit utilisable
+            //    même si la bibliothèque échoue à charger (401, 405, réseau…)
             if (_pendingEditEntry is not null)
             {
                 var entryToLoad = _pendingEditEntry;
@@ -95,6 +94,21 @@ public partial class ProgramBuilderViewModel : BaseViewModel
             else if (CurrentSession is null)
             {
                 InitNewSeance();
+            }
+
+            // 2. Charger la bibliothèque (indépendant de la séance)
+            try
+            {
+                await _libraryService.InitializeAsync();
+                await RefreshLibraryAsync();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Console.WriteLine("[ProgramBuilderVM] Bibliothèque : token expiré");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ProgramBuilderVM] Bibliothèque indisponible : {ex.Message}");
             }
         }
         finally
