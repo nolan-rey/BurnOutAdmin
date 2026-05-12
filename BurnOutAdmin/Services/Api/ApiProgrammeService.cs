@@ -23,9 +23,45 @@ namespace BurnOutAdmin.Services.Api;
 /// </summary>
 public class ApiProgrammeService : IProgrammeService
 {
-    private readonly ApiHttpClient _api;
+    private readonly ApiHttpClient   _api;
+    private readonly IApiAuthService _auth;
 
-    public ApiProgrammeService(ApiHttpClient api) => _api = api;
+    public ApiProgrammeService(ApiHttpClient api, IApiAuthService auth)
+    {
+        _api  = api;
+        _auth = auth;
+    }
+
+    // ── Résolution id_createur ────────────────────────────────────
+    // Si CurrentUserId n'est pas encore en cache, on le résout via GET /users
+    // en cherchant le client dont l'email correspond à CurrentUserEmail.
+    private async Task<int> ResolveCurrentUserIdAsync()
+    {
+        if (_auth.CurrentUserId is { } cached && cached > 0)
+            return cached;
+
+        if (_auth.CurrentUserEmail is not { Length: > 0 } myEmail)
+            return 0;
+
+        try
+        {
+            var response = await _api.GetAsync<ClientListResponseDto>("/users");
+            var me = response?.Data?.FirstOrDefault(c =>
+                string.Equals(c.Email, myEmail, StringComparison.OrdinalIgnoreCase));
+            var id = me?.ResolvedId ?? 0;
+            if (id > 0)
+            {
+                _auth.CurrentUserId = id;
+                Console.WriteLine($"[ApiProgrammeService] CurrentUserId résolu : {id} ({myEmail})");
+            }
+            return id;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiProgrammeService] ResolveCurrentUserId failed: {ex.Message}");
+            return 0;
+        }
+    }
 
     // ── Lecture ───────────────────────────────────────────────────
 
@@ -84,6 +120,14 @@ public class ApiProgrammeService : IProgrammeService
     {
         try
         {
+            // Résoudre l'ID SQL du créateur (champ obligatoire côté API)
+            var creatorId = await ResolveCurrentUserIdAsync();
+            if (creatorId <= 0)
+            {
+                Console.WriteLine("[ApiProgrammeService] CreateProgrammeAsync: id_createur introuvable — utilisateur connecté non identifié dans /users");
+                return null;
+            }
+
             var dto = new CreateProgrammeDto
             {
                 NomProgramme      = programme.Name,
@@ -92,9 +136,12 @@ public class ApiProgrammeService : IProgrammeService
                 Niveau            = MapLevelToApi(programme.Level),
                 DureeSemaines     = programme.DurationWeeks,
                 SeancesParSemaine = programme.SessionsPerWeek,
+                IdCreateur        = creatorId,
                 DateDebut         = DateTime.Today.ToString("yyyy-MM-dd"),
                 DateFin           = DateTime.Today.AddDays(programme.DurationWeeks * 7).ToString("yyyy-MM-dd")
             };
+
+            Console.WriteLine($"[ApiProgrammeService] POST /programmes nom='{dto.NomProgramme}' createur={dto.IdCreateur} type={dto.Type} niveau={dto.Niveau}");
 
             var result = await _api.PostAsync<CreateProgrammeResponseDto>("/programmes", dto);
             if (result?.Success == true && result.ResolvedId is { } newId && newId > 0)

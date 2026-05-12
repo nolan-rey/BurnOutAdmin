@@ -7,6 +7,9 @@ public interface IApiAuthService
     bool IsAuthenticated { get; }
     string? CurrentUserEmail { get; }
 
+    /// <summary>ID SQL de l'utilisateur connecté — résolu depuis /users après le login.</summary>
+    int? CurrentUserId { get; set; }
+
     /// <summary>Login Firebase. Retourne null si succès, message d'erreur sinon.</summary>
     Task<string?> LoginAsync(string email, string password);
 

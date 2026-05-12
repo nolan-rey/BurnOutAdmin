@@ -229,7 +229,7 @@ public partial class ProgrammesViewModel : BaseViewModel
                 var created = await _programmeService.CreateProgrammeAsync(newProgramme);
                 if (created is null)
                 {
-                    ErrorMessage = "Échec de la création. Vérifiez votre connexion.";
+                    ErrorMessage = "Échec de la création. Si c'est votre première connexion, ouvrez la page Clients puis réessayez (résolution de votre ID administrateur).";
                     return;
                 }
             }

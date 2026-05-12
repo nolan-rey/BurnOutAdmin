@@ -20,9 +20,14 @@ namespace BurnOutAdmin.Services.Api;
 /// </summary>
 public class ApiClientService : IClientService
 {
-    private readonly ApiHttpClient _api;
+    private readonly ApiHttpClient   _api;
+    private readonly IApiAuthService _auth;
 
-    public ApiClientService(ApiHttpClient api) => _api = api;
+    public ApiClientService(ApiHttpClient api, IApiAuthService auth)
+    {
+        _api  = api;
+        _auth = auth;
+    }
 
     // ── Lecture ───────────────────────────────────────────────────
 
@@ -37,7 +42,22 @@ public class ApiClientService : IClientService
             if (data is { Count: > 0 })
             {
                 Console.WriteLine($"[ApiClientService] /users OK — {data.Count} client(s)");
-                return data.Select(MapClientDtoToClient).ToList();
+                var clients = data.Select(MapClientDtoToClient).ToList();
+
+                // Résoudre l'ID SQL de l'utilisateur connecté pour les opérations qui en ont besoin
+                // (ex: id_createur pour POST /programmes).
+                if (_auth.CurrentUserId is null && _auth.CurrentUserEmail is { } myEmail)
+                {
+                    var me = clients.FirstOrDefault(c =>
+                        string.Equals(c.Email, myEmail, StringComparison.OrdinalIgnoreCase));
+                    if (me is not null && me.Id > 0)
+                    {
+                        _auth.CurrentUserId = me.Id;
+                        Console.WriteLine($"[ApiClientService] CurrentUserId résolu : {me.Id} ({myEmail})");
+                    }
+                }
+
+                return clients;
             }
         }
         catch (UnauthorizedAccessException) { throw; }

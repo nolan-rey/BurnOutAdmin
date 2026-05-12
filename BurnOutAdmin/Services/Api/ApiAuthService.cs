@@ -8,6 +8,7 @@ public class ApiAuthService : IApiAuthService
     private const string PrefKeyToken  = "api_jwt_token";
     private const string PrefKeyExpiry = "api_jwt_expiry";
     private const string PrefKeyEmail  = "api_user_email";
+    private const string PrefKeyUserId = "api_user_id";
 
     private readonly HttpClient _http;
 
@@ -35,6 +36,22 @@ public class ApiAuthService : IApiAuthService
 
     public string? CurrentUserEmail =>
         Preferences.Default.Get(PrefKeyEmail, string.Empty) is { Length: > 0 } e ? e : null;
+
+    public int? CurrentUserId
+    {
+        get
+        {
+            var id = Preferences.Default.Get(PrefKeyUserId, 0);
+            return id > 0 ? id : null;
+        }
+        set
+        {
+            if (value is > 0)
+                Preferences.Default.Set(PrefKeyUserId, value.Value);
+            else
+                Preferences.Default.Remove(PrefKeyUserId);
+        }
+    }
 
     public string? GetToken()
     {
@@ -99,6 +116,7 @@ public class ApiAuthService : IApiAuthService
         Preferences.Default.Remove(PrefKeyToken);
         Preferences.Default.Remove(PrefKeyExpiry);
         Preferences.Default.Remove(PrefKeyEmail);
+        Preferences.Default.Remove(PrefKeyUserId);
     }
 
     // ── Helpers ───────────────────────────────────────────────────
