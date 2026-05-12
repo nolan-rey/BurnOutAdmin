@@ -17,6 +17,7 @@ public partial class ProgramBuilderViewModel : BaseViewModel
     private readonly IAlertService _alertService;
     private readonly IExerciseLibraryService _libraryService;
     private readonly ISessionLibraryService _sessionLibraryService;
+    private readonly IProgrammeService _programmeService;
 
     // ── Séance courante (unique) ──────────────────────────────────
     [ObservableProperty] private SessionViewModel? _currentSession;
@@ -63,13 +64,15 @@ public partial class ProgramBuilderViewModel : BaseViewModel
         IProgramAssignmentService assignmentService,
         IAlertService alertService,
         IExerciseLibraryService libraryService,
-        ISessionLibraryService sessionLibraryService)
+        ISessionLibraryService sessionLibraryService,
+        IProgrammeService programmeService)
     {
         _clientService = clientService;
         _assignmentService = assignmentService;
         _alertService = alertService;
         _libraryService = libraryService;
         _sessionLibraryService = sessionLibraryService;
+        _programmeService = programmeService;
         Title = "Créateur de Séance";
     }
 
@@ -321,42 +324,79 @@ public partial class ProgramBuilderViewModel : BaseViewModel
             await _alertService.AlertAsync("Attention", "Donnez un nom à la séance avant de l'assigner.");
             return;
         }
-
-        var assignment = new ClientProgramAssignment
+        if (CurrentSession is null || !CurrentSession.Categories.Any())
         {
-            ClientId = SelectedClient.Id,
-            ProgramName = SeanceName,
-            AssignedAt = AssignStartDate,
-            Sessions = new List<AssignedSession>
-            {
-                new AssignedSession
-                {
-                    Name = SeanceName,
-                    Order = 1,
-                    Categories = CurrentSession!.Categories.Select(c => new AssignedCategory
-                    {
-                        Name = c.Name,
-                        Exercises = c.SubCategories
-                            .SelectMany(sc => sc.Exercises.Select(e => new AssignedExercise
-                            {
-                                Name   = e.Name,
-                                Sets   = sc.Sets,
-                                Reps   = int.TryParse(e.RepsText, out var r) ? r : 0,
-                                Weight = double.TryParse(e.WeightText,
-                                             System.Globalization.NumberStyles.Any,
-                                             System.Globalization.CultureInfo.InvariantCulture,
-                                             out var w) ? w : 0,
-                                Rpe    = 0
-                            })).ToList()
-                    }).ToList()
-                }
-            }
-        };
+            await _alertService.AlertAsync("Attention", "La séance est vide. Ajoutez au moins une catégorie.");
+            return;
+        }
+        if (SelectedClient.Id <= 0)
+        {
+            await _alertService.AlertAsync("Erreur", "ID client invalide.");
+            return;
+        }
 
-        await _assignmentService.AssignProgramAsync(assignment);
-        IsAssignPanelOpen = false;
-        await _alertService.AlertAsync("Séance assignée",
-            $"La séance \"{SeanceName}\" a été assignée à {SelectedClient.FullName}.");
+        if (IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+
+            // ── 1. Sauvegarder la séance dans la bibliothèque ───────────
+            await _sessionLibraryService.InitializeAsync();
+            var savedEntry = await _sessionLibraryService.SaveSessionAsync(
+                SeanceName.Trim(),
+                SeanceDescription.Trim(),
+                CurrentSession.Model);
+            Console.WriteLine($"[ProgramBuilderVM] Séance sauvegardée id={savedEntry.Id}");
+
+            // ── 2. Créer un programme qui encapsule cette séance ────────
+            var programme = new Programme
+            {
+                Name            = SeanceName.Trim(),
+                Description     = string.IsNullOrWhiteSpace(SeanceDescription)
+                    ? $"Programme généré depuis la séance \"{SeanceName.Trim()}\""
+                    : SeanceDescription.Trim(),
+                Type            = ProgrammeType.Mixed,
+                Level           = ProgrammeLevel.Intermediate,
+                DurationWeeks   = 1,
+                SessionsPerWeek = 1,
+                IsActive        = true
+            };
+
+            var created = await _programmeService.CreateProgrammeAsync(programme);
+            if (created is null || created.Id <= 0)
+            {
+                await _alertService.AlertAsync("Erreur",
+                    "Impossible de créer le programme côté serveur. Réessayez.");
+                return;
+            }
+            Console.WriteLine($"[ProgramBuilderVM] Programme créé id={created.Id}");
+
+            // ── 3. Assigner le programme au client ──────────────────────
+            var assignment = new ClientProgramAssignment
+            {
+                ClientId     = SelectedClient.Id,
+                ProgrammeId  = created.Id,
+                ProgramName  = created.Name,
+                AssignedAt   = AssignStartDate,
+                EndDate      = AssignStartDate.AddDays(7) // 1 séance ≈ 1 semaine
+            };
+
+            await _assignmentService.AssignProgramAsync(assignment);
+
+            IsAssignPanelOpen = false;
+            await _alertService.AlertAsync("Séance assignée",
+                $"La séance \"{SeanceName}\" a été assignée à {SelectedClient.FullName}.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ProgramBuilderVM] ConfirmAssign error: {ex.Message}");
+            await _alertService.AlertAsync("Erreur", $"Échec de l'assignation : {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     [RelayCommand]

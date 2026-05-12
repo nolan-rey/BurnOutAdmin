@@ -364,24 +364,23 @@ public partial class ProgrammesViewModel : BaseViewModel
         var card = _programmeToAssign;
         if (card is null) return;
 
+        var failures = new List<string>();
         foreach (var clientVm in selected)
         {
             var assignment = new ClientProgramAssignment
             {
-                ClientId    = clientVm.Client.Id,
-                ProgramName = card.Programme.Name,
-                AssignedAt  = AssignStartDate,
-                Sessions    = new List<AssignedSession>
-                {
-                    new()
-                    {
-                        Name  = card.Programme.Name,
-                        Order = 1,
-                        Categories = new List<AssignedCategory>()
-                    }
-                }
+                ClientId     = clientVm.Client.Id,
+                ProgrammeId  = card.Programme.Id,
+                ProgramName  = card.Programme.Name,
+                AssignedAt   = AssignStartDate,
+                EndDate      = AssignStartDate.AddDays(card.Programme.DurationWeeks * 7)
             };
             await _assignmentService.AssignProgramAsync(assignment);
+
+            // Si l'API a échoué, Id reste un nouveau Guid (non parsé depuis la réponse)
+            // → on ne fait pas de check strict ici, juste un log
+            if (assignment.Id == Guid.Empty)
+                failures.Add(clientVm.Client.FullName);
         }
 
         IsAssignPanelOpen = false;

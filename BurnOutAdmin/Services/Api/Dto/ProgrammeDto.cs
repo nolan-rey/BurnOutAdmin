@@ -118,14 +118,20 @@ public class UpdateProgrammeDto
     public int? IsActif { get; set; }
 }
 
-/// <summary>Réponse de création POST /programmes.</summary>
+/// <summary>Réponse de création POST /programmes — accepte "id" (spec v2) et "id_programme" (variante).</summary>
 public class CreateProgrammeResponseDto
 {
     [JsonPropertyName("success")]
     public bool Success { get; set; }
 
+    [JsonPropertyName("id")]
+    public int? Id { get; set; }
+
     [JsonPropertyName("id_programme")]
     public int? IdProgramme { get; set; }
+
+    [JsonIgnore]
+    public int? ResolvedId => Id ?? IdProgramme;
 
     [JsonPropertyName("message")]
     public string? Message { get; set; }

@@ -3,9 +3,19 @@ namespace BurnOutAdmin.Models;
 public class ClientProgramAssignment
 {
     public Guid Id { get; set; } = Guid.NewGuid();
+
+    /// <summary>ID SQL du client (clients.id_client).</summary>
     public int ClientId { get; set; }
+
+    /// <summary>ID SQL du programme à assigner (programmes.id_programme).</summary>
+    public int ProgrammeId { get; set; }
+
     public string ProgramName { get; set; } = string.Empty;
     public DateTime AssignedAt { get; set; } = DateTime.Now;
+
+    /// <summary>Date de fin de l'assignation (optionnelle).</summary>
+    public DateTime? EndDate { get; set; }
+
     public List<AssignedSession> Sessions { get; set; } = new();
 }
 

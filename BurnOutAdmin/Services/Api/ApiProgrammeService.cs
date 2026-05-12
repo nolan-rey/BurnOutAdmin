@@ -97,16 +97,16 @@ public class ApiProgrammeService : IProgrammeService
             };
 
             var result = await _api.PostAsync<CreateProgrammeResponseDto>("/programmes", dto);
-            if (result?.Success == true)
+            if (result?.Success == true && result.ResolvedId is { } newId && newId > 0)
             {
-                programme.Id        = result.IdProgramme ?? 0;
+                programme.Id        = newId;
                 programme.IsActive  = true;
                 programme.CreatedAt = DateTime.UtcNow;
+                Console.WriteLine($"[ApiProgrammeService] Programme créé id={newId}");
                 return programme;
             }
 
-            // L'API a répondu mais sans success=true → recharge la liste pour trouver le nouveau
-            Console.WriteLine($"[ApiProgrammeService] CreateProgrammeAsync: {result?.Error ?? "no error detail"}");
+            Console.WriteLine($"[ApiProgrammeService] CreateProgrammeAsync: success={result?.Success} id={result?.ResolvedId} err={result?.Error}");
             return null;
         }
         catch (UnauthorizedAccessException) { throw; }

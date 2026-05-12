@@ -21,15 +21,26 @@ public class ApiProgramAssignmentService : IProgramAssignmentService
 
     public async Task AssignProgramAsync(ClientProgramAssignment assignment)
     {
+        if (assignment.ClientId <= 0 || assignment.ProgrammeId <= 0)
+        {
+            Console.WriteLine($"[ApiProgramAssignmentService] AssignProgramAsync: IDs invalides — client={assignment.ClientId} programme={assignment.ProgrammeId}");
+            return;
+        }
+
         try
         {
+            var dateDebut = assignment.AssignedAt.ToString("yyyy-MM-dd");
+            var dateFin   = (assignment.EndDate ?? assignment.AssignedAt.AddMonths(3)).ToString("yyyy-MM-dd");
+
             var dto = new CreateAssignationDto
             {
                 IdClient    = assignment.ClientId,
-                IdProgramme = ExtractProgrammeId(assignment),
-                DateDebut   = assignment.AssignedAt.ToString("yyyy-MM-dd"),
-                DateFin     = assignment.AssignedAt.AddMonths(3).ToString("yyyy-MM-dd")
+                IdProgramme = assignment.ProgrammeId,
+                DateDebut   = dateDebut,
+                DateFin     = dateFin
             };
+
+            Console.WriteLine($"[ApiProgramAssignmentService] POST /programme-assignations client={dto.IdClient} programme={dto.IdProgramme} {dto.DateDebut}→{dto.DateFin}");
 
             var result = await _api.PostAsync<CreateAssignationResponseDto>(
                 "/programme-assignations", dto);
@@ -38,6 +49,7 @@ public class ApiProgramAssignmentService : IProgramAssignmentService
             {
                 if (Guid.TryParse(result.IdAssignation, out var g))
                     assignment.Id = g;
+                Console.WriteLine($"[ApiProgramAssignmentService] Assignation OK id={result.IdAssignation}");
             }
             else
             {
@@ -74,27 +86,16 @@ public class ApiProgramAssignmentService : IProgramAssignmentService
 
     private static ClientProgramAssignment MapToAssignment(AssignationDto dto) => new()
     {
-        Id          = Guid.TryParse(dto.IdAssignation, out var g) ? g : Guid.NewGuid(),
-        ClientId    = dto.IdClient,
-        ProgramName = dto.Programme?.NomProgramme ?? $"Programme #{dto.IdProgramme}",
-        AssignedAt  = TryParseDate(dto.DateAssignation) ?? DateTime.Now,
-        Sessions    = []   // Enrichi ultérieurement si besoin
+        Id           = Guid.TryParse(dto.IdAssignation, out var g) ? g : Guid.NewGuid(),
+        ClientId     = dto.IdClient,
+        ProgrammeId  = dto.IdProgramme,
+        ProgramName  = dto.Programme?.NomProgramme ?? $"Programme #{dto.IdProgramme}",
+        AssignedAt   = TryParseDate(dto.DateAssignation) ?? DateTime.Now,
+        EndDate      = TryParseDate(dto.DateFin),
+        Sessions     = []   // Enrichi ultérieurement si besoin
     };
 
     // ── Helpers ────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Tente d'extraire l'id_programme depuis le nom du programme (fallback 0).
-    /// En production, le ViewModel passe l'id directement.
-    /// </summary>
-    private static int ExtractProgrammeId(ClientProgramAssignment assignment)
-    {
-        // Si le ProgramName contient "#ID" on extrait (ex: "Programme #3")
-        var parts = assignment.ProgramName.Split('#');
-        if (parts.Length > 1 && int.TryParse(parts[^1].Trim(), out var id))
-            return id;
-        return 0;
-    }
 
     private static DateTime? TryParseDate(string? s)
     {
