@@ -16,6 +16,7 @@ public partial class ClientsViewModel : BaseViewModel
     private readonly INfcOrchestrator _orchestrator;
     private readonly IRfidReaderService _rfidReader;
     private readonly IProgramAssignmentService _assignmentService;
+    private readonly INavigationService _navigationService;
 
     // Source complète (non filtrée)
     private List<Client> _allClients = new();
@@ -145,16 +146,34 @@ public partial class ClientsViewModel : BaseViewModel
         IAlertService alertService,
         INfcOrchestrator orchestrator,
         IRfidReaderService rfidReader,
-        IProgramAssignmentService assignmentService)
+        IProgramAssignmentService assignmentService,
+        INavigationService navigationService)
     {
         _clientService = clientService;
         _alertService = alertService;
         _orchestrator = orchestrator;
         _rfidReader = rfidReader;
         _assignmentService = assignmentService;
+        _navigationService = navigationService;
         Title = "Liste des Clients";
 
         LoadClientsCommand.ExecuteAsync(null);
+    }
+
+    // --- Navigation vers la fiche profil détaillée ---
+
+    /// <summary>
+    /// Navigue vers la fiche profil détaillée du client.
+    /// Résout <see cref="ClientProfileViewModel"/> via le NavigationService
+    /// et lui passe le client courant via <c>SetClient</c>.
+    /// </summary>
+    [RelayCommand]
+    private void OpenClientProfile(Client? client)
+    {
+        if (client is null) return;
+        _navigationService.NavigateTo("ClientProfile");
+        if (_navigationService.CurrentViewModel is ClientProfileViewModel vm)
+            vm.SetClient(client);
     }
 
     // --- Commandes ---

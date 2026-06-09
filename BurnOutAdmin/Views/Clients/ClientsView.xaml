@@ -313,8 +313,19 @@
                                                 </Border>
                                                 <Label IsVisible="{Binding HasNfcCard, Converter={StaticResource InvertedBool}}" Text="Aucune carte associée" FontSize="11" TextColor="{StaticResource TextLight}" FontAttributes="Italic" VerticalOptions="Center"/>
                                             </HorizontalStackLayout>
-                                            <!-- Actions: Programs (green) + RFID bind (blue) + Edit (amber) + Delete (red) -->
+                                            <!-- Actions: Profil (violet) + Programs (green) + RFID bind (blue) + Edit (amber) + Delete (red) -->
                                             <HorizontalStackLayout Grid.Column="4" Spacing="6" VerticalOptions="Center" HorizontalOptions="End">
+                                                <!-- Voir la fiche profil détaillée du client -->
+                                                <Border BackgroundColor="Transparent" StrokeThickness="0"
+                                                        HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ClientsViewModel}}, Path=OpenClientProfileCommand}" CommandParameter="{Binding .}"/>
+                                                    </Border.GestureRecognizers>
+                                                    <Label Text="&#xE851;" FontFamily="MaterialIcons"
+                                                           FontSize="18" TextColor="#7C3AED"
+                                                           HorizontalOptions="Center" VerticalOptions="Center"
+                                                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                                                </Border>
                                                 <Border BackgroundColor="Transparent" StrokeThickness="0"
                                                         HeightRequest="32" WidthRequest="32" VerticalOptions="Center">
                                                     <Border.GestureRecognizers>
