@@ -1,0 +1,1157 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BurnOutAdmin.ViewModels"
+             xmlns:models="clr-namespace:BurnOutAdmin.Models"
+             xmlns:programModels="clr-namespace:BurnOutAdmin.Models.Program"
+             xmlns:services="clr-namespace:BurnOutAdmin.Services"
+             x:Class="BurnOutAdmin.Views.ClientProfile.ClientProfileView"
+             x:DataType="vm:ClientProfileViewModel"
+             BackgroundColor="#F1F5F9">
+
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="28,24" Spacing="22" MaximumWidthRequest="1100">
+
+                <!-- ═══ Breadcrumb + retour ═══ -->
+                <HorizontalStackLayout Spacing="6">
+                    <Label Text="Clients" TextColor="#94A3B8" FontSize="12"
+                           VerticalOptions="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding BackToClientsCommand}"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label Text="›" TextColor="#CBD5E1" FontSize="12" VerticalOptions="Center"/>
+                    <Label Text="Fiche client" TextColor="#475569" FontSize="12" FontAttributes="Bold"
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+
+                <!-- ═══ Header profil ═══ -->
+                <Border BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16" Padding="28">
+                    <Border.Shadow><Shadow Brush="#000" Offset="0,2" Radius="8" Opacity="0.04"/></Border.Shadow>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="22" VerticalOptions="Center">
+
+                        <!-- Avatar : photo si disponible, sinon initiale -->
+                        <Grid Grid.Column="0" WidthRequest="84" HeightRequest="84" VerticalOptions="Center">
+                            <Border IsVisible="{Binding Client.HasProfileImage}"
+                                    StrokeThickness="0"
+                                    WidthRequest="84" HeightRequest="84">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="42"/></Border.StrokeShape>
+                                <Image Source="{Binding Client.ImageUrl}" Aspect="AspectFill"
+                                       WidthRequest="84" HeightRequest="84"/>
+                            </Border>
+                            <Border IsVisible="{Binding Client.HasProfileImage, Converter={StaticResource InvertedBoolConverter}}"
+                                    StrokeThickness="0" WidthRequest="84" HeightRequest="84">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="42"/></Border.StrokeShape>
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#4F46E5" Offset="0"/>
+                                        <GradientStop Color="#7C3AED" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Label Text="{Binding Initial}"
+                                       FontSize="32" FontAttributes="Bold" TextColor="White"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                        </Grid>
+
+                        <!-- Identité + métadonnées -->
+                        <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                            <Label Text="{Binding Client.FullName}"
+                                   FontSize="26" FontAttributes="Bold" TextColor="#0F172A"
+                                   LineBreakMode="TailTruncation"/>
+                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                <Label Text="&#xE0BE;" FontFamily="MaterialIcons"
+                                       FontSize="14" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                <Label Text="{Binding Client.Email}"
+                                       FontSize="13" TextColor="#64748B" VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="10" Margin="0,6,0,0">
+                                <!-- Badge statut -->
+                                <Border BackgroundColor="#F0FDF4" Stroke="#BBF7D0" StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 12" Padding="10,4">
+                                    <HorizontalStackLayout Spacing="6">
+                                        <Ellipse Fill="#16A34A" WidthRequest="7" HeightRequest="7"
+                                                 VerticalOptions="Center"/>
+                                        <Label Text="{Binding Client.Status}" FontSize="11" FontAttributes="Bold"
+                                               TextColor="#15803D" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                </Border>
+                                <!-- ID client -->
+                                <Border BackgroundColor="#F1F5F9" StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 12" Padding="10,4">
+                                    <Label Text="{Binding Client.Id, StringFormat='ID #{0}'}"
+                                           FontSize="11" FontAttributes="Bold" TextColor="#64748B"/>
+                                </Border>
+                                <!-- Chip Totem (cliquable → ouvre le picker) -->
+                                <Border IsVisible="{Binding HasSelectedTotem}"
+                                        BackgroundColor="{Binding SelectedTotem.AccentBackground}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 12" Padding="8,3">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding OpenTotemPickerCommand}"/>
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                        <!-- Affiche le badge composé (tier × division × totem) si dispo,
+                                             fallback sur l'aperçu or/3 du totem sinon. -->
+                                        <Image IsVisible="{Binding HasCurrentBadge}"
+                                               Source="{Binding CurrentBadgeUrl}"
+                                               Aspect="AspectFit"
+                                               WidthRequest="20" HeightRequest="20"
+                                               VerticalOptions="Center"/>
+                                        <Image IsVisible="{Binding HasCurrentBadge, Converter={StaticResource InvertedBoolConverter}}"
+                                               Source="{Binding SelectedTotem.ImageUrl}"
+                                               Aspect="AspectFit"
+                                               WidthRequest="20" HeightRequest="20"
+                                               VerticalOptions="Center"/>
+                                        <Label Text="{Binding SelectedTotem.DisplayName}"
+                                               FontSize="11" FontAttributes="Bold"
+                                               TextColor="{Binding SelectedTotem.AccentColor}"
+                                               VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+
+                        <!-- Bouton retour -->
+                        <Border Grid.Column="2"
+                                BackgroundColor="#F1F5F9" StrokeThickness="0"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="14,10" VerticalOptions="Center">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding BackToClientsCommand}"/>
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="6">
+                                <Label Text="&#xE5C4;" FontFamily="MaterialIcons" FontSize="16"
+                                       TextColor="#475569" VerticalOptions="Center"/>
+                                <Label Text="Retour" FontSize="13" FontAttributes="Bold"
+                                       TextColor="#475569" VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- ═══ 2 colonnes : Infos perso + Séances ═══ -->
+                <Grid ColumnDefinitions="2*,3*" ColumnSpacing="22">
+
+                    <!-- Colonne gauche : infos personnelles -->
+                    <VerticalStackLayout Grid.Column="0" Spacing="18">
+
+                        <!-- ═══ Présentation du client (texte libre saisi à l'inscription) ═══
+                             Fond dégradé indigo doux + grand guillemet décoratif pour donner
+                             un effet « citation » premium. Masquée si non renseignée. -->
+                        <Border IsVisible="{Binding Client.HasPresentation}"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 14"
+                                Padding="0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#EEF2FF" Offset="0"/>
+                                    <GradientStop Color="#FAFBFF" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid RowDefinitions="Auto,Auto" Padding="22,20">
+                                <!-- En-tête : avatar + nom + sous-titre + grand guillemet -->
+                                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <!-- Avatar : photo ou initiale -->
+                                    <Grid Grid.Column="0" WidthRequest="44" HeightRequest="44"
+                                          VerticalOptions="Center">
+                                        <Border IsVisible="{Binding Client.HasProfileImage}"
+                                                StrokeThickness="0"
+                                                WidthRequest="44" HeightRequest="44">
+                                            <Border.StrokeShape><RoundRectangle CornerRadius="22"/></Border.StrokeShape>
+                                            <Image Source="{Binding Client.ImageUrl}" Aspect="AspectFill"
+                                                   WidthRequest="44" HeightRequest="44"/>
+                                        </Border>
+                                        <Border IsVisible="{Binding Client.HasProfileImage, Converter={StaticResource InvertedBoolConverter}}"
+                                                StrokeThickness="0"
+                                                WidthRequest="44" HeightRequest="44">
+                                            <Border.StrokeShape><RoundRectangle CornerRadius="22"/></Border.StrokeShape>
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#4F46E5" Offset="0"/>
+                                                    <GradientStop Color="#7C3AED" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                            <Label Text="{Binding Initial}"
+                                                   FontSize="18" FontAttributes="Bold" TextColor="White"
+                                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
+                                    </Grid>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="Présentation" FontSize="11" FontAttributes="Bold"
+                                               TextColor="#4F46E5" CharacterSpacing="0.8"/>
+                                        <Label Text="Saisie par le client à l'inscription"
+                                               FontSize="11" TextColor="#64748B"/>
+                                    </VerticalStackLayout>
+                                    <!-- Grand guillemet décoratif -->
+                                    <Label Grid.Column="2" Text="&#x201C;"
+                                           FontSize="48" FontFamily="Georgia"
+                                           TextColor="#C7D2FE"
+                                           VerticalOptions="Start" HorizontalOptions="End"
+                                           Margin="0,-8,0,0"/>
+                                </Grid>
+                                <!-- Texte de la présentation -->
+                                <Label Grid.Row="1" Text="{Binding Client.Presentation}"
+                                       FontSize="13" TextColor="#1E293B"
+                                       LineBreakMode="WordWrap"
+                                       Margin="0,8,0,0"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- ═══ Carte Totem ═══════════════════════════════════
+                             Affiche le totem (animal) actuellement attribué au client,
+                             avec son image grand format et un bouton pour le changer.
+                             Si aucun totem n'est encore choisi, propose un placeholder
+                             pour aider le coach à le définir. -->
+                        <Border BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 14" Padding="22">
+                            <VerticalStackLayout Spacing="16">
+                                <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                    <HorizontalStackLayout Grid.Column="0" Spacing="8">
+                                        <Label Text="&#xE7EF;" FontFamily="MaterialIcons" FontSize="18"
+                                               TextColor="#4F46E5" VerticalOptions="Center"/>
+                                        <Label Text="Totem" FontSize="14" FontAttributes="Bold"
+                                               TextColor="#0F172A" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                    <!-- Bouton « Modifier » -->
+                                    <Border Grid.Column="1" BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8" Padding="10,5"
+                                            VerticalOptions="Center">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding OpenTotemPickerCommand}"/>
+                                        </Border.GestureRecognizers>
+                                        <HorizontalStackLayout Spacing="5">
+                                            <Label Text="&#xE3C9;" FontFamily="MaterialIcons" FontSize="13"
+                                                   TextColor="#4F46E5" VerticalOptions="Center"/>
+                                            <Label FontSize="11" FontAttributes="Bold"
+                                                   TextColor="#4F46E5" VerticalOptions="Center">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding HasSelectedTotem}" Value="True">
+                                                        <Setter Property="Text" Value="Modifier"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding HasSelectedTotem}" Value="False">
+                                                        <Setter Property="Text" Value="Choisir"/>
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                </Grid>
+
+                                <!-- État rempli : grosse image centrée façon « médaille »
+                                     L'image du totem est le héros visuel. Fond circulaire teinté de
+                                     l'accent du totem, image AspectFit en grand format. Nom + emoji
+                                     en dessous, centrés et discrets. -->
+                                <VerticalStackLayout IsVisible="{Binding HasSelectedTotem}"
+                                                     Spacing="14" HorizontalOptions="Center">
+                                    <!-- Cadre médaille : disque coloré, badge composé dedans.
+                                         CurrentBadgeUrl (tier × division × totem) si dispo, sinon
+                                         aperçu or/3 du totem en fallback. -->
+                                    <Border BackgroundColor="{Binding SelectedTotem.AccentBackground}"
+                                            StrokeThickness="0"
+                                            WidthRequest="200" HeightRequest="200"
+                                            HorizontalOptions="Center">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="100"/></Border.StrokeShape>
+                                        <Border.Shadow>
+                                            <Shadow Brush="{Binding SelectedTotem.AccentColor}"
+                                                    Offset="0,4" Radius="20" Opacity="0.18"/>
+                                        </Border.Shadow>
+                                        <Grid>
+                                            <Image IsVisible="{Binding HasCurrentBadge}"
+                                                   Source="{Binding CurrentBadgeUrl}"
+                                                   Aspect="AspectFit"
+                                                   Margin="14"/>
+                                            <Image IsVisible="{Binding HasCurrentBadge, Converter={StaticResource InvertedBoolConverter}}"
+                                                   Source="{Binding SelectedTotem.ImageUrl}"
+                                                   Aspect="AspectFit"
+                                                   Margin="14"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Nom du totem + libellé du rang actuel -->
+                                    <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                        <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+                                            <Label Text="{Binding SelectedTotem.Emoji}" FontSize="22"
+                                                   VerticalOptions="Center"/>
+                                            <Label Text="{Binding SelectedTotem.DisplayName}"
+                                                   FontSize="22" FontAttributes="Bold"
+                                                   TextColor="{Binding SelectedTotem.AccentColor}"
+                                                   VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                        <Label Text="{Binding CurrentRankLabel}"
+                                               FontSize="13" FontAttributes="Bold" TextColor="#475569"
+                                               HorizontalTextAlignment="Center"/>
+                                        <Label Text="Totem identité du client"
+                                               FontSize="11" TextColor="#94A3B8"
+                                               HorizontalTextAlignment="Center"/>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+
+                                <!-- État vide : placeholder « aucun totem » -->
+                                <Border IsVisible="{Binding HasSelectedTotem, Converter={StaticResource InvertedBoolConverter}}"
+                                        BackgroundColor="#F8FAFC" Stroke="#E2E8F0" StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 12" Padding="16,14">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding OpenTotemPickerCommand}"/>
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                                        <Label Text="&#xE145;" FontFamily="MaterialIcons" FontSize="18"
+                                               TextColor="#94A3B8" VerticalOptions="Center"/>
+                                        <Label Text="Aucun totem attribué — cliquez pour choisir"
+                                               FontSize="12" TextColor="#64748B" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Coordonnées -->
+                        <Border BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 14" Padding="22">
+                            <VerticalStackLayout Spacing="14">
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="&#xE0CD;" FontFamily="MaterialIcons" FontSize="18"
+                                           TextColor="#4F46E5" VerticalOptions="Center"/>
+                                    <Label Text="Coordonnées" FontSize="14" FontAttributes="Bold"
+                                           TextColor="#0F172A" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                <BoxView HeightRequest="1" Color="#F1F5F9"/>
+
+                                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto"
+                                      RowSpacing="10" ColumnSpacing="14">
+                                    <Label Grid.Row="0" Grid.Column="0" Text="Téléphone"
+                                           FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"
+                                           VerticalOptions="Center"/>
+                                    <Label Grid.Row="0" Grid.Column="1"
+                                           Text="{Binding Client.Phone, FallbackValue='—', TargetNullValue='—'}"
+                                           FontSize="13" TextColor="#1E293B" VerticalOptions="Center"/>
+
+                                    <Label Grid.Row="1" Grid.Column="0" Text="Adresse"
+                                           FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"
+                                           VerticalOptions="Start"/>
+                                    <Label Grid.Row="1" Grid.Column="1"
+                                           Text="{Binding Client.FullAddress, FallbackValue='—', TargetNullValue='—'}"
+                                           FontSize="13" TextColor="#1E293B" LineBreakMode="WordWrap"/>
+
+                                    <Label Grid.Row="2" Grid.Column="0" Text="UID NFC"
+                                           FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"
+                                           VerticalOptions="Center"/>
+                                    <Label Grid.Row="2" Grid.Column="1"
+                                           Text="{Binding Client.NfcDisplayText}"
+                                           FontSize="13" TextColor="#1E293B" VerticalOptions="Center"/>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Identité personnelle -->
+                        <Border BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 14" Padding="22">
+                            <VerticalStackLayout Spacing="14">
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="&#xEA67;" FontFamily="MaterialIcons" FontSize="18"
+                                           TextColor="#4F46E5" VerticalOptions="Center"/>
+                                    <Label Text="Profil personnel" FontSize="14" FontAttributes="Bold"
+                                           TextColor="#0F172A" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                <BoxView HeightRequest="1" Color="#F1F5F9"/>
+
+                                <Grid ColumnDefinitions="Auto,*" RowSpacing="10" ColumnSpacing="14">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Label Grid.Row="0" Grid.Column="0" Text="Date de naissance" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding Client.BirthDate, StringFormat='{0:dd/MM/yyyy}', FallbackValue='—', TargetNullValue='—'}" FontSize="13" TextColor="#1E293B"/>
+
+                                    <Label Grid.Row="1" Grid.Column="0" Text="Âge" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Client.AgeYears, StringFormat='{0} ans', FallbackValue='—', TargetNullValue='—'}" FontSize="13" TextColor="#1E293B"/>
+
+                                    <Label Grid.Row="2" Grid.Column="0" Text="Genre" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding Client.Gender, FallbackValue='—', TargetNullValue='—'}" FontSize="13" TextColor="#1E293B"/>
+
+                                    <Label Grid.Row="3" Grid.Column="0" Text="Sport favori" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding Client.FavoriteSport, FallbackValue='—', TargetNullValue='—'}" FontSize="13" TextColor="#1E293B"/>
+
+                                    <Label Grid.Row="4" Grid.Column="0" Text="Membre depuis" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                    <Label Grid.Row="4" Grid.Column="1" Text="{Binding Client.MemberSince, FallbackValue='—', TargetNullValue='—'}" FontSize="13" TextColor="#1E293B"/>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Mesures physiques -->
+                        <Border BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 14" Padding="22">
+                            <VerticalStackLayout Spacing="14">
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="&#xEB43;" FontFamily="MaterialIcons" FontSize="18"
+                                           TextColor="#4F46E5" VerticalOptions="Center"/>
+                                    <Label Text="Mesures &amp; cardio" FontSize="14" FontAttributes="Bold"
+                                           TextColor="#0F172A" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                <BoxView HeightRequest="1" Color="#F1F5F9"/>
+
+                                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto"
+                                      RowSpacing="14" ColumnSpacing="14">
+                                    <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="3">
+                                        <Label Text="Taille" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"/>
+                                        <Label Text="{Binding Client.Height, StringFormat='{0:0.#} cm', FallbackValue='—', TargetNullValue='—'}"
+                                               FontSize="15" FontAttributes="Bold" TextColor="#0F172A"/>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="3">
+                                        <Label Text="Poids" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"/>
+                                        <Label Text="{Binding Client.Weight, StringFormat='{0:0.#} kg', FallbackValue='—', TargetNullValue='—'}"
+                                               FontSize="15" FontAttributes="Bold" TextColor="#0F172A"/>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="3">
+                                        <Label Text="IMC" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"/>
+                                        <Label Text="{Binding Client.BodyMassIndex, FallbackValue='—', TargetNullValue='—'}"
+                                               FontSize="15" FontAttributes="Bold" TextColor="#0F172A"/>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="3">
+                                        <Label Text="Groupe sanguin" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"/>
+                                        <Label Text="{Binding Client.BloodType, FallbackValue='—', TargetNullValue='—'}"
+                                               FontSize="15" FontAttributes="Bold" TextColor="#0F172A"/>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="2" Grid.Column="0" Spacing="3">
+                                        <Label Text="FC max" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"/>
+                                        <Label Text="{Binding Client.MaxHeartRate, StringFormat='{0} bpm', FallbackValue='—', TargetNullValue='—'}"
+                                               FontSize="15" FontAttributes="Bold" TextColor="#0F172A"/>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="2" Grid.Column="1" Spacing="3">
+                                        <Label Text="FC repos" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8"/>
+                                        <Label Text="{Binding Client.RestHeartRate, StringFormat='{0} bpm', FallbackValue='—', TargetNullValue='—'}"
+                                               FontSize="15" FontAttributes="Bold" TextColor="#0F172A"/>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Habitudes / médical -->
+                        <Border BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 14" Padding="22">
+                            <VerticalStackLayout Spacing="14">
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="&#xEAF6;" FontFamily="MaterialIcons" FontSize="18"
+                                           TextColor="#4F46E5" VerticalOptions="Center"/>
+                                    <Label Text="Habitudes &amp; médical" FontSize="14" FontAttributes="Bold"
+                                           TextColor="#0F172A" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                <BoxView HeightRequest="1" Color="#F1F5F9"/>
+
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14" RowSpacing="10">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Label Grid.Row="0" Grid.Column="0" Text="Sommeil" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding Client.SleepQuality, FallbackValue='—', TargetNullValue='—'}" FontSize="13" TextColor="#1E293B"/>
+                                    <Label Grid.Row="1" Grid.Column="0" Text="Alimentation" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Client.DietQuality, FallbackValue='—', TargetNullValue='—'}" FontSize="13" TextColor="#1E293B"/>
+                                    <Label Grid.Row="2" Grid.Column="0" Text="Fatigue physique" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding Client.PhysicalFatigue, FallbackValue='—', TargetNullValue='—'}" FontSize="13" TextColor="#1E293B"/>
+                                    <Label Grid.Row="3" Grid.Column="0" Text="Fatigue mentale" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding Client.MentalFatigue, FallbackValue='—', TargetNullValue='—'}" FontSize="13" TextColor="#1E293B"/>
+                                    <Label Grid.Row="4" Grid.Column="0" Text="Tabac" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                    <Label Grid.Row="4" Grid.Column="1" Text="{Binding Client.TobaccoConsumption, FallbackValue='—', TargetNullValue='—'}" FontSize="13" TextColor="#1E293B"/>
+                                    <Label Grid.Row="5" Grid.Column="0" Text="Alcool" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                    <Label Grid.Row="5" Grid.Column="1" Text="{Binding Client.AlcoholConsumption, FallbackValue='—', TargetNullValue='—'}" FontSize="13" TextColor="#1E293B"/>
+                                    <Label Grid.Row="6" Grid.Column="0" Text="Antécédents" FontSize="11" FontAttributes="Bold" TextColor="#94A3B8" VerticalOptions="Start"/>
+                                    <Label Grid.Row="6" Grid.Column="1" Text="{Binding Client.MedicalCondition, FallbackValue='—', TargetNullValue='—'}" FontSize="13" TextColor="#1E293B" LineBreakMode="WordWrap"/>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Colonne droite : historique séances -->
+                    <Border Grid.Column="1" BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1"
+                            StrokeShape="RoundRectangle 14" Padding="22">
+                        <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+                            <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                                <HorizontalStackLayout Grid.Column="0" Spacing="8">
+                                    <Label Text="&#xE54E;" FontFamily="MaterialIcons" FontSize="20"
+                                           TextColor="#4F46E5" VerticalOptions="Center"/>
+                                    <Label Text="Historique des séances" FontSize="16" FontAttributes="Bold"
+                                           TextColor="#0F172A" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                <Border Grid.Column="1" BackgroundColor="#EEF2FF" StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 12" Padding="10,4"
+                                        VerticalOptions="Center">
+                                    <Label Text="{Binding TotalCount, StringFormat='{0} séances'}"
+                                           FontSize="11" FontAttributes="Bold" TextColor="#4F46E5"/>
+                                </Border>
+                            </Grid>
+
+                            <!-- ════ Filtres : Toutes / À venir / Réalisées ════
+                                 Pills cliquables, l'onglet actif passe en blanc + indigo.
+                                 Masqué pendant le chargement et si aucune séance du tout. -->
+                            <Border Grid.Row="1"
+                                    IsVisible="{Binding ShouldShowFilters}"
+                                    BackgroundColor="#F1F5F9" StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 999" Padding="4"
+                                    HorizontalOptions="Start" Margin="0,14,0,0">
+                                <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="0">
+                                    <!-- Toutes -->
+                                    <Border Grid.Column="0" Padding="12,6" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 999">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SetFilterCommand}" CommandParameter="all"/>
+                                        </Border.GestureRecognizers>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsAllFilter}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="White"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsAllFilter}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="Transparent"/>
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                            <Label Text="Toutes" FontSize="12" FontAttributes="Bold" VerticalOptions="Center">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsAllFilter}" Value="True">
+                                                        <Setter Property="TextColor" Value="#4F46E5"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsAllFilter}" Value="False">
+                                                        <Setter Property="TextColor" Value="#64748B"/>
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                            <Label Text="{Binding TotalCount}" FontSize="11" FontAttributes="Bold"
+                                                   TextColor="#94A3B8" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                    <!-- À venir -->
+                                    <Border Grid.Column="1" Padding="12,6" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 999">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SetFilterCommand}" CommandParameter="pending"/>
+                                        </Border.GestureRecognizers>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsPendingFilter}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="White"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsPendingFilter}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="Transparent"/>
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                            <Label Text="À venir" FontSize="12" FontAttributes="Bold" VerticalOptions="Center">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsPendingFilter}" Value="True">
+                                                        <Setter Property="TextColor" Value="#4F46E5"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsPendingFilter}" Value="False">
+                                                        <Setter Property="TextColor" Value="#64748B"/>
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                            <Label Text="{Binding PendingCount}" FontSize="11" FontAttributes="Bold"
+                                                   TextColor="#94A3B8" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                    <!-- Réalisées -->
+                                    <Border Grid.Column="2" Padding="12,6" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 999">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SetFilterCommand}" CommandParameter="done"/>
+                                        </Border.GestureRecognizers>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsDoneFilter}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="White"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsDoneFilter}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="Transparent"/>
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                            <Label Text="Réalisées" FontSize="12" FontAttributes="Bold" VerticalOptions="Center">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsDoneFilter}" Value="True">
+                                                        <Setter Property="TextColor" Value="#4F46E5"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsDoneFilter}" Value="False">
+                                                        <Setter Property="TextColor" Value="#64748B"/>
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                            <Label Text="{Binding DoneCount}" FontSize="11" FontAttributes="Bold"
+                                                   TextColor="#94A3B8" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- Chargement -->
+                            <VerticalStackLayout Grid.Row="2" IsVisible="{Binding IsLoading}"
+                                                 Spacing="10" Padding="0,30" HorizontalOptions="Center">
+                                <ActivityIndicator IsRunning="True" Color="#4F46E5"
+                                                   WidthRequest="28" HeightRequest="28"/>
+                                <Label Text="Chargement des séances…" FontSize="12"
+                                       TextColor="#64748B" HorizontalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+
+                            <!-- Liste paginée (10 par défaut, « Voir plus » via footer) -->
+                            <CollectionView Grid.Row="3"
+                                            IsVisible="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}"
+                                            ItemsSource="{Binding VisibleSeances}"
+                                            VerticalScrollBarVisibility="Default"
+                                            Margin="0,14,0,0">
+                                <CollectionView.EmptyView>
+                                    <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center"
+                                                         Spacing="8" Padding="0,40">
+                                        <Label Text="📭" FontSize="36" HorizontalTextAlignment="Center"/>
+                                        <Label Text="{Binding EmptyFilterTitle}"
+                                               FontSize="14" FontAttributes="Bold"
+                                               TextColor="#64748B" HorizontalTextAlignment="Center"/>
+                                        <Label Text="{Binding EmptyFilterSubtitle}"
+                                               FontSize="12" TextColor="#94A3B8"
+                                               HorizontalTextAlignment="Center" MaximumWidthRequest="280"
+                                               LineBreakMode="WordWrap"/>
+                                    </VerticalStackLayout>
+                                </CollectionView.EmptyView>
+                                <CollectionView.Footer>
+                                    <Border IsVisible="{Binding CanLoadMore}"
+                                            BackgroundColor="#F8FAFC" Stroke="#E2E8F0" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 10" Padding="14,11"
+                                            Margin="0,4,0,0">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding LoadMoreSeancesCommand}"/>
+                                        </Border.GestureRecognizers>
+                                        <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+                                            <Label Text="&#xE5D3;" FontFamily="MaterialIcons" FontSize="16"
+                                                   TextColor="#4F46E5" VerticalOptions="Center"/>
+                                            <Label Text="{Binding LoadMoreLabel}" FontSize="12" FontAttributes="Bold"
+                                                   TextColor="#4F46E5" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                </CollectionView.Footer>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="models:ClientSeanceItem">
+                                        <Border BackgroundColor="White"
+                                                Stroke="#E2E8F0" StrokeThickness="1"
+                                                StrokeShape="RoundRectangle 10"
+                                                Padding="14,12" Margin="0,0,0,10">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ClientProfileViewModel}}, Path=OpenSessionDetailCommand}"
+                                                    CommandParameter="{Binding .}"/>
+                                            </Border.GestureRecognizers>
+                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                                <!-- Icône statut -->
+                                                <Border Grid.Column="0" WidthRequest="38" HeightRequest="38"
+                                                        StrokeThickness="0" VerticalOptions="Center">
+                                                    <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding IsCompleted}" Value="True">
+                                                            <Setter Property="BackgroundColor" Value="#F0FDF4"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding IsCompleted}" Value="False">
+                                                            <Setter Property="BackgroundColor" Value="#EEF2FF"/>
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <Label FontFamily="MaterialIcons" FontSize="18"
+                                                           HorizontalOptions="Center" VerticalOptions="Center">
+                                                        <Label.Triggers>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding IsCompleted}" Value="True">
+                                                                <Setter Property="Text" Value="&#xE876;"/>
+                                                                <Setter Property="TextColor" Value="#16A34A"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding IsCompleted}" Value="False">
+                                                                <Setter Property="Text" Value="&#xE8B5;"/>
+                                                                <Setter Property="TextColor" Value="#4F46E5"/>
+                                                            </DataTrigger>
+                                                        </Label.Triggers>
+                                                    </Label>
+                                                </Border>
+
+                                                <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                                    <Label Text="{Binding Name}" FontSize="14" FontAttributes="Bold"
+                                                           TextColor="#0F172A" LineBreakMode="TailTruncation"/>
+                                                    <HorizontalStackLayout Spacing="12">
+                                                        <HorizontalStackLayout Spacing="4">
+                                                            <Label Text="&#xE8DF;" FontFamily="MaterialIcons" FontSize="11" TextColor="#94A3B8"/>
+                                                            <Label Text="{Binding DatePrevueDisplay}" FontSize="11" TextColor="#64748B"/>
+                                                        </HorizontalStackLayout>
+                                                        <HorizontalStackLayout Spacing="4" IsVisible="{Binding IsCompleted}">
+                                                            <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="11" TextColor="#16A34A"/>
+                                                            <Label Text="{Binding DateRealisationDisplay}" FontSize="11" TextColor="#16A34A" FontAttributes="Bold"/>
+                                                        </HorizontalStackLayout>
+                                                        <Label Text="{Binding ExerciseCount, StringFormat='{0} exercices'}"
+                                                               FontSize="11" TextColor="#94A3B8"/>
+                                                    </HorizontalStackLayout>
+                                                </VerticalStackLayout>
+
+                                                <!-- Badge statut + chevron -->
+                                                <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
+                                                    <Border StrokeThickness="0" Padding="10,4" StrokeShape="RoundRectangle 12">
+                                                        <Border.Triggers>
+                                                            <DataTrigger TargetType="Border" Binding="{Binding IsCompleted}" Value="True">
+                                                                <Setter Property="BackgroundColor" Value="#F0FDF4"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger TargetType="Border" Binding="{Binding IsCompleted}" Value="False">
+                                                                <Setter Property="BackgroundColor" Value="#FFFBEB"/>
+                                                            </DataTrigger>
+                                                        </Border.Triggers>
+                                                        <Label Text="{Binding StatusText}" FontSize="11" FontAttributes="Bold">
+                                                            <Label.Triggers>
+                                                                <DataTrigger TargetType="Label" Binding="{Binding IsCompleted}" Value="True">
+                                                                    <Setter Property="TextColor" Value="#15803D"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger TargetType="Label" Binding="{Binding IsCompleted}" Value="False">
+                                                                    <Setter Property="TextColor" Value="#92400E"/>
+                                                                </DataTrigger>
+                                                            </Label.Triggers>
+                                                        </Label>
+                                                    </Border>
+                                                    <Label Text="&#xE5CC;" FontFamily="MaterialIcons" FontSize="18"
+                                                           TextColor="#CBD5E1" VerticalOptions="Center"/>
+                                                </HorizontalStackLayout>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </Grid>
+                    </Border>
+
+                </Grid>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- ════ Sous-modal : Sélection du totem ════
+             Grille 2×2 des 4 totems disponibles. Le totem actif est surligné
+             en indigo ; clic sur une carte → SelectTotemCommand. -->
+        <Grid IsVisible="{Binding IsTotemPickerOpen}" BackgroundColor="#60000000">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CloseTotemPickerCommand}"/>
+            </Grid.GestureRecognizers>
+            <Border BackgroundColor="White" WidthRequest="640" MaximumHeightRequest="780"
+                    VerticalOptions="Center" HorizontalOptions="Center"
+                    StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="0">
+                <Border.Shadow><Shadow Brush="#000" Offset="0,10" Radius="24" Opacity="0.18"/></Border.Shadow>
+                <!-- bloque la fermeture sur clic à l'intérieur de la modale -->
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer/>
+                </Border.GestureRecognizers>
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <!-- En-tête -->
+                    <Grid Grid.Row="0" Padding="22,18,22,14" ColumnDefinitions="*,Auto"
+                          BackgroundColor="#F8FAFC">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Choisir le totem du client" FontSize="16" FontAttributes="Bold"
+                                   TextColor="#0F172A"/>
+                            <Label Text="Sélectionnez l'identité animale qui représente ce client."
+                                   FontSize="11" TextColor="#64748B"/>
+                        </VerticalStackLayout>
+                        <Label Grid.Column="1" Text="&#xE5CD;" FontFamily="MaterialIcons"
+                               FontSize="20" TextColor="#94A3B8"
+                               VerticalOptions="Start" HorizontalOptions="End">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CloseTotemPickerCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+
+                    <!-- Grille 2×2 -->
+                    <ScrollView Grid.Row="1">
+                        <CollectionView ItemsSource="{Binding AvailableTotems}"
+                                        SelectionMode="None"
+                                        Margin="18,16">
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Vertical" Span="2"
+                                                 HorizontalItemSpacing="12" VerticalItemSpacing="12"/>
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Totem">
+                                    <Border BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 16" Padding="18">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ClientProfileViewModel}}, Path=SelectTotemCommand}"
+                                                CommandParameter="{Binding .}"/>
+                                        </Border.GestureRecognizers>
+                                        <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                                            <!-- Image en grand format, disque coloré -->
+                                            <Border BackgroundColor="{Binding AccentBackground}"
+                                                    StrokeThickness="0"
+                                                    WidthRequest="130" HeightRequest="130"
+                                                    HorizontalOptions="Center">
+                                                <Border.StrokeShape><RoundRectangle CornerRadius="65"/></Border.StrokeShape>
+                                                <Image Source="{Binding ImageUrl}" Aspect="AspectFit"
+                                                       Margin="10"/>
+                                            </Border>
+                                            <HorizontalStackLayout Spacing="6" HorizontalOptions="Center">
+                                                <Label Text="{Binding Emoji}" FontSize="18"
+                                                       VerticalOptions="Center"/>
+                                                <Label Text="{Binding DisplayName}"
+                                                       FontSize="16" FontAttributes="Bold"
+                                                       TextColor="{Binding AccentColor}" VerticalOptions="Center"/>
+                                            </HorizontalStackLayout>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </ScrollView>
+
+                    <!-- Pied : indicateur de sauvegarde + annulation -->
+                    <Grid Grid.Row="2" Padding="22,14" BackgroundColor="#F8FAFC"
+                          ColumnDefinitions="*,Auto">
+                        <HorizontalStackLayout Grid.Column="0" Spacing="8" VerticalOptions="Center"
+                                               IsVisible="{Binding IsSavingTotem}">
+                            <ActivityIndicator IsRunning="True" Color="#4F46E5"
+                                               WidthRequest="14" HeightRequest="14"/>
+                            <Label Text="Enregistrement…" FontSize="11" TextColor="#64748B"
+                                   VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                        <Border Grid.Column="1" BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8" Padding="14,8">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CloseTotemPickerCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="Annuler" FontSize="12" FontAttributes="Bold" TextColor="#475569"/>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ════ Sous-modal : Détail séance ════ -->
+        <Grid IsVisible="{Binding IsSessionDetailOpen}" BackgroundColor="#60000000">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CloseSessionDetailCommand}"/>
+            </Grid.GestureRecognizers>
+            <Border BackgroundColor="White" WidthRequest="780" MaximumHeightRequest="780"
+                    VerticalOptions="Center" HorizontalOptions="Center"
+                    Stroke="#E2E8F0" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16">
+                <Border.Shadow><Shadow Brush="#000" Offset="0,12" Radius="40" Opacity="0.25"/></Border.Shadow>
+                <Border.GestureRecognizers><TapGestureRecognizer/></Border.GestureRecognizers>
+
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <!-- Header -->
+                    <Grid Grid.Row="0" Padding="24,18" ColumnDefinitions="*,Auto"
+                          BackgroundColor="#F8FAFC">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="{Binding ViewingSeance.Name, FallbackValue='Séance'}"
+                                   FontSize="18" FontAttributes="Bold" TextColor="#0F172A"/>
+                            <HorizontalStackLayout Spacing="12">
+                                <HorizontalStackLayout Spacing="4">
+                                    <Label Text="&#xE8DF;" FontFamily="MaterialIcons" FontSize="12" TextColor="#94A3B8"/>
+                                    <Label Text="{Binding ViewingSeance.DatePrevueDisplay, StringFormat='Prévue : {0}'}"
+                                           FontSize="11" TextColor="#64748B"/>
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="4" IsVisible="{Binding ViewingSeance.IsCompleted}">
+                                    <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="12" TextColor="#16A34A"/>
+                                    <Label Text="{Binding ViewingSeance.DateRealisationDisplay, StringFormat='Réalisée : {0}'}"
+                                           FontSize="11" TextColor="#16A34A" FontAttributes="Bold"/>
+                                </HorizontalStackLayout>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                        <Label Grid.Column="1" Text="✕" FontSize="18" TextColor="#94A3B8"
+                               WidthRequest="32" HeightRequest="32"
+                               HorizontalTextAlignment="Center" VerticalTextAlignment="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CloseSessionDetailCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+
+                    <!-- Contenu -->
+                    <ScrollView Grid.Row="1">
+                        <VerticalStackLayout Padding="24" Spacing="16">
+
+                            <!-- Chargement -->
+                            <VerticalStackLayout IsVisible="{Binding IsLoadingSessionDetail}"
+                                                 HorizontalOptions="Center" Spacing="10" Padding="0,40">
+                                <ActivityIndicator IsRunning="True" Color="#4F46E5"
+                                                   WidthRequest="32" HeightRequest="32"/>
+                                <Label Text="Chargement du détail de la séance…"
+                                       FontSize="12" TextColor="#64748B"/>
+                            </VerticalStackLayout>
+
+                            <!-- ════ Placeholder : séance réalisée sans ressenti enregistré ════ -->
+                            <Border IsVisible="{Binding HasNoFeedback}"
+                                    BackgroundColor="#F8FAFC" Stroke="#E2E8F0" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 12" Padding="18,14">
+                                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                                    <Label Text="&#xE88F;" FontFamily="MaterialIcons" FontSize="18"
+                                           TextColor="#94A3B8" VerticalOptions="Center"/>
+                                    <Label Text="Aucun ressenti enregistré par le client pour cette séance."
+                                           FontSize="12" TextColor="#64748B" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Border>
+
+                            <!-- ════ Feedback de fin de séance (post du client) ════ -->
+                            <Border IsVisible="{Binding HasFeedback}"
+                                    BackgroundColor="#EEF2FF" Stroke="#C7D2FE" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 12" Padding="18,16">
+                                <VerticalStackLayout Spacing="14">
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Label Text="&#xE8AF;" FontFamily="MaterialIcons" FontSize="20"
+                                               TextColor="#4F46E5" VerticalOptions="Center"/>
+                                        <Label Text="Ressenti du client" FontSize="14" FontAttributes="Bold"
+                                               TextColor="#3730A3" VerticalOptions="Center"/>
+                                        <Label Text="{Binding ViewingFeedback.CreatedDisplay, StringFormat='· {0}'}"
+                                               FontSize="11" TextColor="#6366F1" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+
+                                    <!-- Stats principales : RPE / Humeur / Durée -->
+                                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                                        <Border Grid.Column="0" BackgroundColor="White" StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 10" Padding="14,12">
+                                            <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                                                <Label Text="RPE (effort perçu)" FontSize="10" FontAttributes="Bold"
+                                                       TextColor="#94A3B8" CharacterSpacing="0.5"
+                                                       HorizontalTextAlignment="Center"/>
+                                                <Label Text="{Binding ViewingFeedback.RpeDisplay}"
+                                                       FontSize="22" FontAttributes="Bold" TextColor="#0F172A"
+                                                       HorizontalTextAlignment="Center"/>
+                                                <!-- Bouton "Voir le détail" : seulement si le client a saisi un RPE détaillé -->
+                                                <Border IsVisible="{Binding ViewingFeedback.HasRpeDetails}"
+                                                        BackgroundColor="#EEF2FF" Stroke="#C7D2FE" StrokeThickness="1"
+                                                        StrokeShape="RoundRectangle 999" Padding="10,5"
+                                                        HorizontalOptions="Center">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding ToggleRpeDetailsCommand}"/>
+                                                    </Border.GestureRecognizers>
+                                                    <HorizontalStackLayout Spacing="5">
+                                                        <Label FontFamily="MaterialIcons" FontSize="12"
+                                                               TextColor="#4F46E5" VerticalOptions="Center">
+                                                            <Label.Triggers>
+                                                                <DataTrigger TargetType="Label" Binding="{Binding IsRpeDetailsExpanded}" Value="True">
+                                                                    <Setter Property="Text" Value="&#xE316;"/> <!-- expand_less -->
+                                                                </DataTrigger>
+                                                                <DataTrigger TargetType="Label" Binding="{Binding IsRpeDetailsExpanded}" Value="False">
+                                                                    <Setter Property="Text" Value="&#xE313;"/> <!-- expand_more -->
+                                                                </DataTrigger>
+                                                            </Label.Triggers>
+                                                        </Label>
+                                                        <Label FontSize="11" FontAttributes="Bold"
+                                                               TextColor="#4F46E5" VerticalOptions="Center">
+                                                            <Label.Triggers>
+                                                                <DataTrigger TargetType="Label" Binding="{Binding IsRpeDetailsExpanded}" Value="True">
+                                                                    <Setter Property="Text" Value="Masquer"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger TargetType="Label" Binding="{Binding IsRpeDetailsExpanded}" Value="False">
+                                                                    <Setter Property="Text" Value="Voir le détail"/>
+                                                                </DataTrigger>
+                                                            </Label.Triggers>
+                                                        </Label>
+                                                    </HorizontalStackLayout>
+                                                </Border>
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Column="1" BackgroundColor="White" StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 10" Padding="14,12">
+                                            <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                                                <Label Text="Humeur" FontSize="10" FontAttributes="Bold"
+                                                       TextColor="#94A3B8" CharacterSpacing="0.5"
+                                                       HorizontalTextAlignment="Center"/>
+                                                <Label Text="{Binding ViewingFeedback.Mood, FallbackValue='—', TargetNullValue='—'}"
+                                                       FontSize="22"
+                                                       HorizontalTextAlignment="Center"/>
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Column="2" BackgroundColor="White" StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 10" Padding="14,12">
+                                            <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                                                <Label Text="Durée" FontSize="10" FontAttributes="Bold"
+                                                       TextColor="#94A3B8" CharacterSpacing="0.5"
+                                                       HorizontalTextAlignment="Center"/>
+                                                <Label Text="{Binding ViewingFeedback.DurationDisplay}"
+                                                       FontSize="22" FontAttributes="Bold" TextColor="#0F172A"
+                                                       HorizontalTextAlignment="Center"/>
+                                            </VerticalStackLayout>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Petite ligne « exos validés / sautés » -->
+                                    <Border IsVisible="{Binding ViewingFeedback.HasExosBreakdown}"
+                                            BackgroundColor="White" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 10" Padding="14,10">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                            <Label Grid.Column="0" Text="&#xE86C;" FontFamily="MaterialIcons" FontSize="16"
+                                                   TextColor="#4F46E5" VerticalOptions="Center"/>
+                                            <Label Grid.Column="1" Text="Exercices effectués" FontSize="12"
+                                                   TextColor="#475569" VerticalOptions="Center"/>
+                                            <Label Grid.Column="2" Text="{Binding ViewingFeedback.ExosDisplay}"
+                                                   FontSize="13" FontAttributes="Bold" TextColor="#0F172A"
+                                                   VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- ════ RPE DÉTAILLÉ (déroulant) ════ -->
+                                    <Border IsVisible="{Binding IsRpeDetailsExpanded}"
+                                            BackgroundColor="White" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 12" Padding="16,14">
+                                        <VerticalStackLayout Spacing="14">
+                                            <HorizontalStackLayout Spacing="8">
+                                                <Label Text="&#xE8B5;" FontFamily="MaterialIcons" FontSize="16"
+                                                       TextColor="#4F46E5" VerticalOptions="Center"/>
+                                                <Label Text="RPE détaillé" FontSize="13" FontAttributes="Bold"
+                                                       TextColor="#1E293B" VerticalOptions="Center"/>
+                                                <Label Text="Saisi par le client à la fin de la séance"
+                                                       FontSize="11" TextColor="#94A3B8" VerticalOptions="Center"/>
+                                            </HorizontalStackLayout>
+
+                                            <!-- ════ 3 catégories du RPE détaillé ════════════════════
+                                                 Construction en code-behind (voir ClientProfileView.xaml.cs).
+                                                 Raison : les BindableLayout MAUI gardent en cache leurs vues
+                                                 et se mélangent entre 2 ouvertures de séances → chevauchements.
+                                                 Reconstruction complète à chaque changement de feedback. -->
+                                            <VerticalStackLayout x:Name="RpeCategoriesHost" Spacing="12"/>
+
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                    <!-- Commentaire libre -->
+                                    <VerticalStackLayout IsVisible="{Binding ViewingFeedback.HasContent}" Spacing="6">
+                                        <Label Text="COMMENTAIRE" FontSize="10" FontAttributes="Bold"
+                                               TextColor="#6366F1" CharacterSpacing="0.6"/>
+                                        <Border BackgroundColor="White" StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 10" Padding="14,11">
+                                            <Label Text="{Binding ViewingFeedback.Content}"
+                                                   FontSize="13" TextColor="#1E293B"
+                                                   LineBreakMode="WordWrap"/>
+                                        </Border>
+                                    </VerticalStackLayout>
+
+                                    <!-- Photo de fin de séance -->
+                                    <VerticalStackLayout IsVisible="{Binding ViewingFeedback.HasImage}" Spacing="6">
+                                        <Label Text="PHOTO" FontSize="10" FontAttributes="Bold"
+                                               TextColor="#6366F1" CharacterSpacing="0.6"/>
+                                        <Border BackgroundColor="White" StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 10" Padding="0">
+                                            <Image Source="{Binding ViewingFeedback.ImageUrl}"
+                                                   Aspect="AspectFill"
+                                                   HeightRequest="200"/>
+                                        </Border>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Commentaire saisi sur l'assignation (s'il est différent du post) -->
+                            <Border IsVisible="{Binding HasAssignationNote}"
+                                    BackgroundColor="#FFFBEB" Stroke="#FDE68A" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10" Padding="14,11">
+                                <VerticalStackLayout Spacing="6">
+                                    <HorizontalStackLayout Spacing="6">
+                                        <Label Text="&#xE0B9;" FontFamily="MaterialIcons" FontSize="14"
+                                               TextColor="#92400E" VerticalOptions="Center"/>
+                                        <Label Text="Note du coach / assignation" FontSize="11" FontAttributes="Bold"
+                                               TextColor="#92400E" CharacterSpacing="0.4"
+                                               VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                    <Label Text="{Binding ViewingSeance.Commentaire}"
+                                           FontSize="13" TextColor="#78350F" LineBreakMode="WordWrap"/>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Performances client (si présentes) -->
+                            <Border IsVisible="{Binding HasPerformances}"
+                                    BackgroundColor="#F0FDF4" Stroke="#BBF7D0" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10" Padding="16,14">
+                                <VerticalStackLayout Spacing="10">
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Label Text="&#xE876;" FontFamily="MaterialIcons" FontSize="18"
+                                               TextColor="#16A34A" VerticalOptions="Center"/>
+                                        <Label Text="Performances du client" FontSize="14" FontAttributes="Bold"
+                                               TextColor="#15803D" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Performances}"
+                                                         Spacing="6">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="services:ClientPerformanceItem">
+                                                <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="14">
+                                                    <Label Grid.Column="0" Text="{Binding ExerciseName}"
+                                                           FontSize="13" FontAttributes="Bold" TextColor="#0F172A"/>
+                                                    <Label Grid.Column="1" Text="{Binding SeriesFaites, StringFormat='{0} séries'}"
+                                                           FontSize="12" TextColor="#15803D"/>
+                                                    <Label Grid.Column="2" Text="{Binding RepetitionsFaites, StringFormat='{0} reps', FallbackValue=''}"
+                                                           FontSize="12" TextColor="#15803D"/>
+                                                    <Label Grid.Column="3" Text="{Binding ChargeFaiteKg, StringFormat='{0} kg', FallbackValue=''}"
+                                                           FontSize="12" TextColor="#15803D"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Catégories / blocs / exercices -->
+                            <VerticalStackLayout IsVisible="{Binding ViewingSessionModel, Converter={StaticResource IsNotNullConverter}}"
+                                                 BindableLayout.ItemsSource="{Binding ViewingSessionModel.Categories}"
+                                                 Spacing="14">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="programModels:CategoryModel">
+                                        <Border BackgroundColor="#FAF5FF" Stroke="#DDD6FE" StrokeThickness="1"
+                                                StrokeShape="RoundRectangle 10" Padding="14,12">
+                                            <VerticalStackLayout Spacing="10">
+                                                <Label Text="{Binding Name}" FontSize="14" FontAttributes="Bold"
+                                                       TextColor="#3B0764"/>
+                                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding SubCategories}"
+                                                                     Spacing="8">
+                                                    <BindableLayout.ItemTemplate>
+                                                        <DataTemplate x:DataType="programModels:SubCategoryModel">
+                                                            <Border BackgroundColor="White" Stroke="#E2E8F0"
+                                                                    StrokeThickness="1"
+                                                                    StrokeShape="RoundRectangle 8" Padding="12,10">
+                                                                <VerticalStackLayout Spacing="6">
+                                                                    <Grid ColumnDefinitions="*,Auto">
+                                                                        <Label Grid.Column="0" Text="{Binding Name}"
+                                                                               FontSize="13" FontAttributes="Bold" TextColor="#1E293B"/>
+                                                                        <Label Grid.Column="1"
+                                                                               Text="{Binding Sets, StringFormat='{0} séries'}"
+                                                                               FontSize="11" TextColor="#64748B" FontAttributes="Bold"/>
+                                                                    </Grid>
+                                                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Exercises}"
+                                                                                         Spacing="3">
+                                                                        <BindableLayout.ItemTemplate>
+                                                                            <DataTemplate x:DataType="programModels:ExerciseModel">
+                                                                                <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="12">
+                                                                                    <Label Grid.Column="0" Text="{Binding Name}" FontSize="12" TextColor="#475569"/>
+                                                                                    <Label Grid.Column="1" Text="{Binding RepsText}" FontSize="11" TextColor="#94A3B8"/>
+                                                                                    <Label Grid.Column="2" Text="{Binding WeightText}" FontSize="11" TextColor="#94A3B8"/>
+                                                                                    <Label Grid.Column="3" Text="{Binding Tempo}" FontSize="11" TextColor="#94A3B8"/>
+                                                                                </Grid>
+                                                                            </DataTemplate>
+                                                                        </BindableLayout.ItemTemplate>
+                                                                    </VerticalStackLayout>
+                                                                </VerticalStackLayout>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </BindableLayout.ItemTemplate>
+                                                </VerticalStackLayout>
+                                            </VerticalStackLayout>
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                    <Border Grid.Row="2" BackgroundColor="#F8FAFC" StrokeThickness="0" Padding="24,14">
+                        <Button Text="Fermer"
+                                Command="{Binding CloseSessionDetailCommand}"
+                                BackgroundColor="White" BorderColor="#E2E8F0" BorderWidth="1"
+                                TextColor="#374151" FontAttributes="Bold" FontSize="13"
+                                Padding="20,10" CornerRadius="8" HorizontalOptions="End"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+    </Grid>
+</ContentView>

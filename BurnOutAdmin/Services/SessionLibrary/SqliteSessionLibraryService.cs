@@ -89,4 +89,21 @@ public class SqliteSessionLibraryService : ISessionLibraryService
         await InitializeAsync();
         await _db!.DeleteAsync<SavedSessionEntry>(id);
     }
+
+    public async Task<SessionModel?> LoadSessionModelAsync(int builderId)
+    {
+        await InitializeAsync();
+        var entry = await _db!.FindAsync<SavedSessionEntry>(builderId);
+        if (entry is null || string.IsNullOrWhiteSpace(entry.DataJson) || entry.DataJson == "{}")
+            return null;
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<SessionModel>(entry.DataJson);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[SqliteSessionLibraryService] LoadSessionModelAsync({builderId}) deserialize error: {ex.Message}");
+            return null;
+        }
+    }
 }

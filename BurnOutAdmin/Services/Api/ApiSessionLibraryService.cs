@@ -190,6 +190,31 @@ public class ApiSessionLibraryService : ISessionLibraryService
         }
     }
 
+    // ── Chargement du modèle complet (édition / visualisation) ───
+    // TODO API : endpoint à implémenter côté Slim : GET /seances-builder/{id}/full
+    // Retourne le SessionModel reconstitué (catégories, sous-catégories, exercices).
+    public async Task<SessionModel?> LoadSessionModelAsync(int builderId)
+    {
+        if (builderId <= 0) return null;
+        try
+        {
+            // Tentative simple : décoder data_json côté GET /seances-builder/{id}.
+            var dto = await _api.GetAsync<SeanceBuilderDto>($"/seances-builder/{builderId}");
+            if (dto is null || string.IsNullOrWhiteSpace(dto.DataJson) || dto.DataJson == "{}")
+            {
+                Console.WriteLine($"[ApiSessionLibraryService] LoadSessionModelAsync({builderId}) : data_json absent — stub vide");
+                return null;
+            }
+            return System.Text.Json.JsonSerializer.Deserialize<SessionModel>(dto.DataJson);
+        }
+        catch (UnauthorizedAccessException) { throw; }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiSessionLibraryService] LoadSessionModelAsync({builderId}) error: {ex.Message}");
+            return null;
+        }
+    }
+
     // ── Mapping ───────────────────────────────────────────────────
 
     private static SavedSessionEntry MapToEntry(SeanceBuilderDto dto)

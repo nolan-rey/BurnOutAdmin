@@ -31,6 +31,7 @@ public class NavigationService : INavigationService
         {
             { "Dashboard", typeof(DashboardViewModel) },
             { "Clients", typeof(ClientsViewModel) },
+            { "ClientProfile", typeof(ClientProfileViewModel) },
             { "Programmes", typeof(ProgrammesViewModel) },
             { "ProgramBuilder", typeof(ProgramBuilderViewModel) },
             { "Challenges", typeof(ChallengesViewModel) },

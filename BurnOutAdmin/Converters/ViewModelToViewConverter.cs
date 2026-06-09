@@ -1,6 +1,7 @@
 using System.Globalization;
 using BurnOutAdmin.ViewModels;
 using BurnOutAdmin.Views.Challenges;
+using BurnOutAdmin.Views.ClientProfile;
 using BurnOutAdmin.Views.Clients;
 using BurnOutAdmin.Views.Dashboard;
 using BurnOutAdmin.Views.NfcLogs;
@@ -20,6 +21,7 @@ public class ViewModelToViewConverter : IValueConverter
         {
             DashboardViewModel vm => new DashboardView { BindingContext = vm },
             ClientsViewModel vm => new ClientsView { BindingContext = vm },
+            ClientProfileViewModel vm => new ClientProfileView { BindingContext = vm },
             ProgrammesViewModel vm => new ProgrammesView { BindingContext = vm },
             ChallengesViewModel vm => new ChallengesView { BindingContext = vm },
             NfcLogsViewModel vm => new NfcLogsView { BindingContext = vm },

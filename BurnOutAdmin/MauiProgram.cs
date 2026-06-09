@@ -10,8 +10,10 @@ using BurnOutAdmin.ViewModels;
 using BurnOutAdmin.ViewModels.Auth;
 using BurnOutAdmin.ViewModels.ProgramBuilder;
 using BurnOutAdmin.Views.Auth;
+using BurnOutAdmin.Views.ClientProfile;
 using BurnOutAdmin.Views.ProgramBuilder;
 using BurnOutAdmin.Views.Shell;
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 
 namespace BurnOutAdmin;
@@ -23,6 +25,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()   // active MediaPicker, popups, behaviors…
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -85,6 +88,11 @@ public static class MauiProgram
         // Bibliothèque de séances → API (séances builder depuis seances_builder)
         builder.Services.AddSingleton<ISessionLibraryService, ApiSessionLibraryService>();
 
+        // ── Nouveaux services pour la fiche ClientProfile ────────────
+        builder.Services.AddSingleton<IClientHistoryService, ApiClientHistoryService>();
+        builder.Services.AddSingleton<IClientStatsService,   ApiClientStatsService>();
+        builder.Services.AddSingleton<IRankBadgeService,     ApiRankBadgeService>();
+
         // Services UI
         builder.Services.AddSingleton<IAlertService, MauiAlertService>();
         builder.Services.AddSingleton<INavigationService, NavigationService>();
@@ -94,6 +102,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<MainShellViewModel>();
         builder.Services.AddTransient<DashboardViewModel>();
         builder.Services.AddTransient<ClientsViewModel>();
+        builder.Services.AddTransient<ClientProfileViewModel>();
         builder.Services.AddTransient<ProgrammesViewModel>();
         builder.Services.AddTransient<ProgramBuilderViewModel>();
         builder.Services.AddTransient<ChallengesViewModel>();
@@ -101,6 +110,7 @@ public static class MauiProgram
         builder.Services.AddTransient<SettingsViewModel>();
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<RegisterViewModel>();
+        builder.Services.AddTransient<SetDetailViewModel>();
 
         // ── Views ───────────────────────────────────────────────────
 
@@ -108,6 +118,7 @@ public static class MauiProgram
         builder.Services.AddTransient<ProgramBuilderPage>();
         builder.Services.AddTransient<LoginView>();
         builder.Services.AddTransient<RegisterView>();
+        builder.Services.AddTransient<ClientProfileView>();
 
 #if DEBUG
         builder.Logging.AddDebug();

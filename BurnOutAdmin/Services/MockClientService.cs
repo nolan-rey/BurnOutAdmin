@@ -216,6 +216,17 @@ public class MockClientService : IClientService
         }
     }
 
+    public Task<bool> UpdateClientTotemAsync(int clientId, int? totemRang)
+    {
+        lock (_lock)
+        {
+            var existing = _mockClients.FirstOrDefault(c => c.Id == clientId);
+            if (existing is null) return Task.FromResult(false);
+            existing.TotemRang = totemRang;
+            return Task.FromResult(true);
+        }
+    }
+
     public async Task<bool> AddClientAsync(Client client)
     {
         await Task.Delay(150);

@@ -214,6 +214,28 @@ public class ApiClientService : IClientService
         }
     }
 
+    // TODO API : endpoint à implémenter côté Slim : PUT /clients/{id}/totem  body { "totem_rang": int|null }
+    public async Task<bool> UpdateClientTotemAsync(int clientId, int? totemRang)
+    {
+        try
+        {
+            var body = new { totem_rang = totemRang };
+            var result = await _api.PutAsync<ApiSuccessDto>($"/clients/{clientId}/totem", body);
+            if (result?.Success != true)
+            {
+                Console.WriteLine($"[ApiClientService] UpdateClientTotemAsync failed: {result?.Error}");
+                return false;
+            }
+            return true;
+        }
+        catch (UnauthorizedAccessException) { throw; }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClientService] UpdateClientTotemAsync error: {ex.Message}");
+            return false;
+        }
+    }
+
     public async Task<bool> DeleteClientAsync(int id)
     {
         try
