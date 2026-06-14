@@ -194,22 +194,47 @@ public partial class RegisterViewModel : ObservableObject
             VerificationCode = VerificationCode.Trim()
         };
 
-        var error = await _authService.RegisterAsync(dto);
-
-        IsLoading = false;
-
-        if (error is not null) { SetError(error); return; }
-
-        // Succès → ouvrir MainShell
-        var app = _serviceProvider.GetRequiredService<App>();
-        app.StartNfcOrchestrator();
-
-        await MainThread.InvokeOnMainThreadAsync(() =>
+        try
         {
-            var mainShell = _serviceProvider.GetRequiredService<MainShell>();
-            if (Application.Current?.Windows.Count > 0)
-                Application.Current.Windows[0].Page = mainShell;
-        });
+            var error = await _authService.RegisterAsync(dto);
+
+            if (error is not null)
+            {
+                SetError(error);
+                return;
+            }
+
+            // ── Succès : navigation vers MainShell ─────────────────
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                // Démarrer l'orchestrateur NFC (non bloquant)
+                try
+                {
+                    var app = _serviceProvider.GetRequiredService<App>();
+                    app.StartNfcOrchestrator();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Register] NFC orchestrator start error: {ex.Message}");
+                    // Non bloquant — on continue vers le shell
+                }
+
+                // Remplacer la page courante par MainShell
+                var mainShell = _serviceProvider.GetRequiredService<MainShell>();
+                if (Application.Current?.Windows is { Count: > 0 } windows)
+                    windows[0].Page = mainShell;
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Register] Unexpected error: {ex.GetType().Name}: {ex.Message}");
+            SetError($"Erreur inattendue : {ex.Message}");
+        }
+        finally
+        {
+            // Garantit que le spinner s'arrête toujours
+            IsLoading = false;
+        }
     }
 
     // ── Commande — retour login ───────────────────────────────────
