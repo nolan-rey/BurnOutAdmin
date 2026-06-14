@@ -61,21 +61,44 @@ public class ApiProgrammeSeanceService : IProgrammeSeanceService
 
         try
         {
-            var dto = new CreateProgrammeSeanceDto
+            // ── data_json mobile-ready ────────────────────────────────
+            // Le template.DataJson local est en PascalCase (cache C#).
+            // On le re-désérialise en SessionModel puis on remappe au
+            // format snake_case attendu par l'API mobile (clés blocks,
+            // exercices, nom_exercice, etc.). Sinon la séance s'affiche
+            // vide sur l'app pratiquant.
+            object mobileData = new { };
+            if (!string.IsNullOrWhiteSpace(template.DataJson) && template.DataJson != "{}")
             {
-                IdSeanceBuilder = template.Id,
-                Nom             = template.Name,
-                Description     = template.Description,
-                Ordre           = order,
-                ExerciseCount   = template.ExerciseCount,
-                CategoryCount   = template.CategoryCount,
-                DataJson        = string.IsNullOrWhiteSpace(template.DataJson) ? "{}" : template.DataJson
+                try
+                {
+                    var session = System.Text.Json.JsonSerializer
+                        .Deserialize<Models.Program.SessionModel>(template.DataJson);
+                    if (session is not null)
+                        mobileData = MobileDataJsonMapper.Build(session);
+                }
+                catch (System.Text.Json.JsonException ex)
+                {
+                    Console.WriteLine($"[ApiProgrammeSeanceService] DataJson local invalide (id={template.Id}): {ex.Message}");
+                }
+            }
+
+            // Body anonymous → data_json est un OBJET, pas une string.
+            var body = new
+            {
+                id_seance_builder = template.Id,
+                nom               = template.Name,
+                description       = template.Description,
+                ordre             = order,
+                exercise_count    = template.ExerciseCount,
+                category_count    = template.CategoryCount,
+                data_json         = mobileData
             };
 
-            Console.WriteLine($"[ApiProgrammeSeanceService] POST /programmes/{programmeId}/seances nom='{dto.Nom}' ordre={dto.Ordre} template={dto.IdSeanceBuilder}");
+            Console.WriteLine($"[ApiProgrammeSeanceService] POST /programmes/{programmeId}/seances nom='{template.Name}' ordre={order} template={template.Id}");
 
             var result = await _api.PostAsync<CreateProgrammeSeanceResponseDto>(
-                $"/programmes/{programmeId}/seances", dto);
+                $"/programmes/{programmeId}/seances", body);
 
             if (result?.Success == true && result.ResolvedId is { } newId && newId > 0)
             {

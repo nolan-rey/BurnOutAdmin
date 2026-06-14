@@ -83,19 +83,26 @@ public class ApiSessionLibraryService : ISessionLibraryService
                 .SelectMany(sc => sc.Exercises)
                 .Count();
 
-            var dataJson = JsonSerializer.Serialize(session);
+            // ── data_json mobile-ready (snake_case + structure blocks/exercices) ──
+            // L'API mobile lit ces clés précises ; envoyer un objet (pas une string)
+            // évite le double-encodage JSON qui faisait apparaître la séance vide.
+            var mobileData = MobileDataJsonMapper.Build(session);
 
-            var dto = new CreateSeanceBuilderDto
+            // Cache local : PascalCase string pour relecture C# de l'éditeur
+            var dataJsonLocal = JsonSerializer.Serialize(session);
+
+            // Body anonymous : data_json passe en OBJET, plus en string
+            var body = new
             {
-                Nom           = name,
-                Description   = description,
-                ExerciseCount = exerciseCount,
-                CategoryCount = session.Categories.Count,
-                DataJson      = dataJson
+                nom            = name,
+                description    = description,
+                exercise_count = exerciseCount,
+                category_count = session.Categories.Count,
+                data_json      = mobileData
             };
 
             var result = await _api.PostAsync<CreateSeanceBuilderResponseDto>(
-                "/seances-builder", dto);
+                "/seances-builder", body);
 
             var newId = result?.IdSeanceBuilder ?? 0;
 
@@ -104,7 +111,7 @@ public class ApiSessionLibraryService : ISessionLibraryService
             // on le stocke dans Preferences pour pouvoir éditer plus tard.
             if (newId > 0)
             {
-                Preferences.Set(DataJsonKey(newId), dataJson);
+                Preferences.Set(DataJsonKey(newId), dataJsonLocal);
                 Console.WriteLine($"[ApiSessionLibraryService] DataJson mis en cache local pour id={newId}");
             }
 
@@ -113,7 +120,7 @@ public class ApiSessionLibraryService : ISessionLibraryService
                 Id            = newId,
                 Name          = name,
                 Description   = description,
-                DataJson      = dataJson,
+                DataJson      = dataJsonLocal,
                 ExerciseCount = exerciseCount,
                 CategoryCount = session.Categories.Count,
                 CreatedAt     = DateTime.UtcNow
@@ -149,21 +156,23 @@ public class ApiSessionLibraryService : ISessionLibraryService
                 .SelectMany(sc => sc.Exercises)
                 .Count();
 
-            var dataJson = JsonSerializer.Serialize(session);
+            // ── data_json mobile-ready (snake_case + blocks/exercices) ──
+            var mobileData    = MobileDataJsonMapper.Build(session);
+            var dataJsonLocal = JsonSerializer.Serialize(session);
 
-            var dto = new UpdateSeanceBuilderDto
+            var body = new
             {
-                Nom           = name,
-                Description   = description,
-                ExerciseCount = exerciseCount,
-                CategoryCount = session.Categories.Count,
-                DataJson      = dataJson
+                nom            = name,
+                description    = description,
+                exercise_count = exerciseCount,
+                category_count = session.Categories.Count,
+                data_json      = mobileData
             };
 
-            await _api.PutAsync<CreateSeanceBuilderResponseDto>($"/seances-builder/{id}", dto);
+            await _api.PutAsync<CreateSeanceBuilderResponseDto>($"/seances-builder/{id}", body);
 
             // ── Mettre à jour le cache local ──────────────────────────
-            Preferences.Set(DataJsonKey(id), dataJson);
+            Preferences.Set(DataJsonKey(id), dataJsonLocal);
             Console.WriteLine($"[ApiSessionLibraryService] UpdateSessionAsync({id}) OK — cache mis à jour");
         }
         catch (UnauthorizedAccessException) { throw; }
